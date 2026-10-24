@@ -135,3 +135,14 @@ def build_perdoc_grpo(rendered: Path, truth_dirs: list[Path], out: Path, count, 
              "by_difficulty": dict(Counter(r["difficulty"] for r in rows)), "tokens": _tokens(rows, count)}
     (out / "perdoc_grpo_stats.json").write_text(json.dumps(stats, indent=1))
     return stats
+
+
+def is_hard_grpo_row(row: dict) -> bool:
+    """A medium/hard document that either hides an identity field from the page (abstention is the answer) or has
+    more than one line item: the rows where 16 samples of the per-document policy still disagree."""
+    from gst_recon.rewards.doc import IDENTITY, visible
+
+    ref = json.loads(row["reference"])
+    truth, page = ref["truth"], ref["doc_text"]
+    hidden = any(truth.get(f) and not visible(f, truth[f], page) for f in IDENTITY)
+    return row["difficulty"] in ("medium", "hard") and (hidden or len(truth["line_items"]) > 1)

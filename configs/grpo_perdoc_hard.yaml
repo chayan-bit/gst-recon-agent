@@ -1,0 +1,77 @@
+# Per-document GRPO, hard variant for rs-epyc (configs/launch_grpo_perdoc_hard.sh), run next to the kratos plan-B run.
+# The kratos run (all documents, 8 generations) saw 50-75% of groups with zero reward spread: perdoc-v2 already
+# solves most documents. This variant keeps the documents where it still disagrees with itself and doubles the group.
+# Data: grpo-perdoc-2k (prompts <= 2048 tokens, the 120 grpo-*-201 dev cases excluded) filtered by
+# gst_recon.train.perdoc.is_hard_grpo_row: medium/hard documents with an identity field the page does not show
+# (abstention is the answer) or more than one line item: 1168 of 2590 rows.
+# Policy = base Qwen3-4B + perdoc-v2 as the trainable LoRA (runs/grpo-perdoc-init). Rollouts: SGLang with adapter
+# sync, grammar-constrained to doc_json_schema, 16 per document, completion cap 640 (truth max 480 tokens).
+#
+# rs-epyc H100 budget, with the eval server shrunk to ~24 GB (~70 GB free; the launcher needs 60 GB):
+#   server: mem fraction 0.30 of ~70 GiB: 7.5 weights + ~12 GiB KV (~85k tokens; one step needs <= 4 prompts x 2k
+#     + 64 x 640 completion tokens = ~49k) + LoRA slots; CUDA graphs ~2 GiB on top.
+#   trainer ~15-18 GiB: 7.5 policy, ~0.7 LoRA + grads + 8-bit Adam, checkpointed activations (4 x ~2.7k tokens),
+#     ~1.6 completion logits (4 x 640 x 152k, fp32) and their gradient. The launcher wants 26 GB left for it.
+algo: grpo
+backend: trl  # unsloth + sglang is refused by the fork by design
+
+model:
+  name_or_path: Qwen/Qwen3-4B-Instruct-2507  # the launcher substitutes the local snapshot (MODEL=...)
+  precision: bf16
+  max_seq_length: 2688  # prompts <= 2048 tokens + 640 completion
+  gradient_checkpointing: true
+  use_peft: true
+  # must match the per-document adapter exactly (the runner checks): r32, alpha 64, plain LoRA, all 7 projections
+  lora_r: 32
+  lora_alpha: 64
+  lora_dropout: 0.0
+  lora_target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+
+datasets:
+  - name: data/train/curated/grpo-perdoc-hard  # columns: prompt (system + user messages), reference (truth + doc_text)
+    split: train
+
+rewards:
+  - type: gst_recon_doc_grpo  # 0 if schema-invalid, else 0.1..1; truth = 1.0
+    weight: 1.0
+
+train:
+  rollout_backend: sglang
+  sglang_server_url: http://127.0.0.1:30001  # port 30001, never the teacher's or eval server's 30000
+  sglang_sync_dir: runs/grpo-sync  # on disk via the repo's runs link, never /dev/shm
+  max_steps: 292  # one pass over the 1168 documents at 4 per step; the launcher's STOP_AT deadline may bind first
+  # 4 x 16 = 64 completions per optimizer step = 4 documents x 16 generations
+  per_device_batch_size: 4
+  gradient_accumulation_steps: 16
+  num_generations: 16
+  learning_rate: 5.0e-6
+  warmup_ratio: 0.03
+  beta: 0.0  # with a PEFT policy TRL's reference is the base model, not the SFT policy
+  loss_type: grpo
+  scale_rewards: group
+  temperature: 1.0  # sample the policy itself: the SFT adapter is confident (token accuracy ~0.99), so 8 samples
+  top_p: 1.0        # at a lower temperature are often identical and carry no advantage
+  max_prompt_length: 2048  # = the data filter, so no prompt is truncated
+  max_completion_length: 640  # longest truth record is 480 tokens; a clipped record is invalid and scores 0
+  logging_steps: 1
+  save_steps: 25
+  save_total_limit: 2
+  seed: 42
+
+logging:
+  output_dir: runs/grpo-perdoc-hard
+  run_name: gst-recon-grpo-perdoc-hard
+  loggers: [tensorboard]
+
+chat_template: auto
+
+gst_recon:
+  init_adapter: runs/grpo-perdoc-init  # the per-document SFT LoRA, loaded as the trainable policy (not merged)
+  rollout_json_schema: doc  # SGLang json_schema = doc_json_schema() on every rollout request
+  max_hours: 6  # the launcher's STOP_AT deadline (GST_MAX_HOURS) binds first
+  bf16_snapshots: runs/grpo-perdoc-hard/bf16  # bf16 adapter + SHA256SUMS per save
+  mask_truncated_completions: true
+  gradient_checkpointing: true
+  optimizer: adamw_8bit
+  lr_scheduler: constant_with_warmup
+  dataloader_num_workers: 0

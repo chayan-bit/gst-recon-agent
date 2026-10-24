@@ -25,6 +25,8 @@ MAX_RUNNING=${MAX_RUNNING:-32}; SERVER_EXTRA=${SERVER_EXTRA:-}; CONTEXT=${CONTEX
 DATA=${DATA:-data/train/curated/grpo-merged}
 INIT_ADAPTER=${INIT_ADAPTER:-runs/sft-curated}  # the config's gst_recon.init_adapter
 INIT_FROM=${INIT_FROM:-}  # optional: link INIT_ADAPTER to this adapter dir after its SHA256SUMS verify
+MIN_AVAIL=${MIN_AVAIL:-12}  # GB of available host RAM to start (preflight and run_guarded)
+STOP_AT=${STOP_AT:-}  # optional HH:MM deadline: the trainer saves and stops 15 min before it, is killed 2 min before
 OUT=$(awk '/^  output_dir:/{print $2}' "$HOME/gst-recon/repo/$CONFIG")
 cd "$REPO" || exit 1
 export HF_HOME=$ROOT/hf
@@ -54,7 +56,12 @@ disk=$(df -BG --output=avail ~ | tail -1 | tr -dc 0-9)
 log "preflight config=$CONFIG memfrac=$MEMFRAC avail=${avail}G gpu_free=${gpu}MiB disk=${disk}G load=$(cut -d' ' -f1 /proc/loadavg) init=$(readlink -f "$INIT_ADAPTER") rows=$(wc -l < "$DATA/train.jsonl")"
 nvidia-smi --query-compute-apps=pid,used_memory --format=csv,noheader | tee -a "$LOG"
 [ "$gpu" -ge "$GPU_MIN_MIB" ] || die "only ${gpu} MiB GPU free, need $GPU_MIN_MIB (server + trainer)"
-[ "$avail" -ge 12 ] || die "only ${avail} GB host RAM available"
+[ "$avail" -ge "$MIN_AVAIL" ] || die "only ${avail} GB host RAM available, need $MIN_AVAIL"
+limit=195m; maxh=""
+if [ -n "$STOP_AT" ]; then
+  end=$(date -d "$STOP_AT" +%s); [ "$end" -gt "$(date +%s)" ] || end=$((end + 86400))
+  left=$((end - $(date +%s))); [ "$left" -gt 1800 ] || die "under 30 min to $STOP_AT"
+fi
 [ "$disk" -ge 8 ] || die "only ${disk} GB disk (5 GB floor + 2 checkpoints + adapter sync)"
 
 # 1. rollout server in its own tmux session (outside the trainer's process group and time box)
@@ -70,13 +77,18 @@ left=$(nvidia-smi --query-gpu=memory.free --format=csv,noheader,nounits)
 [ "$left" -ge "$TRAINER_MIN_MIB" ] || { tmux kill-session -t sglang-rollout; die "only ${left} MiB GPU left for the trainer, need $TRAINER_MIN_MIB"; }
 
 # 2. first-5-steps timing, printed once into the log
-( t0=$(date +%s); until grep -q "^step 5/" "$LOG" 2>/dev/null; do sleep 30; pgrep -u "$USER" -f "[g]st_recon.train run" >/dev/null || exit; done
+( t0=$(date +%s); until grep -q "step 5/" "$LOG" 2>/dev/null; do sleep 30; pgrep -u "$USER" -f "[g]st_recon.train run" >/dev/null || exit; done
   log "first 5 steps: $(( ($(date +%s) - t0) / 5 )) s/step incl. model load (see step lines for the steady rate)" ) &
 
 # 3. GRPO under the host-RAM watchdog; timeout signals its whole process group (run_guarded, trainer, children)
+if [ -n "$STOP_AT" ]; then  # recomputed after the server start
+  left=$((end - $(date +%s))); limit=$((left - 120)); maxh=$(awk -v s="$left" 'BEGIN { printf "%.3f", (s - 900) / 3600 }')
+  log "trainer until $STOP_AT: save-then-stop after ${maxh} h, hard stop in $((limit / 60)) min"
+fi
 # UNSLOTH_RETURN_LOGITS: AlignTune's vendored unsloth patches transformers even on the trl backend and would
 # return empty logits (seen in the rs-lab per-document SFT); TRL needs real ones for the completion log-probs.
-timeout -s TERM 195m env PYTHON="$ALIGN_PY" MODEL="$BASE" UNSLOTH_RETURN_LOGITS=1 CAP_GB=8 DUMP_GB=6 MIN_AVAIL_GB=12 \
+timeout -s TERM $limit env PYTHON="$ALIGN_PY" MODEL="$BASE" UNSLOTH_RETURN_LOGITS=1 ${maxh:+GST_MAX_HOURS=$maxh} \
+  CAP_GB=8 DUMP_GB=6 MIN_AVAIL_GB=$MIN_AVAIL \
   bash configs/run_guarded.sh "$CONFIG" >> "$LOG" 2>&1
 rc=$?
 

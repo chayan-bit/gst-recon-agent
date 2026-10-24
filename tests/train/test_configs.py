@@ -94,7 +94,8 @@ def test_perdoc_grpo_configs_use_the_doc_reward_grammar_and_a_1024_cap():
     assert {n for n, *_ in cfgs} >= {"grpo_perdoc.yaml", "grpo_perdoc_small.yaml", "grpo_perdoc_kratos.yaml"}
     for name, cfg, extras in cfgs:
         assert cfg["rewards"] == [{"type": "gst_recon_doc_grpo", "weight": 1.0}], name
-        assert cfg["train"]["max_completion_length"] == (640 if "kratos" in name else 1024) and cfg["train"]["num_generations"] == 8, name
+        assert cfg["train"]["max_completion_length"] == (640 if "kratos" in name or "hard" in name else 1024), name
+        assert cfg["train"]["num_generations"] == (16 if "hard" in name else 8), name
         assert cfg["train"]["beta"] == 0.0 and extras["rollout_json_schema"] == "doc", name
-        assert cfg["datasets"][0]["name"] == "data/train/curated/grpo-perdoc" + ("-2k" if "kratos" in name else ""), name
+        assert cfg["datasets"][0]["name"] == "data/train/curated/grpo-perdoc" + ("-2k" if "kratos" in name else "-hard" if "hard" in name else ""), name
         assert extras["init_adapter"] == "runs/grpo-perdoc-init", name
