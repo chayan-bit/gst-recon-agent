@@ -63,6 +63,6 @@ gst_recon:
   rows_as_is: true
   check_completion_mask: true
   max_hours: 2.5  # wall-clock cap: save, then stop
-  # the first launch (16:45) died at step 148 at 17:35 (task result 0xC000013A, a Ctrl-C on its console window);
-  # the relaunch continues from the last full checkpoint (optimizer, scheduler, data position), then steps 121-174
-  resume_from_checkpoint: runs/sft-perdoc-v2/checkpoint-120
+  # console Ctrl-C/close events (task result 0xC000013A) ended the 16:45 launch at step 148 and its 17:41 resume
+  # from checkpoint-120 at step 167; the 18:08 resume from checkpoint-160 finished step 174 (18:13:44, rc 0)
+  resume_from_checkpoint: runs/sft-perdoc-v2/checkpoint-160
