@@ -135,3 +135,20 @@ Against the 30B model run end to end (paired by case on the 120 simulator cases)
 That is a comparison of systems, not of models: the 4B system has deterministic code doing the matching and the 30B model does not.
 On the 12 real-world sanity cases it scores 81.9% under v2 and v3 (76.4% under v1) against 97.2% for Claude Sonnet in the same mode, so we are still far behind the frontier.
 What we do not claim: these hybrid rows are not like-for-like with the end-to-end rows of the 30B teacher and Sonnet, because code does part of the work; the reconciler was revised twice (v1 to v2 to v3) and all three are reported; and throughput is slightly understated because a demo recording shared the server for the first four minutes (reconciler v2 reuses the same model replies, so its throughput is the v1 figure).
+
+## 13. Isn't this mostly deterministic rules? Why not OCR plus rules?
+
+The law is deterministic on purpose, and the model does only what rules cannot do.
+The 4B model reads each messy document (scan OCR, WhatsApp or email text) into a typed record and judges, per line, the item category and the business purpose in the buyer's context.
+Code parses the already structured books (purchase register, GSTR-2B, bank statement), links them to the documents, and applies the statute (sections 16(2) and 17(5), rules 36 and 37) and the rupee arithmetic.
+That keeps the part that must be auditable fixed and testable, and gives perception and judgment to the model.
+Here is what we measured on the 120 simulator cases, each row in `reports/hybrid.md` or `reports/results.md`.
+First, OCR plus regex extraction plus the same reconciler, with no model, is the "heuristic hybrid (code alone)" row: ITC invoice exact 10.4% [8.8, 12.1] and context accuracy 40.9% [34.7, 46.3]; it has only a reconciler v1 row.
+Second, the base 4B model in the same hybrid mode ("student-base hybrid") scores 44.3% under reconciler v1 and 55.2% [51.9, 58.6] under v3, and the fine-tuned per-document 4B ("student-perdoc-sft hybrid") scores 62.9% [60.2, 65.3] under v1 and 79.9% [77.5, 82.4] under v3, with context accuracy 82.7% [79.3, 85.8] under both.
+So like for like under reconciler v1 the ladder is 10.4, 44.3, 62.9 ITC-exact, and the model, not the rules, is what moves it.
+Third, the rule baselines in `reports/results.md` are handed the true extraction and the true document links, which a real deployment never has, so only their decisions are comparable: "keyword (oracle extraction and links)" (naive Bayes on line descriptions, no buyer context) scores ITC-exact 71.6% [68.9, 74.2] with context accuracy 48.1% [43.7, 52.4], and "context-blind rules (oracle extraction and links)" (the real rules engine without the buyer profile or remarks) scores 82.7% [80.4, 85.0] with context accuracy 50.1% [44.9, 55.6].
+We say plainly that on ITC-exact alone the context-blind engine given perfect extraction is ahead of our system (82.7% against 79.9%), because most invoices do not depend on the buyer.
+Where the answer depends on who is buying, the same item can be blocked for one buyer and eligible for another (the caterer example in the demo), the rule baselines reach 48 to 50% and our system reaches 82.7%.
+That context accuracy gap is the case for a model, and the code-alone floor shows what happens when reading the documents is left to regex.
+Last, the reconciler fixes in versions 2 and 3 are ordinary matching logic (check-digit validation of GSTINs, unique-match filling of fields the OCR did not show, no invoice-number veto on GSTR-2B links), each checked against an oracle that reproduces the truth on all 132 test cases and on the dev sets.
+What we do not claim: that the 4B system is more accurate than a rules engine that is given perfect inputs on every metric; the claim is that it must read the documents itself and judge context, and that it does both better than the alternatives we measured.
