@@ -85,7 +85,7 @@ Narration:
 "We do not claim to beat frontier models.
 We measured the climb.
 On unseen items and layouts, invoices exactly right go from 53.1 percent for the base model to 78.9 with SFT, on a sample of fifteen cases.
-We also tried GRPO on a rule-checked reward, and it did not beat SFT, so we did not ship it.
+We also tried GRPO on a rule-checked reward, twice, and neither run cleared our bar, so we did not ship it.
 On the 120 test cases Claude Sonnet gets 96.3 and our hybrid system gets 79.9, which is 83.0 percent of that, and nothing leaves the machine.
 Constrained decoding lifts valid output from 70 to 100 percent."
 
@@ -124,7 +124,7 @@ Do not remove shot 5's constrained-versus-unconstrained pair or shot 7's limitat
 
 ## Fallbacks if something is not ready by the deadline
 
-- No GRPO model yet: shot 5 shows base and SFT only, and the narration says "GRPO is still training"; do not show a GRPO bar.
-- No real-world set yet: shot 7 drops the second line and says "a real-document check is the next step".
+- GRPO: shot 5 shows base and SFT only, and the narration says GRPO was tried twice and not shipped; do not show a GRPO bar.
+- Real documents: a 42-document eval-only set exists, so shot 7 may say the check was done and the result is a failure analysis; do not quote a real-world accuracy figure.
 - Rollout speedup not measured: shot 6 card 1 shows only the measured cache-sharing line, not a speedup.
 - Student cannot stream a full case in time: show the first 20 seconds of the stream and the final table, with the "cut" label.
