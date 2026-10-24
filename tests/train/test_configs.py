@@ -16,8 +16,9 @@ def test_configs_restate_values_aligntune_would_shadow(path):
     assert args["batch_size"] == cfg["train"]["per_device_batch_size"]
     assert args["output_dir"] == cfg["logging"]["output_dir"]
     assert extras["dataloader_num_workers"] == 0
-    if "dryrun" not in path.name:  # the GPU training configs
-        assert args["max_seq_length"] >= 10240 and extras["gradient_checkpointing"] is True
+    # restated, not AlignTune's 512 default; per-document rows are short, whole cases need >= 10k
+    assert args["max_seq_length"] >= (4096 if "perdoc" in path.name else 10240)
+    assert extras["gradient_checkpointing"] is True
     assert not set(args) & set(extras)
 
 

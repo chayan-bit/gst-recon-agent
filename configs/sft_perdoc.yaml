@@ -1,0 +1,59 @@
+# Per-document SFT for the hybrid mode: Qwen3-4B-Instruct-2507 + a fresh LoRA on one row per document
+# (gst_recon.hybrid.sft: DOC_SYSTEM_PROMPT via build_doc_messages, DocRecord target), built from the same
+# SFT train pool as configs/sft.yaml by `python -m gst_recon.train perdoc` (OCR rule applied per document).
+# Starts from the base model, not the e2e SFT model: different prompt and output schema.
+# Curated data: 4759 rows, total tokens p50 1457 / p99 1918 / max 3785 (data/train-perdoc/perdoc_stats.json).
+# Budget <= 30 min on the H100: ~7.1M tokens per epoch at ~9k tok/s (the e2e SFT's measured rate) is ~13 min
+# per epoch; 450 steps x 16 rows = ~1.5 epochs, ~20 min plus padding (no packing).
+#   PYTHON=~/gst-recon/venv-align/bin/python MODEL=<local Qwen3-4B snapshot> bash configs/run_guarded.sh configs/sft_perdoc.yaml
+algo: sft
+backend: unsloth
+
+model:
+  name_or_path: Qwen/Qwen3-4B-Instruct-2507
+  precision: bf16
+  max_seq_length: 4096  # longest curated row is 3785 tokens
+  use_peft: true
+  lora_r: 32
+  lora_alpha: 64
+  lora_dropout: 0.0
+  lora_target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+
+datasets:
+  - name: data/train/curated/sft-perdoc  # directory with train.jsonl (column: messages)
+    split: train
+    task_type: sft
+
+train:
+  epochs: 2
+  max_steps: 450  # ~1.5 epochs (4759 rows / 16 per step = 298 steps per epoch); the time budget, not the epochs, binds
+  per_device_batch_size: 16
+  gradient_accumulation_steps: 1
+  learning_rate: 1.0e-4
+  warmup_ratio: 0.03
+  weight_decay: 0.0
+  max_grad_norm: 1.0
+  packing: false
+  logging_steps: 5
+  save_steps: 150
+  save_total_limit: 1  # rs-epyc disk is tight
+  seed: 42
+
+logging:
+  output_dir: runs/sft-perdoc
+  run_name: gst-recon-sft-perdoc
+  loggers: [tensorboard]
+
+chat_template: auto
+
+# Runner kwargs, as in configs/sft.yaml: settings AlignTune 0.1.28's YAML parser drops, and loss on the
+# assistant reply only.
+gst_recon:
+  gradient_checkpointing: true
+  optimizer: adamw_8bit
+  lr_scheduler: cosine
+  dataloader_num_workers: 0
+  dataset_num_proc: 1
+  train_on_responses_only:
+    instruction_part: "<|im_start|>user\n"
+    response_part: "<|im_start|>assistant\n"
