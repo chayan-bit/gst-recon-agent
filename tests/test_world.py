@@ -89,3 +89,21 @@ def test_train_size_profiles_shrink_cases_and_keep_eval_sizes():
     assert generate_case(3, "hard", 0, size="sft").case_id != generate_case(3, "hard", 0).case_id
     with pytest.raises(ValueError):
         generate_case(3, "hard", 0, split="test_ood", size="grpo")
+
+
+def _cn_collisions(case) -> list[tuple[str, str]]:
+    from collections import Counter
+
+    from gst_recon.schema import DocType
+
+    keys = Counter((i.supplier_gstin, i.invoice_no) for i in case.inputs.invoices if i.doc_type == DocType.CREDIT_NOTE)
+    return [k for k, n in keys.items() if n > 1]
+
+
+def test_credit_note_numbers_are_unique_per_supplier():
+    """GSTR-2B keys documents by (period, ctin, number): a reused CN number would overwrite the first note."""
+    from gst_recon.sim.world import generate_case
+
+    assert not _cn_collisions(generate_case(9001, "medium", 14, split="test_iid"))  # the reported case
+    for i in range(150):
+        assert not _cn_collisions(generate_case(77, "hard", i)), i

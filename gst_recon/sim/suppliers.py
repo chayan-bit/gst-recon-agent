@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import random
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, timedelta
 
 from gst_recon.schema import DocType, LinePurpose, Party, TruthInvoice, TruthLineItem
@@ -32,6 +32,7 @@ class Supplier:
     family: str
     number_fmt: str
     counter: int
+    credit_notes: set[str] = field(default_factory=set)  # CN numbers issued in this case (GSTR-2B key part)
 
 
 def _name(rng: random.Random, view: View) -> str:
@@ -125,4 +126,7 @@ def credit_note(rng: random.Random, inv: TruthInvoice, s: Supplier, buyer: Party
                                       cgst=cgst, sgst=sgst, cess=r2(taxable * src.cess / max(src.taxable_value, 1))))
     dt = min(period_end, inv.invoice_date + timedelta(days=rng.randint(1, 10)))
     no = f"CN/{rng.randint(1, 400):03d}"
+    while no in s.credit_notes:  # redraw only on a repeat, so every case without one stays byte-identical
+        no = f"CN/{rng.randint(1, 400):03d}"
+    s.credit_notes.add(no)
     return assemble(s, buyer, [line], no, dt, DocType.CREDIT_NOTE, False, inv.invoice_no)
