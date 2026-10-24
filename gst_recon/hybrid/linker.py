@@ -129,10 +129,7 @@ def _twob_rows(inputs: CaseInputs) -> list[_TwoBRow]:
 def _twob_score(inv: TruthInvoice, row: _TwoBRow) -> tuple[int, list[str]]:
     if row.is_note != (inv.doc_type == DocType.CREDIT_NOTE):
         return 0, []
-    no = _no_score(inv.invoice_no, row.key[2])
-    if not no[0]:
-        return 0, []
-    return _score([no, _gstin_score(inv.supplier_gstin, row.key[1]),
+    return _score([_no_score(inv.invoice_no, row.key[2]), _gstin_score(inv.supplier_gstin, row.key[1]),
                    (2, "date equal") if row.dt == inv.invoice_date.strftime("%d-%m-%Y") else (0, ""),
                    (1, "taxable equal") if _close(inv.taxable_value, row.taxable) else (0, ""),
                    (1, "tax heads equal") if all(_close(getattr(inv, h), row.heads[h]) for h in HEADS) else (0, ""),

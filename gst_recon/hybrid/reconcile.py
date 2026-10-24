@@ -12,10 +12,36 @@ from datetime import date
 
 from gst_recon.hybrid.docschema import HEADS, DocRecord, invoice_date, to_extraction, to_truth_invoice
 from gst_recon.hybrid.inputs import PromptParts, parse_prompt
-from gst_recon.hybrid.linker import link_documents
+from gst_recon.hybrid.linker import lev, link_documents
 from gst_recon.hybrid.repair import repair
-from gst_recon.schema import CaseInputs, DocType, Party, ReconOutput, TruthInvoice
+from gst_recon.schema import CaseInputs, DocType, ItcCategory, Party, ReconOutput, TruthInvoice
 from gst_recon.sim import rules
+from gst_recon.sim.gstin import is_valid_gstin
+
+GOODS_VEHICLE_HSN = "8704"  # s.17(5)(a) blocks motor vehicles for transport of persons; goods vehicles are outside it
+
+
+def _goods_vehicles(rec: DocRecord) -> tuple[DocRecord, list[str]]:
+    """A line read as motor_vehicle but printed with HSN 8704 (goods vehicle) is not a s.17(5)(a) vehicle."""
+    notes, lines = [], []
+    for i, li in enumerate(rec.line_items, 1):
+        if li.itc_category == ItcCategory.MOTOR_VEHICLE and li.hsn.strip().startswith(GOODS_VEHICLE_HSN):
+            li = li.model_copy(update={"itc_category": ItcCategory.NORMAL})
+            notes.append(f"line {i}: HSN {li.hsn} is a goods vehicle: motor_vehicle -> normal")
+        lines.append(li)
+    return (rec.model_copy(update={"line_items": lines}) if notes else rec), notes
+
+
+def _gstin_fix(inv: TruthInvoice, link: rules.Link, inputs: CaseInputs, twob: dict) -> str | None:
+    """An invoice GSTIN that fails the mod-36 check digit is a misread: take the valid GSTIN of the linked
+    GSTR-2B entry (else of a linked register row) when it is within 2 edits. A valid GSTIN is never changed,
+    so a real registration under another GSTIN (same PAN, other state) still shows as gstin_mismatch."""
+    if is_valid_gstin(inv.supplier_gstin):
+        return None
+    regs = {r.voucher_no: r for r in inputs.purchase_register}
+    entry = twob.get(link.gstr2b) if link.gstr2b else None
+    cands = ([entry.ctin] if entry else []) + [regs[v].party_gstin.upper() for v in link.register_vouchers if v in regs]
+    return next((g for g in cands if is_valid_gstin(g) and lev(g, inv.supplier_gstin.strip().upper()) <= 2), None)
 
 
 def _explain(inv: TruthInvoice, inputs: CaseInputs, link: rules.Link, twob: dict, out_row, itc_row) -> dict:
@@ -56,7 +82,9 @@ def reconcile_prompt(prompt: str, records: Mapping[str, DocRecord]) -> tuple[Rec
     trace: dict = {"missing_records": [d.doc_id for d in parts.docs if d.doc_id not in records], "bad_dates": [], "repairs": {}}
     fixed = {}
     for doc_id, rec in records.items():
+        rec, law = _goods_vehicles(rec)
         fixed[doc_id], notes = repair(rec)
+        notes = law + notes
         if notes:
             trace["repairs"][doc_id] = notes
     records = fixed
@@ -71,9 +99,16 @@ def reconcile_prompt(prompt: str, records: Mapping[str, DocRecord]) -> tuple[Rec
         invoices.append(to_truth_invoice(d.doc_id, rec, buyer_gstin=h.buyer_gstin, buyer_name=h.buyer_name, when=when))
     inputs = _inputs(parts, invoices)
     links, link_trace = link_documents(inputs)
+    twob = rules.index_2b(inputs)
+    trace["gstin_fixes"] = {}
+    for i, inv in enumerate(invoices):
+        if g := _gstin_fix(inv, links[inv.doc_id], inputs, twob):
+            trace["gstin_fixes"][inv.doc_id] = f"{inv.supplier_gstin} fails the check digit -> {g} (linked entry)"
+            invoices[i] = inv.model_copy(update={"supplier_gstin": g})
+            records[inv.doc_id] = records[inv.doc_id].model_copy(update={"supplier_gstin": g})
+    inputs = _inputs(parts, invoices)
     out = rules.reconcile(inputs, links)
     out = out.model_copy(update={"extractions": [to_extraction(i.doc_id, records[i.doc_id]) for i in invoices]})
-    twob = rules.index_2b(inputs)
     trace["links"] = link_trace
     trace["decisions"] = {i.doc_id: _explain(i, inputs, links[i.doc_id], twob, m, t)
                           for i, m, t in zip(invoices, out.matches, out.itc)}

@@ -56,8 +56,31 @@ def _repair_line(rec: DocRecord, li: DocLine) -> tuple[DocLine, str]:
             f"{why}heads recomputed from taxable x {rate:g}% ({'intra' if intra else 'inter'}-state)")
 
 
+def _header_consistent(rec: DocRecord) -> float | None:
+    """The header's standard rate when its heads, taxable and total agree with each other, else None."""
+    rate = _header_rate(rec)
+    tax = sum(getattr(rec, h) for h in HEADS)
+    if rate is None or _off(rec.total, rec.taxable_value + (0 if rec.reverse_charge else tax)):
+        return None
+    return rate
+
+
+def _single_line_from_header(rec: DocRecord) -> tuple[DocRecord, list[str]]:
+    """One line and a self-consistent header that disagrees with it: the header (three printed figures that
+    agree) beats the line, so the line takes the header's taxable, rate and heads."""
+    if len(rec.line_items) != 1 or (rate := _header_consistent(rec)) is None:
+        return rec, []
+    li = rec.line_items[0]
+    fields = ("taxable_value", *HEADS)
+    if not any(_off(getattr(li, f), getattr(rec, f)) for f in fields) and li.rate == rate:
+        return rec, []
+    new = li.model_copy(update={"rate": rate, **{f: getattr(rec, f) for f in fields}})
+    return rec.model_copy(update={"line_items": [new]}), ["line 1: taken from the self-consistent header"]
+
+
 def repair(rec: DocRecord) -> tuple[DocRecord, list[str]]:
-    notes, lines = [], []
+    rec, notes = _single_line_from_header(rec)
+    lines = []
     for i, li in enumerate(rec.line_items, 1):
         new, why = _repair_line(rec, li)
         lines.append(new)
