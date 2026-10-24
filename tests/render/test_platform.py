@@ -3,7 +3,8 @@
 import pytest
 
 from gst_recon.render import memlimit
-from gst_recon.render.__main__ import _init_worker, mp_context
+from gst_recon.render.__main__ import mp_context
+from gst_recon.render.worker import _init_worker
 
 
 @pytest.mark.parametrize("platform,method", [("linux", "fork"), ("win32", "spawn"), ("darwin", "spawn")])
@@ -40,10 +41,10 @@ def test_linux_cap_reports_unsupported_when_the_kernel_refuses(monkeypatch):
 
 
 def test_worker_init_warns_when_cap_is_not_enforceable(monkeypatch, capsys):
-    monkeypatch.setattr("gst_recon.render.__main__.apply_memory_cap", lambda gb: "unsupported")
+    monkeypatch.setattr("gst_recon.render.worker.apply_memory_cap", lambda gb: "unsupported")
     _init_worker(6)
     assert "not enforceable" in capsys.readouterr().err
-    monkeypatch.setattr("gst_recon.render.__main__.apply_memory_cap", lambda gb: "job_object")
+    monkeypatch.setattr("gst_recon.render.worker.apply_memory_cap", lambda gb: "job_object")
     _init_worker(6)
     assert capsys.readouterr().err == ""
 
@@ -61,3 +62,12 @@ def test_tokenizer_cache_download_is_skipped_when_present(tmp_path, monkeypatch)
     monkeypatch.setattr(tokens, "CACHE", f)
     monkeypatch.setattr(tokens.urllib.request, "urlretrieve", lambda *a: pytest.fail("must not download"))
     assert tokens.ensure_tokenizer_cache() is True
+
+
+def test_pool_entry_points_live_in_an_importable_module():
+    # spawn (Windows) pickles them by qualified name; living in __main__ fails to unpickle in the child
+    from gst_recon.render import __main__ as entry
+    from gst_recon.render import worker
+
+    assert entry._render_one is worker._render_one and entry._init_worker is worker._init_worker
+    assert worker._render_one.__module__ == "gst_recon.render.worker"
