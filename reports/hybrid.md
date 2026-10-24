@@ -4,19 +4,53 @@
 
 Case-level scores of the whole pipeline (per-document model, then the frozen reconciler v3), doc schema v2: ITC invoice exact, match accuracy and composite.
 Simulator test: the 120 frozen test cases (test_iid 60 + test_ood 60), each arm run once.
-Semireal: the 54 real-document cases (clean 9, sim seed 0 9, sim seeds 1-4 36), pooled as a case mean.
-Cells are value (paired delta vs v1 [95% CI]), paired bootstrap of 10,000 case resamples, seed 0.
+Semireal: the 54 real-document cases (clean 9, sim seed 0 9, sim seeds 1-4 36), 234 documents, pooled as a case mean.
+Cells are value (paired delta vs v1 [95% CI]), paired bootstrap of 10,000 case resamples, seed 0 (`scripts/eval_hybrid_compare.py`).
+Frontier rows run each model at its lowest reasoning setting; the detail, cost and latency are in [frontier-hybrid.md](frontier-hybrid.md).
 
 | run | test ITC exact % | test match % | test composite | semireal ITC exact % | semireal match % | semireal composite |
 |---|---|---|---|---|---|---|
-| pd3g287, GRPO from pd3 (shipped) | 80.0 (-0.1 [-1.5, +1.3]) | 85.0 (-3.8 [-4.8, -2.7]) | 81.6 (-1.1 [-2.0, -0.2]) | 61.1 (+2.6 [-1.4, +6.7]) | 71.5 (+7.4 [+1.4, +13.7]) | 72.9 (+4.3 [+1.7, +7.0]) |
+| pd3g287, GRPO from pd3 (shipped) | 80.0 (-0.1 [-1.5, +1.3]) | 85.0 (-3.8 [-4.8, -2.7]) | 81.6 (-1.1 [-2.1, -0.2]) | 61.1 (+2.6 [-1.4, +6.7]) | 71.5 (+7.4 [+1.4, +13.7]) | 72.9 (+4.3 [+1.7, +7.0]) |
 | student-perdoc-sft v1 | 80.1 | 88.7 | 82.8 | 58.5 | 64.1 | 68.6 |
 | ensemble B (identity vote of v1, pd3a, pd3) | not run | not run | not run | 58.3 (-0.2 [-1.0, +0.8]) | 69.7 (+5.6 [+1.7, +10.2]) | 69.9 (+1.3 [+0.5, +2.4]) |
-| Claude Haiku 5.5 hybrid (same harness) | pending | pending | pending | pending | pending | pending |
+| Claude Haiku 5.5, minimum thinking | pending | pending | pending | 84.9 (+26.4 [+18.4, +35.1]) | 88.4 (+24.3 [+16.8, +32.6]) | 86.5 (+17.9 [+12.9, +23.4]) |
+| Claude Haiku 4.5, thinking off | pending | pending | pending | 68.2 (+9.7 [+0.3, +19.1]) | 82.2 (+18.1 [+10.5, +26.3]) | 77.4 (+8.8 [+3.3, +14.3]) |
+| GPT-6 luna, reasoning none | pending | pending | pending | 70.6 (+12.2 [+8.1, +16.5]) | 82.5 (+18.3 [+12.5, +24.8]) | 77.9 (+9.3 [+7.4, +11.3]) |
 | Claude Sonnet end to end (reference, whole case, not hybrid) | 96.3 | 99.0 | 94.4 | not run | not run | not run |
 
-On the test set pd3g287 ties v1 on ITC invoice exact and matches 3.8 points worse; on the real documents it is ahead on all three, significantly on match and composite.
+Paired delta vs pd3g287 [95% CI], ITC exact / match / composite:
+
+| run | test | semireal |
+|---|---|---|
+| student-perdoc-sft v1 | +0.1 [-1.3, +1.5] / +3.8 [+2.7, +4.8] / +1.1 [+0.2, +2.1] | -2.6 [-6.7, +1.4] / -7.4 [-13.7, -1.4] / -4.3 [-7.0, -1.7] |
+| ensemble B | not run | -2.8 [-7.0, +1.3] / -1.8 [-6.3, +2.6] / -2.9 [-5.5, -0.4] |
+| Claude Haiku 5.5, minimum thinking | pending | +23.8 [+16.0, +32.2] / +16.9 [+12.6, +21.2] / +13.6 [+9.4, +18.2] |
+| Claude Haiku 4.5, thinking off | pending | +7.1 [-2.5, +16.7] / +10.7 [+6.1, +15.3] / +4.5 [-0.4, +9.5] |
+| GPT-6 luna, reasoning none | pending | +9.6 [+5.2, +13.9] / +10.9 [+7.5, +14.2] / +5.0 [+2.7, +7.2] |
+
+Invented identity under the INVENTED rule of `gst_recon/rewards/doc.py` (a GSTIN, invoice number or date other than the truth where the page does not show the truth, over 3 identity slots per parsed document), a per-document proxy:
+
+| run | test | semireal |
+|---|---|---|
+| pd3g287 | 854 / 6,750 = 12.7% | 68 / 702 = 9.7% |
+| student-perdoc-sft v1 | 1,785 / 6,756 = 26.4% | 141 / 702 = 20.1% |
+| ensemble B | not run | 71 / 702 = 10.1% |
+| Claude Haiku 5.5, minimum thinking | pending | 59 / 702 = 8.4% |
+| Claude Haiku 4.5, thinking off | pending | 114 / 702 = 16.6% |
+| GPT-6 luna, reasoning none | pending | 108 / 702 = 15.4% |
+
+Settings: Haiku 5.5 thinking cannot be switched off through the Claude CLI, so its row is the minimum (`CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING=1`, `MAX_THINKING_TOKENS=0`, `--effort low`; mean thinking tokens per document pending); Haiku 4.5 runs with thinking off (5 of its 234 semireal replies were unparseable); GPT-6 luna runs at reasoning effort none.
+The semireal documents are real client documents; the frontier runs sent them to the vendor CLIs (approvals in frontier-hybrid.md), and only aggregates are reported.
+On the test set pd3g287 ties v1 on ITC invoice exact and matches 3.8 points worse; on the real documents it is ahead of v1 on all three, significantly on match and composite, and every frontier model at its lowest reasoning setting is ahead of pd3g287 on match.
 Ensemble B was not run on the test set, which is run once per shipped candidate.
+
+Secondary (more reasoning, not the headline comparison), semireal pooled, ITC exact / match / composite:
+
+| run | semireal | invented (INVENTED rule) |
+|---|---|---|
+| Claude Haiku 5.5, default thinking | 84.8 / 88.6 / 86.7 | 52 / 702 = 7.4% |
+| GPT-6 luna, medium reasoning effort | 82.4 / 86.4 / 84.1 | 87 / 702 = 12.4% |
+
 Per-document, per-field, dev and schema-valid numbers are proxies and are reported in the sections below.
 
 In hybrid mode the model reads one document at a time (`DOC_SYSTEM_PROMPT` plus the case header and that one document section) and returns its extraction and two judgments per line (ITC category and purpose).
@@ -251,7 +285,7 @@ Served as `base:perdoc-grpo` (pd3g287) and `base:perdoc` (v1) on the same SGLang
 | v1 (schema v2) | 120 | 80.1 [77.7, 82.6] | 83.0 [79.6, 86.0] | 26,205 | 197,898 | 88.7 [86.9, 90.5] | 93.8 | 82.8 [81.2, 84.4] |
 | v1 (schema v1, earlier headline) | 120 | 79.9 [77.5, 82.4] | 82.7 [79.3, 85.8] | 27,183 | 203,126 | 88.7 [86.9, 90.6] | 93.8 | 82.7 [81.2, 84.4] |
 
-Paired on the 120 simulator cases (10,000 case resamples, seed 0), pd3g287 minus v1 (schema v2): ITC invoice exact -0.1 [-1.5, +1.3] (p = 0.90), match accuracy -3.8 [-4.8, -2.7] (p < 0.005), composite -1.1 [-2.0, -0.2] (p = 0.02).
+Paired on the 120 simulator cases (10,000 case resamples, seed 0, as `scripts/eval_hybrid_compare.py`), pd3g287 minus v1 (schema v2): ITC invoice exact -0.1 [-1.5, +1.3] (p = 0.92), match accuracy -3.8 [-4.8, -2.7] (p < 0.005), composite -1.1 [-2.1, -0.2] (p = 0.02).
 v1 under schema v2 reproduces its schema-v1 headline: ITC -0.1 [-0.5, +0.1], match +0.0, composite -0.0.
 By split, pd3g287 vs v1 ITC invoice exact: test_iid 81.7 vs 82.4, test_ood 78.3 vs 77.7; match accuracy test_iid 89.8 vs 91.8, test_ood 80.1 vs 85.7.
 Share of Claude Sonnet end to end (ITC 96.3 on the same 120 cases): pd3g287 83.1%, v1 83.2%.
