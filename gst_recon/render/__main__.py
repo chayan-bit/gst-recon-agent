@@ -1,8 +1,8 @@
 """CLI: python -m gst_recon.render --truth data/truth --out data/rendered --workers 8
 
 Renders every truth case JSON into <out>/<case_id>/{prompt.txt,target.json,meta.json}.
-Resumable (finished cases are skipped), memory-light (forked workers share the
-imported libraries; each worker recycles after --recycle cases). Images are kept
+Resumable (finished cases are skipped), memory-light (on Linux forked workers share the
+imported libraries, on Windows workers are spawned; each worker recycles after --recycle cases). Images are kept
 only for the first --keep-images cases. `--stats-only` summarises an existing --out.
 """
 
@@ -18,6 +18,8 @@ import time
 from pathlib import Path
 
 from gst_recon.render.holdout import SPLITS
+from gst_recon.render.memlimit import apply_memory_cap
+from gst_recon.render.tokens import ensure_tokenizer_cache
 
 
 def _render_one(job: tuple[str, str, str | None, bool, bool]) -> dict:
@@ -26,7 +28,7 @@ def _render_one(job: tuple[str, str, str | None, bool, bool]) -> dict:
     from gst_recon.schema import Case
 
     t0 = time.perf_counter()
-    case = Case.model_validate_json(Path(path).read_text())
+    case = Case.model_validate_json(Path(path).read_text(encoding="utf-8"))
     try:
         meta = render_case(case, Path(out), split=split, keep_images=keep, ocr=ocr)
     except Exception as e:  # keep the batch going; the failure is reported at the end
@@ -38,14 +40,13 @@ def _render_one(job: tuple[str, str, str | None, bool, bool]) -> dict:
 
 def _init_worker(max_gb: float) -> None:
     """Cap each worker's private memory so a runaway effect fails one case instead of the host."""
-    if max_gb > 0:
-        try:
-            import resource
+    if apply_memory_cap(max_gb) == "unsupported":
+        print("warning: --max-mem-gb is not enforceable on this platform", file=sys.stderr)
 
-            lim = int(max_gb * 2**30)
-            resource.setrlimit(resource.RLIMIT_DATA, (lim, lim))  # RLIMIT_AS breaks rust/openblas thread pools
-        except (ImportError, ValueError, OSError):
-            pass  # not enforceable on this platform (macOS)
+
+def mp_context(platform: str | None = None) -> str:
+    """'fork' on Linux (workers share the imported libraries copy-on-write), 'spawn' elsewhere (Windows has no fork)."""
+    return "fork" if (platform or sys.platform).startswith("linux") else "spawn"
 
 
 def _warm() -> None:
@@ -87,7 +88,7 @@ def stats(rows: list[dict]) -> str:
 def _collect(out: Path) -> list[dict]:
     rows = []
     for p in sorted(out.glob("*/meta.json")):
-        m = json.loads(p.read_text())
+        m = json.loads(p.read_text(encoding="utf-8"))
         rows.append({k: m.get(k) for k in ("case_id", "difficulty", "split", "ocr_recall", "ocr_recall_scanned",
                                            "has_unrecoverable", "prompt_tokens", "target_tokens", "fits_context")})
     return rows
@@ -122,9 +123,11 @@ def main(argv: list[str] | None = None) -> int:
     jobs = [(str(f), str(a.out), a.split, i < a.keep_images, not a.no_ocr) for i, f in enumerate(files)
             if a.force or not (a.out / f.stem / "meta.json").exists()]
     print(f"{len(files)} truth cases, {len(jobs)} to render, {a.workers} workers", flush=True)
-    _warm()
+    if mp_context() == "fork":
+        _warm()
+    ensure_tokenizer_cache()  # one download before the workers start, not a race between them
     t0, rows, errors = time.perf_counter(), [], []
-    with mp.get_context("fork").Pool(a.workers, maxtasksperchild=a.recycle, initializer=_init_worker, initargs=(a.max_mem_gb,)) as pool:
+    with mp.get_context(mp_context()).Pool(a.workers, maxtasksperchild=a.recycle, initializer=_init_worker, initargs=(a.max_mem_gb,)) as pool:
         for n, r in enumerate(pool.imap_unordered(_render_one, jobs), 1):
             (errors if "error" in r else rows).append(r)
             if n % 10 == 0 or n == len(jobs):

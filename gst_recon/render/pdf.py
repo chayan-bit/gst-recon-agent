@@ -25,7 +25,14 @@ def _setup_fontconfig() -> None:
     cache = Path(tempfile.gettempdir()) / "gst-recon-fontcache"
     cache.mkdir(exist_ok=True)
     conf = cache / "fonts.conf"
-    conf.write_text(f'<?xml version="1.0"?><fontconfig><dir>{FONTS}</dir><cachedir>{cache}</cachedir></fontconfig>')
+    xml = f'<?xml version="1.0"?><fontconfig><dir>{FONTS}</dir><cachedir>{cache}</cachedir></fontconfig>'
+    try:
+        if not conf.exists() or conf.read_text(encoding="utf-8") != xml:
+            tmp = cache / f"fonts.{os.getpid()}.tmp"
+            tmp.write_text(xml, encoding="utf-8")
+            os.replace(tmp, conf)  # workers start together; never leave a half-written config
+    except OSError:
+        pass  # another worker is replacing it right now (Windows keeps open files locked); content is identical
     os.environ["FONTCONFIG_FILE"] = str(conf)
 
 

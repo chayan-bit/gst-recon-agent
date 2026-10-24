@@ -110,9 +110,9 @@ def render_case(case: Case, out_root: Path, *, split: str | None = None, keep_im
         **stats,
         "timing_s": {k: round(sum(d.get("t", {}).get(k, 0) for d in docs), 3) for k in ("render", "degrade", "ocr")},
     }
-    (tmp / "prompt.txt").write_text(prompt)
-    (tmp / "target.json").write_text(target)
-    (tmp / "meta.json").write_text(json.dumps(meta, indent=1))
+    for name, text in (("prompt.txt", prompt), ("target.json", target), ("meta.json", json.dumps(meta, indent=1))):
+        with open(tmp / name, "w", encoding="utf-8", newline="\n") as fh:  # same bytes on every OS
+            fh.write(text)
     shutil.rmtree(final, ignore_errors=True)
     tmp.rename(final)
     return meta

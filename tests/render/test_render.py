@@ -96,6 +96,8 @@ def test_render_case_is_deterministic_by_seed(weasy, has_tesseract, tiny_case, t
     m2 = render_case(case, tmp_path / "b", ocr=ocr)
     for name in ("prompt.txt", "target.json"):
         assert (tmp_path / "a" / case.case_id / name).read_bytes() == (tmp_path / "b" / case.case_id / name).read_bytes()
+    for name in ("prompt.txt", "target.json", "meta.json"):  # same bytes on every OS: LF only, UTF-8
+        assert b"\r" not in (tmp_path / "a" / case.case_id / name).read_bytes()
     for m in (m1, m2):
         m["timing_s"] = None
     assert m1 == m2
