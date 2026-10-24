@@ -7,6 +7,7 @@
 set -u
 export REPO=${REPO:-$(cd "$(dirname "$0")/.." && pwd)}  # this checkout (~/gst-recon/repo-grpo), not gst-eval's ~/gst-recon/repo
 : "${PERDOC_ADAPTER:?set PERDOC_ADAPTER to the perdoc-v2 adapter dir}"
+export ABORT_AVAIL_GB=${ABORT_AVAIL_GB:-4}  # run_guarded kills our run if the shared host stays under 4 GB available for 60 s
 CONFIG=${CONFIG:-configs/grpo_perdoc_hard.yaml} DATA=${DATA:-data/train/curated/grpo-perdoc-hard} \
   INIT_ADAPTER=${INIT_ADAPTER:-runs/grpo-perdoc-init} \
   INIT_FROM="$PERDOC_ADAPTER" CONTEXT=2688 MEMFRAC=${MEMFRAC:-0.30} MAX_RUNNING=64 GPU_MIN_MIB=60000 TRAINER_MIN_MIB=26000 \
