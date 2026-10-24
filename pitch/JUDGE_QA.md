@@ -17,7 +17,7 @@ What we do not claim: that the ITC decisions are right on real books, only that 
 
 For this data, privacy decides: purchase invoices, bank statements and supplier GSTINs are the data a business cannot send to a third-party API, and an on-premises model removes that question.
 Cost and latency at month-end volume are the second reason: {{Z_COST_PCT}}% of Sonnet's cost per 1,000 cases and a p50 of {{STUDENT_P50_LATENCY_S}} s (see question 6 for how fair that comparison is).
-We are not claiming the small model is better: Claude Sonnet scores 97.8% ITC-exact on the same held-out cases against our {{GRPO_ITCEXACT_OOD}}, so the student reaches {{Y_PCT_OF_SONNET_ACCURACY}}% of it.
+We are not claiming the small model is better: Claude Sonnet scores 97.8% ITC-exact on the same held-out cases against our 78.9 (SFT with the compact grammar, a sample of 15 out-of-distribution cases), so the student reaches {{Y_PCT_OF_SONNET_ACCURACY}}% of it.
 A private deployment of a hosted model is another way to meet a privacy requirement; we did not test that, and a team that can use one should compare it.
 
 ## 3. How do you know your GST law is right?
@@ -33,12 +33,12 @@ If the model of the law is wrong, the student faithfully learns the error, but t
 
 (Before the GRPO numbers: the best measured student today is the per-document hybrid described in question 12.)
 
-
+Nothing we ship, and we say so.
 SFT teaches the model to imitate a reference answer token by token, which is how it learns the format and the common patterns.
 GRPO samples several answers to the same case and rewards the outcome we care about, which code can check exactly: schema validity, flag and reason-code sets, and exact ITC on the invoices that are not fully eligible, with a dense term so partial progress still counts.
-The hypothesis is that this helps most where imitation is weak: context-dependent blocked credits and exact amounts.
-The measured effect on ITC-exact out-of-distribution is {{GRPO_DELTA_VS_SFT_ITCEXACT_OOD}} points (95% CI {{GRPO_VS_SFT_CI}}, p = {{GRPO_VS_SFT_P}} from a paired bootstrap), and on context accuracy it is 71.4% (the compact-grammar SFT run, 15 out-of-distribution cases) -> {{GRPO_CTX_OOD}}.
-If that interval includes zero we say GRPO did not help on that metric, and we show where it did.
+We built the SGLang rollout backend for it and upstreamed it to AlignTune (PR #32), and we ran GRPO from the per-document SFT once (step 75).
+On the semireal set it adds 1 to 2 points of ITC-exact over the per-document SFT but loses 4 to 7 points of match accuracy, and on 42 real purchase documents it reads invoice numbers worse (21.4% against 30.9%) and invents more identity fields (12.3% against 8.8%), even though its reward credits abstention.
+So GRPO is infrastructure we built and a measured negative result, not a headline gain; what SFT adds end to end is the number to quote: over the base model, paired on 30 simulator cases, +25.7 ITC-exact points [18.8, 32.6] and +45.9 on context accuracy [35.0, 56.5], all p = 0.0005.
 One limit we know about: our GRPO cases are short (2 to 4 invoices, prompts up to 6,144 tokens).
 One thing we checked rather than assumed: both SFT runs used completion-only loss, with every prompt token labelled -100 so the model is trained on its reply only.
 The end-to-end run used unsloth's responses-only masking, verified on the first curated row with the real Qwen3 tokenizer before launch.
@@ -78,7 +78,7 @@ Not yet shown: that it generalises to concepts far outside the 84; the held-out 
 It guarantees the syntax and the schema, not the content, and a grammar can force a well-formed but wrong value.
 That is why validity is reported separately from correctness, and why the table shows both.
 Measured on the 30B teacher, on the same 19 cases: schema-valid 15.8% unconstrained against 94.7% constrained, and ITC-exact 14.9% against 68.0%; 15 of the 19 unconstrained replies hit the 24,000-token cap in repetition loops.
-On the student, between unconstrained and constrained decoding: schema-valid {{GRPO_SCHEMA_VALID_UNCON}}% -> {{GRPO_SCHEMA_VALID_CON}}% and ITC-exact {{GRPO_ITCEXACT_UNCON}} -> {{GRPO_ITCEXACT_CON}}.
+On the SFT student (30 simulator cases), between unconstrained and constrained decoding: schema-valid 70.0% -> 100.0% and ITC-exact 72.3 -> 75.7; paired on 42 cases, dropping the grammar costs -2.4 ITC-exact points [-7.3, +2.5], p = 0.32, so the grammar buys valid output at no measurable accuracy cost.
 Constrained output can also be cut off by the token budget, which leaves it unfinished; the harness counts truncations and context overflows as failures instead of discarding them, and the overhead of constraining on throughput is {{XGRAMMAR_OVERHEAD_PCT}}%.
 The point of the grammar is operational: downstream code can parse every answer and the reward function always has something to score.
 
@@ -88,7 +88,7 @@ Be precise here, because the answer has three parts.
 SGLang is the engine for teacher generation, serving and evaluation, and that is measured and logged.
 The SGLang rollout backend for GRPO exists as AlignTune pull request #32 (open) with CPU tests and a GPU integration test, but it is wired into AlignTune's TRL GRPO trainer, while the unsloth backend ignores `rollout_backend`.
 Our only GRPO config (`configs/grpo_sglang.yaml`) uses the TRL backend with `rollout_backend: sglang`, and the GRPO runner refuses to start without it, so a GRPO run cannot silently fall back to Hugging Face generation.
-That the final run did generate its rollouts on SGLang is confirmed by `{{GRPO_ROLLOUT_BACKEND_ACTUALLY_USED}}` in its training log; until that run exists we present the backend as a contribution with its measured benchmark, not as how this model was trained.
+We do not present the backend as how the shipped model was trained: the shipped adapter is SFT only, the one GRPO run we report (step 75) was not shipped, and the backend stands as a contribution with its measured benchmark.
 The backend was developed against SGLang 0.5.22, and the training host runs SGLang 0.5.10.post1 because of its CUDA driver, so compatibility on that version is a separate check (result: {{SGLANG_0510_COMPAT}}).
 On merging: they are open pull requests (AuditKIT #9, #10, #11, CuratorKIT #34, #35, #36, AlignTune #32, #33, #34, #35, SGLang #46287), eleven in all and none merged at the time of writing.
 

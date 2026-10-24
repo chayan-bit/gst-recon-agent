@@ -76,19 +76,20 @@ A caterer buying the same sugar could claim it, so the model has to read the buy
 
 ### Shot 5 - The results chart (1:34 to 2:03)
 
-On screen: the staircase chart, one step revealed at a time: base, SFT, SFT plus GRPO, each with ITC-exact on unseen items and layouts and a bootstrap interval.
+On screen: the staircase chart, one step revealed at a time: base, SFT, per-document hybrid, each with ITC-exact on unseen items and layouts and a bootstrap interval.
 Then Claude Sonnet and the 30B teacher appear as two extra markers.
 Then a small bar pair: constrained versus unconstrained decoding.
-A footer on the chart reads "held-out out-of-distribution cases, n = 60".
+A footer on the chart reads "held-out out-of-distribution cases; base and SFT are a sample of 15".
 
 Narration:
 "We do not claim to beat frontier models.
 We measured the climb.
-On unseen items and layouts, invoices exactly right go from {{BASE_ITCEXACT_OOD}} percent for the base model, to 78.9 with SFT on a sample of fifteen cases, to {{GRPO_ITCEXACT_OOD}} with GRPO on a rule-checked reward.
+On unseen items and layouts, invoices exactly right go from 53.1 percent for the base model to 78.9 with SFT, on a sample of fifteen cases.
+We also tried GRPO on a rule-checked reward, and it did not beat SFT, so we did not ship it.
 Claude Sonnet gets 97.8: the local model reaches {{Y_PCT_OF_SONNET_ACCURACY}} percent of that, at {{Z_COST_PCT}} percent of the cost.
-Constrained decoding lifts valid output from {{GRPO_SCHEMA_VALID_UNCON}} to {{GRPO_SCHEMA_VALID_CON}} percent."
+Constrained decoding lifts valid output from 70 to 100 percent."
 
-<!-- Sources: n = 60 and Sonnet 97.8 are reports/results.md, test_ood rows. SFT 78.9 is the "SFT constrained (compact grammar)" test_ood row, n = 15 (commit da4120a, 42-case stratified sample); say that it is a small sample. -->
+<!-- Sources: n = 60 and Sonnet 97.8 are reports/results.md, test_ood rows. Base 53.1 is the "student-base constrained" test_ood row and SFT 78.9 is the "SFT constrained (compact grammar)" test_ood row, both n = 15; 70 to 100 is the SFT unconstrained versus compact-grammar schema-valid share on 30 simulator cases (commit da4120a, 42-case stratified sample); say that it is a small sample. -->
 
 ### Shot 6 - What we built for the sponsor stack (2:03 to 2:33)
 

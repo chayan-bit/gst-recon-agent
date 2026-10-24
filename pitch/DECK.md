@@ -61,13 +61,15 @@ A small table of the reward components and weights (composite and GRPO reward in
 
 Visual: a split bar showing train / test_iid / test_ood, with the held-out items listed under test_ood, and a two-row "same item, two buyers, two answers" card.
 
-## Slide 6 - The climb: base, then SFT, then SFT plus GRPO
+## Slide 6 - The climb: base, then SFT, then hybrid mode
 
-- Student: Qwen3-4B-Instruct-2507 with LoRA, trained with AlignTune: SFT on curated cases, then GRPO against the verifiable reward.
-- Headline metric: ITC-exact, the share of invoices whose eligible, blocked and deferred amounts are all within Rs 1 of the truth, in-distribution then out-of-distribution: base {{BASE_ITCEXACT_IID}} / {{BASE_ITCEXACT_OOD}}, SFT 72.6 / 78.9 (compact-grammar decoding, a sample of 15 cases per split, CIs wide), SFT+GRPO {{GRPO_ITCEXACT_IID}} / {{GRPO_ITCEXACT_OOD}}.
-- The number that matters most for the pitch: context accuracy, the invoices where the buyer profile decides the answer ({{BASE_CTX_OOD}} -> 71.4 (SFT, compact grammar, 15 OOD cases) -> {{GRPO_CTX_OOD}}).
-- The weighted composite is shown in small print ({{BASE_COMPOSITE_OOD}} / 82.3 (SFT, compact grammar) / {{GRPO_COMPOSITE_OOD}}), because its floor is high: a model that copies the documents perfectly and calls everything clean already scores about 80 out of 100 (`reports/results.md`, trivial baselines).
-<!-- Slide 6 SFT figures: reports/results.md, "SFT constrained (compact grammar)" rows (commit da4120a, 42-case stratified sample, 15 cases per split), test_iid 72.6, test_ood 78.9, context accuracy test_ood 71.4, composite test_ood 82.3. The earlier full-grammar run (10.9% overall) was a format mismatch and is not quoted. -->
+- Student: Qwen3-4B-Instruct-2507 with LoRA, trained with AlignTune: SFT on curated cases; we also ran GRPO against the verifiable reward, and report that result below instead of presenting it as a gain.
+- Headline metric: ITC-exact, the share of invoices whose eligible, blocked and deferred amounts are all within Rs 1 of the truth, in-distribution then out-of-distribution, end to end: base 46.9 / 53.1 (Qwen3-4B-Instruct-2507, no training, end to end, a sample of 15 cases per split), SFT 72.6 / 78.9 (compact-grammar decoding, same sample).
+  Paired on the 30 simulator cases, SFT beats the base model by +25.7 ITC-exact points [18.8, 32.6], +45.9 on context accuracy [35.0, 56.5] and +20.5 on the composite [14.4, 27.4], all p = 0.0005; that is what fine-tuning adds end to end.
+  Overall on those 30 cases the base scores ITC-exact 50.0 [41.7, 58.2], context accuracy 24.7 and composite 60.1, against 75.7, 63.9 and 80.5 for SFT; six of the 12 real-world base cases were lost to a host failure, so the base real-world row has n = 6 and is not compared.
+- The number that matters most for the pitch: context accuracy, the invoices where the buyer profile decides the answer (out-of-distribution: 33.3 for the base -> 71.4 for SFT with the compact grammar, 15 cases each).
+- The weighted composite is shown in small print (out-of-distribution: 65.9 for the base / 82.3 for SFT with the compact grammar), because its floor is high: a model that copies the documents perfectly and calls everything clean already scores about 80 out of 100 (`reports/results.md`, trivial baselines).
+<!-- Slide 6 base rows: reports/results.md, "student-base constrained" rows (test_iid 46.9 / 17.2 / 54.2, test_ood 53.1 / 33.3 / 65.9, overall n = 30) and the paired note "SFT compact beats base". Slide 6 SFT figures: reports/results.md, "SFT constrained (compact grammar)" rows (commit da4120a, 42-case stratified sample, 15 cases per split), test_iid 72.6, test_ood 78.9, context accuracy test_ood 71.4, composite test_ood 82.3. The earlier full-grammar run (10.9% overall) was a format mismatch and is not quoted. -->
 - Hybrid mode, the best measured student so far: the model reads one document at a time and deterministic code does the matching, rupee arithmetic and ITC rules.
   With the per-document LoRA and reconciler v3 on the 120 simulator cases the 4B student reaches ITC-exact 79.9% [77.5, 82.4] (in-distribution 82.5, out-of-distribution 77.3), context accuracy 82.7% and composite 82.7; the same replies scored 73.1% / 77.8 under reconciler v2 and 62.9% / 73.2 under v1.
   The same model without the adapter scores 55.2% / 67.9% / 71.3 under v3; the paired adapter gain under v3 is +25.9 ITC-exact points [+22.5, +29.2], p = 0.0005, n = 132.
@@ -81,20 +83,20 @@ Visual: a split bar showing train / test_iid / test_ood, with the held-out items
   ITC overclaim is Rs 27,183 for the adapter against Rs 85,156 for the base student under v3 (Rs 23,757 and Rs 84,460 under v2, Rs 19,053 and Rs 72,728 under v1); overclaim rises across versions for the adapter because documents that used to stay deferred for lack of a link now link, so a wrong model judgment on them is counted instead of masked.
   On the real-world sanity cases (12 cases) it scores ITC-exact 81.9% with context accuracy 100%; Claude Sonnet in the same mode scores 97.2%, so the gap to the frontier remains.
   <!-- Hybrid figures: reports/hybrid.md (commits daf6aae for v1, 6a72a4d for v2, 3cec36a for v3 with the reconcilers at b5c3c0b and 8286f1f), "student-perdoc-sft hybrid" and "student-base hybrid" rows. -->
-- What GRPO adds over SFT on ITC-exact, with a paired bootstrap interval and a corrected p-value: {{GRPO_DELTA_VS_SFT_ITCEXACT_OOD}} points, p = {{GRPO_VS_SFT_P}}.
+- What GRPO adds over SFT: nothing we ship. GRPO from the per-document SFT (one run, step 75) was not shipped: on the semireal set it adds 1 to 2 points of ITC-exact over the per-document SFT but loses 4 to 7 points of match accuracy, and on 42 real purchase documents it reads invoice numbers worse (21.4% against 30.9%) and invents more identity fields (12.3% against 8.8%); the AlignTune SGLang rollout backend we built for it is upstream (PR #32) as infrastructure, not as a headline gain.
 
-Visual: a three-step staircase bar chart (base, SFT, SFT+GRPO), two bars per step (iid and ood), with 95% bootstrap CIs.
+Visual: a three-step staircase bar chart (base, SFT, hybrid), two bars per step (iid and ood), with 95% bootstrap CIs; the hybrid bar is labelled as a different pipeline (code does the matching and arithmetic).
 The chart is built from the ITC-exact and context-accuracy columns, in the style produced by `python -m gst_recon.eval report` (sample in `reports/smoke/results.png`, a harness check, not results).
-If GRPO shows no significant gain on some metric, the slide says so and shows the metric where it does help.
+The GRPO result is one line of small print next to the chart, not a bar.
 
 ## Slide 7 - Not claiming to beat frontier models: how close, at what cost
 
 - Claim: the 4B student reaches {{Y_PCT_OF_SONNET_ACCURACY}}% of Claude Sonnet's ITC-exact accuracy at {{Z_COST_PCT}}% of the cost per 1,000 cases, fully local.
 - Latency: p50 {{STUDENT_P50_LATENCY_S}} s on SGLang versus 67.9 s for Sonnet (<!-- reports/results.md throughput table, "Claude Sonnet (via Claude Code CLI)" p50 latency -->), with the caveat on the slide that the Sonnet number is measured through a CLI and is not a clean API latency.
 - Open-model reference: Qwen3-30B-A3B (the teacher, served on SGLang with a 64k context) scores 55.7 / 63.8 ITC-exact (in-distribution / out-of-distribution; Claude Sonnet 94.9 / 97.8). <!-- reports/results.md, teacher-30B constrained and Claude Sonnet rows, test_iid and test_ood -->
-- Constrained versus unconstrained decoding on the student (XGrammar): schema-valid {{GRPO_SCHEMA_VALID_UNCON}}% -> {{GRPO_SCHEMA_VALID_CON}}%, ITC-exact {{GRPO_ITCEXACT_UNCON}} -> {{GRPO_ITCEXACT_CON}}.
+- Constrained versus unconstrained decoding on the SFT student (XGrammar, 30 simulator cases): schema-valid 70.0% -> 100.0%, ITC-exact 72.3 -> 75.7 (paired on 42 cases the difference is -2.4 points [-7.3, +2.5], p = 0.32 without the grammar, so the grammar buys valid output at no measurable accuracy cost). <!-- reports/results.md, "SFT unconstrained" and "SFT constrained, compact grammar" rows and their note -->
 
-Visual: a scatter of accuracy (y, ITC-exact) against cost per 1,000 cases (x, log scale) with five points: base 4B, SFT, SFT+GRPO, 30B teacher, Claude Sonnet.
+Visual: a scatter of accuracy (y, ITC-exact) against cost per 1,000 cases (x, log scale) with five points: base 4B, SFT, per-document hybrid, 30B teacher, Claude Sonnet.
 Next to it, a two-bar chart of the constrained versus unconstrained student.
 
 ## Slide 8 - What we gave back to the sponsor stack
