@@ -131,3 +131,49 @@ def test_score_is_fast(truth):
     for _ in range(50):
         score(raw, truth)
     assert (time.perf_counter() - t) / 50 < 0.02
+
+
+# ---------------------------------------------------------------- GRPO variant
+
+
+def _all_clean(truth: dict) -> dict:
+    """Trivial baseline: true extraction and links, no flags, everything eligible."""
+    out = copy.deepcopy(truth)
+    for m in out["matches"]:
+        m["flags"] = []
+    for row in out["itc"]:
+        for h in ("igst", "cgst", "sgst", "cess"):
+            row["eligible"][h] = round(sum(row[b][h] for b in ("eligible", "blocked", "deferred")), 2)
+            row["blocked"][h] = row["deferred"][h] = 0.0
+        row["reasons"] = ["CREDIT_NOTE_REVERSAL"] if "CREDIT_NOTE_REVERSAL" in row["reasons"] else ["ELIGIBLE"]
+    return out
+
+
+def test_grpo_is_one_for_truth_and_gated_on_schema(truth):
+    assert score(json.dumps(truth), truth)["grpo"] == pytest.approx(1.0)
+    broken = copy.deepcopy(truth)
+    broken["itc_totals"] = "n/a"  # parseable JSON, schema-invalid
+    s = score(broken, truth)
+    assert s["schema_valid"] == 0.0 and s["grpo"] == 0.0 and s["composite"] > 0.5
+
+
+def test_grpo_gives_trivial_all_clean_little_credit(truth):
+    s = score(_all_clean(truth), truth)
+    assert s["composite"] > 0.7 and s["grpo"] < 0.4, s
+
+
+def test_grpo_keeps_partial_credit(truth):
+    pred = copy.deepcopy(truth)
+    flagged = next(m for m in pred["matches"] if m["flags"])
+    flagged["flags"] = []
+    s = score(pred, truth)
+    assert 0.8 < s["grpo"] < 1.0 and 0 < s["flag_f1"] < 1
+
+
+def test_eval_metrics_components():
+    from gst_recon.rewards import eval_metrics
+    case = generate_case(5, "hard", 0)
+    perfect = eval_metrics(case.expected.model_dump(mode="json"), case)
+    assert perfect["itc_abs_err_rs"] == 0 and perfect["context_doc_acc"] in (1.0, None) and perfect["grpo"] == 1.0
+    garbage = eval_metrics("not json", case)
+    assert garbage["field_f1"] == 0 and garbage["grpo"] == 0 and garbage["itc_abs_err_rs"] > 0

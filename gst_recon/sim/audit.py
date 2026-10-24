@@ -3,7 +3,8 @@
     python -m gst_recon.sim.audit [--n 2000] [--n-test 300] [--seed 0] [--json out.json]
 
 (a) per-flag and per-reason base rates by difficulty (train);
-(b) trivial baselines on test_iid / test_ood, scored with the reward functions.
+(b) trivial baselines on test_iid / test_ood: component-wise eval metrics (primary),
+    plus the legacy composite and the GRPO reward.
     Every baseline is handed the true extraction and true document links, so
     the scores isolate the decisions (flags, ITC buckets, reasons):
       majority       global majority flag set / reason set, all tax eligible
@@ -26,7 +27,7 @@ from collections import Counter, defaultdict
 from statistics import mean
 from typing import Callable
 
-from gst_recon.rewards import score
+from gst_recon.rewards import eval_metrics
 from gst_recon.schema import Case, DocType, ItcDecision, LinePurpose, MatchFlag, ReasonCode, TaxHeads, TruthLineItem
 from gst_recon.sim.rules import HEADS, Link, line_block_reason, reconcile, totals_of
 from gst_recon.sim.world import DIFFICULTY, generate_case
@@ -156,7 +157,7 @@ def line_accuracy(cases: list[Case], block: BlockFn, only_sensitive: bool = Fals
     return mean(a == b for a, b in pairs)
 
 
-METRICS = ("match_accuracy", "itc_invoice", "itc_reasons", "itc_total", "composite")
+METRICS = ("field_f1", "match_accuracy", "itc_invoice", "context_doc_acc", "itc_abs_err_rs", "composite", "grpo")
 
 
 def evaluate(train: list[Case], tests: dict[str, list[Case]]) -> dict:
@@ -167,8 +168,8 @@ def evaluate(train: list[Case], tests: dict[str, list[Case]]) -> dict:
     table: dict = {}
     for split, cases in tests.items():
         for name, fn in preds.items():
-            scores = [score(fn(c), c.expected) for c in cases]
-            table[(split, name)] = {k: mean(s[k] for s in scores) for k in METRICS}
+            scores = [eval_metrics(fn(c), c) for c in cases]
+            table[(split, name)] = {k: mean(s[k] for s in scores if s[k] is not None) for k in METRICS}
         for name, fn in (("keyword", kw), ("no_anomaly", lambda li: None)):
             table[(split, name)] |= {"line_acc": line_accuracy(cases, fn), "ctx_line_acc": line_accuracy(cases, fn, True)}
     table[("train", "keyword")] = {"line_acc": line_accuracy(train, kw), "ctx_line_acc": line_accuracy(train, kw, True)}
@@ -249,7 +250,8 @@ def _print(rep: dict) -> None:
     cols = (*METRICS, "line_acc", "ctx_line_acc")
     print("| split | baseline | " + " | ".join(cols) + " |\n|---|---|" + "---|" * len(cols))
     for (split, name), row in rep["baselines"].items():
-        print(f"| {split} | {name} | " + " | ".join(f"{row[c]:.3f}" if c in row else "" for c in cols) + " |")
+        print(f"| {split} | {name} | " + " | ".join(
+            "" if c not in row else f"{row[c]:,.0f}" if c == "itc_abs_err_rs" else f"{row[c]:.3f}" for c in cols) + " |")
     bl = rep["baselines"]
     for split in ("test_iid", "test_ood"):
         lift = bl[(split, "keyword")]["ctx_line_acc"] - bl[(split, "no_anomaly")]["ctx_line_acc"]

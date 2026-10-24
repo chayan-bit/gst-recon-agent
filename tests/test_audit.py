@@ -18,3 +18,5 @@ def test_baselines_below_rules_engine_and_context_matters():
         assert table[(split, "context_blind")]["itc_invoice"] < 0.9  # profile + remarks are needed
         for name in ("majority", "no_anomaly", "keyword"):
             assert table[(split, name)]["composite"] < 0.9
+            assert table[(split, name)]["grpo"] < (0.5 if name == "keyword" else 0.35)
+        assert table[(split, "rules_engine")]["grpo"] > 0.9999

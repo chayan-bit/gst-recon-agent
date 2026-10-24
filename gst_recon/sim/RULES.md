@@ -98,6 +98,14 @@ Documents are shuffled before doc ids are assigned, so position carries no infor
 `unpaid_180d` is tested on forward-charge invoices only, because r.37 itself excludes credit notes and RCM supplies.
 `tests/test_audit.py` asserts there are no spurious pairs (deviation above 3 points with z above 5).
 
+## Rewards and eval metrics
+
+`rewards.score` returns every component plus two aggregates:
+- `composite` (kept for continuity): schema 0.10, extraction F1 0.25, arithmetic 0.10, match 0.20, ITC per document 0.20, reasons 0.05, ITC totals 0.10. A model that copies the documents correctly and calls everything clean already earns about 0.81, so it compresses the learning signal.
+- `grpo` (training reward): 0 unless the output is schema-valid (rollouts may be unconstrained; serving uses constrained decoding). Otherwise links 0.15, F1 over (document, flag) pairs 0.20, F1 over (document, BLOCKED_/DEFERRED_ reason) pairs 0.20, exact ITC on documents either side treats as not fully eligible 0.25, ITC totals 0.10, and a dense term 0.10 (mean of the composite's components) so partial credit remains. An empty-vs-empty F1 counts as 1, so a genuinely clean case is still fully rewarded.
+
+The primary eval report is component-wise (`rewards.eval_metrics`): field F1, match accuracy, exact ITC per document, context-document accuracy (invoices with a line whose s.17(5) outcome depends on the profile or remarks: blocked amounts and BLOCKED_ reasons must match; per document because the output has no per-line decision), and the absolute error of total eligible ITC in rupees.
+
 ## Simplifications (deliberate, documented)
 
 1. **Two rate regimes, chosen by supply date.** See "Rate regimes" below. Supply date = invoice date, payment later, no advances, so s.14 always resolves to the rate on the invoice date.

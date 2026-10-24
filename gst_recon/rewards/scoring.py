@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import re
+from statistics import mean
 from datetime import datetime
 from typing import Any
 
@@ -29,6 +30,10 @@ WEIGHTS = {
     "itc_reasons": 0.05,
     "itc_total": 0.10,
 }
+
+# GRPO variant: decisions dominate; dense = mean of the composite's components (partial credit)
+GRPO_WEIGHTS = {"links": 0.15, "flag_f1": 0.20, "decision_f1": 0.20, "itc_hard": 0.25, "itc_total": 0.10,
+                "dense": 0.10}
 
 HEADER_FIELDS = {
     "doc_type": "str", "supplier_gstin": "gstin", "supplier_name": "name", "invoice_no": "docno",
@@ -239,26 +244,32 @@ def _strset(x: Any) -> frozenset[str]:
     return frozenset(str(v).strip().upper() for v in x) if isinstance(x, list) else frozenset({"<invalid>"})
 
 
-def match_accuracy(pred: dict | None, truth: dict) -> float:
-    """Mean over documents of 4 sub-checks: register vouchers, GSTR-2B entry,
-    payment refs, flag set. Spurious predicted doc_ids count as misses."""
+def _match_checks(p: dict, t: dict) -> tuple[bool, bool, bool, bool]:
+    """(register vouchers, GSTR-2B entry, payment refs, flag set) for one document."""
+    return (_strset(p.get("register_vouchers")) == _strset(t.get("register_vouchers")),
+            all(_eq(p.get(f), t.get(f), "docno") for f in ("gstr2b_period", "gstr2b_ctin", "gstr2b_doc_no")),
+            _strset(p.get("payment_refs")) == _strset(t.get("payment_refs")),
+            _strset(p.get("flags")) == _strset(t.get("flags")))
+
+
+def _match_mean(pred: dict | None, truth: dict, picks: slice) -> float:
     p_rows, t_rows = _by_doc(_list(pred, "matches")), _by_doc(_list(truth, "matches"))
     ids = set(t_rows) | set(p_rows)
     if not ids:
         return 0.0
-    score = 0.0
-    for doc_id in t_rows:
-        p, t = p_rows.get(doc_id), t_rows[doc_id]
-        if p is None:
-            continue
-        twob_ok = all(_eq(p.get(f), t.get(f), "docno") for f in ("gstr2b_period", "gstr2b_ctin", "gstr2b_doc_no"))
-        score += (
-            (_strset(p.get("register_vouchers")) == _strset(t.get("register_vouchers")))
-            + twob_ok
-            + (_strset(p.get("payment_refs")) == _strset(t.get("payment_refs")))
-            + (_strset(p.get("flags")) == _strset(t.get("flags")))
-        ) / 4
-    return score / len(ids)
+    hits = [mean(_match_checks(p_rows[d], t)[picks]) for d, t in t_rows.items() if d in p_rows]
+    return sum(hits) / len(ids)
+
+
+def match_accuracy(pred: dict | None, truth: dict) -> float:
+    """Mean over documents of 4 sub-checks: register vouchers, GSTR-2B entry,
+    payment refs, flag set. Spurious predicted doc_ids count as misses."""
+    return _match_mean(pred, truth, slice(0, 4))
+
+
+def link_accuracy(pred: dict | None, truth: dict) -> float:
+    """match_accuracy without the flags: which voucher, 2B row and payments belong to each document."""
+    return _match_mean(pred, truth, slice(0, 3))
 
 
 def _itc_close(p: dict, t: dict) -> bool:
@@ -285,12 +296,48 @@ def itc_scores(pred: dict | None, truth: dict) -> dict[str, float]:
             "itc_total": float(total_ok)}
 
 
+# ---------------------------------------------------------------- GRPO variant
+
+
+def _f1(p: set, t: set) -> float:
+    if not p and not t:
+        return 1.0
+    return 2 * len(p & t) / (len(p) + len(t))
+
+
+def _doc_pairs(rows: list[dict], key: str, keep=lambda v: True) -> set[tuple[str, str]]:
+    return {(d, v) for d, r in _by_doc(rows).items() for v in _strset(r.get(key)) if v != "<invalid>" and keep(v)}
+
+
+def _decisive(v: str) -> bool:
+    return v.startswith(("BLOCKED_", "DEFERRED_"))
+
+
+def _hard(row: dict) -> bool:
+    """Any tax outside `eligible`: the documents where a decision was actually needed."""
+    return any(abs(_num(_bucket(row, b).get(h)) or 0.0) > TOL for b in ("blocked", "deferred") for h in HEADS)
+
+
+def decision_scores(pred: dict | None, truth: dict) -> dict[str, float]:
+    """F1 over (doc, flag) and (doc, blocked/deferred reason) pairs, and exact ITC
+    on the union of documents that either side treats as not fully eligible.
+    Predicting "all clean" earns nothing here unless the case really is clean."""
+    p_itc, t_itc = _by_doc(_list(pred, "itc")), _by_doc(_list(truth, "itc"))
+    hard = {d for d, r in t_itc.items() if _hard(r)} | {d for d, r in p_itc.items() if _hard(r)}
+    exact = [d in p_itc and d in t_itc and _itc_close(p_itc[d], t_itc[d]) for d in hard]
+    return {"flag_f1": _f1(_doc_pairs(_list(pred, "matches"), "flags"), _doc_pairs(_list(truth, "matches"), "flags")),
+            "decision_f1": _f1(_doc_pairs(_list(pred, "itc"), "reasons", _decisive),
+                               _doc_pairs(_list(truth, "itc"), "reasons", _decisive)),
+            "itc_hard": mean(exact) if exact else 1.0}
+
+
 # ---------------------------------------------------------------- composite
 
 
 def score(raw: Any, truth: ReconOutput | dict) -> dict[str, float]:
-    """All component rewards plus the weighted `composite`, each in [0, 1]."""
-    zero = {k: 0.0 for k in WEIGHTS} | {"composite": 0.0}
+    """All component rewards, the weighted `composite` (continuity) and `grpo`
+    (training reward: 0 unless schema-valid), each in [0, 1]."""
+    zero = {k: 0.0 for k in (*WEIGHTS, *GRPO_WEIGHTS, "composite", "grpo")}
     try:
         t = truth.model_dump(mode="json") if isinstance(truth, ReconOutput) else truth
         pred = parse_output(raw)
@@ -302,8 +349,12 @@ def score(raw: Any, truth: ReconOutput | dict) -> dict[str, float]:
             "arithmetic": arithmetic_consistency(pred),
             "match_accuracy": match_accuracy(pred, t),
             **itc_scores(pred, t),
+            "links": link_accuracy(pred, t),
+            **decision_scores(pred, t),
         }
     except Exception:  # noqa: BLE001 - a reward must never crash a GRPO rollout
         return zero
     out["composite"] = sum(WEIGHTS[k] * out[k] for k in WEIGHTS)
+    out["dense"] = mean(out[k] for k in WEIGHTS if k != "schema_valid")
+    out["grpo"] = out["schema_valid"] * sum(GRPO_WEIGHTS[k] * out[k] for k in GRPO_WEIGHTS)
     return out
