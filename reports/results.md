@@ -246,6 +246,9 @@ Paired by case_id; p-value from a centred paired bootstrap (null: zero mean diff
 - Compare rows only through the paired table, which uses the shared case ids; the CIs at n = 30 are wide.
 - Sign convention in the paired table is the other run minus SFT compact, so a negative delta means SFT compact is better.
 - Same 42 cases, SFT compact vs SFT full grammar: ITC invoice exact +59.5 points, context accuracy +22.5, composite +21.9 (all p = 0.0005); the grammar mismatch, not the model, caused the earlier 10.9%.
+- Per-record ITC buckets on the same 30 sampled simulator cases (587 truth records; correct = all four heads within Rs 0.02, aligned by doc_id), eligible bucket right / all three buckets right, as a share of aligned records (share of truth records in brackets):
+- SFT compact grammar: 71.6% (71.2%) / 69.7% (69.3%); SFT full grammar: 55.5% (55.5%) / 9.0% (9.0%); teacher-30B constrained: 60.9% (48.4%) / 59.2% (47.0%); Sonnet: 98.5% (98.5%) / 98.1% (98.1%).
+- Predicted blocked is nonzero in 13.7% of SFT compact records and deferred in 2.2%, against truth rates near 22% and 12%, so under the compact grammar the remaining error is mostly the eligible decision and a missing deferred bucket, not junk.
 
 ## Hybrid mode
 
