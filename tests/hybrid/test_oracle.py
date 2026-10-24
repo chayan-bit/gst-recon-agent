@@ -49,3 +49,17 @@ def test_ocr_typos_in_invoice_no_and_gstin_still_link(ex):
     out, _ = reconcile_prompt(prompt, {**recs, doc: typo})
     links = lambda o: {m.doc_id: (m.register_vouchers, m.gstr2b_doc_no, m.payment_refs) for m in o.matches}  # noqa: E731
     assert links(out)[doc] == links(good)[doc]
+
+
+def test_repair_fixes_all_heads_filled_and_keeps_true_records(ex):
+    from gst_recon.hybrid.repair import repair
+
+    prompt, target, case = ex
+    recs = truth_records(target, case)
+    assert all(repair(r) == (r, []) for r in recs.values())
+    doc = next(d for d, r in recs.items() if not r.reverse_charge and any(li.cgst for li in r.line_items))
+    r = recs[doc]
+    broken = r.model_copy(update={"line_items": [li.model_copy(update={"igst": li.cgst, "sgst": li.cgst}) for li in r.line_items],
+                                  "igst": r.cgst, "total": 1.0})
+    fixed, notes = repair(broken)
+    assert notes and fixed == r

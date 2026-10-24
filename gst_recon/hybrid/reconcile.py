@@ -13,6 +13,7 @@ from datetime import date
 from gst_recon.hybrid.docschema import HEADS, DocRecord, invoice_date, to_extraction, to_truth_invoice
 from gst_recon.hybrid.inputs import PromptParts, parse_prompt
 from gst_recon.hybrid.linker import link_documents
+from gst_recon.hybrid.repair import repair
 from gst_recon.schema import CaseInputs, DocType, Party, ReconOutput, TruthInvoice
 from gst_recon.sim import rules
 
@@ -52,7 +53,13 @@ def reconcile_prompt(prompt: str, records: Mapping[str, DocRecord]) -> tuple[Rec
     parts = parse_prompt(prompt)
     h = parts.header
     period_start = date(int(h.period[2:]), int(h.period[:2]), 1)
-    trace: dict = {"missing_records": [d.doc_id for d in parts.docs if d.doc_id not in records], "bad_dates": []}
+    trace: dict = {"missing_records": [d.doc_id for d in parts.docs if d.doc_id not in records], "bad_dates": [], "repairs": {}}
+    fixed = {}
+    for doc_id, rec in records.items():
+        fixed[doc_id], notes = repair(rec)
+        if notes:
+            trace["repairs"][doc_id] = notes
+    records = fixed
     invoices = []
     for d in parts.docs:
         rec = records.get(d.doc_id)
