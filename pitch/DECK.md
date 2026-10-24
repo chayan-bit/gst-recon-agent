@@ -128,7 +128,7 @@ Only rows with evidence stay on the slide.
 ## Slide 10 - What is solid, what is not yet, and what is next
 
 - Solid: ground-truth-first data, checkable rewards, a held-out OOD set, an honest baseline ladder, and four contributions to the sponsor toolkits.
-- Not yet: real scans at scale (the real-world sanity set is small: 36 documents, field F1 {{REAL_FIELD_F1}}), tax law beyond the modelled sections, and a vision front end that replaces OCR.
+- Not yet: real scans at scale (on a private eval-only set of 42 real purchase documents the fine-tuned per-document model reads amounts and categories better than the base but invents invoice numbers in simulator formats, which we are fixing by widening the simulator; the real-world sanity set is small: 36 documents, field F1 {{REAL_FIELD_F1}}), tax law beyond the modelled sections, and a vision front end that replaces OCR.
 - Next: a vision-language student that reads the page directly, more of the GST rules (and a lawyer-reviewed rule table), and upstreaming the AlignTune and AuditKIT work.
 
 Visual: a three-column "solid / not yet / next" board; under it, a QR code to the repo and the demo video.
