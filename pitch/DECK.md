@@ -2,7 +2,6 @@
 
 Ten slides, about 4 minutes if presented live, and each slide also reads on its own as a static PDF.
 Every number is copied from a public report: `reports/results.md`, `reports/hybrid.md`, `reports/pipeline.md`, `reports/curation.md` or `reports/serving.md`.
-A token in double braces is a number that has not been measured yet; nothing else on this page is an unmeasured claim.
 Visuals marked "committed" already exist in the repo (`examples/`, `reports/smoke/`); all others have to be made.
 All invoices, GSTINs and buyers are synthetic (simulator output), and the deck says so on the slides that show them.
 
@@ -61,45 +60,35 @@ A small table of the reward components and weights (composite and GRPO reward in
 
 Visual: a split bar showing train / test_iid / test_ood, with the held-out items listed under test_ood, and a two-row "same item, two buyers, two answers" card.
 
-## Slide 6 - Results: the full reconciliation, on simulated cases and on real documents
+## Slide 6 - Results on real documents
 
-- Headline table: the whole pipeline end to end, scored by the same scorer.
+- Headline table: the whole pipeline end to end on real supplier documents, scored by the same scorer.
 
-| System | Test ITC exact | Test match | Test composite | Semireal ITC exact | Semireal match | Semireal composite |
-|---|---|---|---|---|---|---|
-| pd3g287 (shipped): per-document model + our reconciler | 80.0 | 85.0 | 81.6 | 61.1 | 71.5 | 72.9 |
-| student-perdoc-sft (v1): first per-document model + our reconciler | 80.1 | 88.7 | 82.8 | 58.5 | 64.1 | 68.6 |
-| Claude Haiku 5.5, same hybrid harness (one call per document + our reconciler); minimum thinking (mean {{HAIKU_THINK_TOKENS}} tokens per document), cannot be disabled via the CLI | {{HAIKU_TEST_ITC}} | {{HAIKU_TEST_MATCH}} | {{HAIKU_TEST_COMP}} | 84.9 | 88.4 | 86.5 |
-| Claude Haiku 4.5, same hybrid harness (one call per document + our reconciler); thinking off (0 thinking tokens) | {{HAIKU45_TEST_ITC}} | {{HAIKU45_TEST_MATCH}} | {{HAIKU45_TEST_COMP}} | 68.2 | 82.2 | 77.4 |
-| GPT-6 luna, same hybrid harness (one call per document + our reconciler); lowest reasoning effort | 81.9 | 90.5 | 84.0 | 70.6 | 82.5 | 77.9 |
-| Claude Sonnet, whole case in one prompt (a different harness; thinking at CLI default) | 96.3 | 99.0 | 94.4 | not run | not run | not run |
+| Real-document set (54 cases) | ITC exact | Match | Composite | Invented IDs |
+|---|---|---|---|---|
+| Claude Haiku 5.5 (minimum thinking, can't be turned off) | 84.9 | 88.4 | 86.5 | 8.4% |
+| GPT-6 luna (reasoning off) | 70.6 | 82.5 | 77.9 | 15.4% |
+| Claude Haiku 4.5 (thinking off) | 68.2 | 82.2 | 77.4 | 16.6% |
+| pd3g287 (shipped, our local Qwen3-4B + LoRA) | 61.1 | 71.5 | 72.9 | 9.7% |
 
-- Test is the 120 simulator test cases; semireal is 54 cases built around real documents with simulated purchase register, GSTR-2B and bank books, pooled, so it measures document reading and not real book messiness, and its labels were drafted by a model and not verified by a human.
-- ITC exact is the share of invoices whose eligible, blocked and deferred amounts are all within Rs 1 of the truth; match is match accuracy; composite is the weighted composite, which has a high floor.
-- pd3g287 and student-perdoc-sft run under reconciler v3 and doc schema v2, and their test rows were scored once.
-- On the test set pd3g287 ties student-perdoc-sft on ITC exact (80.0 against 80.1) and matches 3.8 points worse (85.0 against 88.7, composite 81.6 against 82.8); on the semireal real documents it is ahead on all three, significantly on match and composite.
-- On the semireal real documents the readers with no test-time compute lead our shipped model: Haiku 5.5 at minimum thinking by 13.6 composite points, GPT-6 luna by 5.0 (significant) and Haiku 4.5 by 4.5 (p = 0.068, not significant); our model's case rests on running locally on one 16 GB GPU, with no document leaving the machine. On the 120 simulator test cases luna also leads pd3g287 (ITC exact +1.9, not significant; match +5.6 and composite +2.4, both significant).
-- Sonnet ran through the Claude Code CLI with the whole case in one prompt, so its row is a different harness and not a like-for-like comparison with the hybrid rows.
-- No model gets test-time compute beyond what its harness cannot remove: our 4B (Qwen3-4B-Instruct-2507) has no thinking mode and its output is XGrammar-constrained to start with `{`, Haiku 4.5 runs with thinking off, GPT-6 luna at the lowest reasoning effort, and Haiku 5.5 cannot disable thinking through the Claude Code CLI, so its row is at minimum thinking.
-- Sonnet's whole-case run used the Claude Code CLI defaults, and its report does not record the thinking setting, so we say thinking at CLI default.
-- For scale, a context-blind rules engine handed the true extraction and links scores 82.7 ITC exact, 100.0 match and 87.3 composite on the same test cases: on ITC exact alone it is ahead of our system, and what the model adds is reading the documents and judging context.
-- The shipped system is pd3g287: Qwen3-4B-Instruct-2507 with a per-document LoRA trained on simulator rows with realistic identity formats, then 287 steps of GRPO with the per-document reward, run in hybrid mode (the model reads one document at a time and deterministic code does the matching, rupee arithmetic and ITC rules) with reconciler v3 and doc schema v2.
-- We chose it by a post-hoc override, and we say so plainly. Our pre-registered ship rule said no, because it regressed on simulated dev (small-dev ITC exact delta -1.7, 95% CI [-4.5, +0.9], against a required lower bound of -3.0). We overrode the rule after the fact because real documents are what matter: on the 54 pooled semireal cases it is the best model end to end (composite +4.3 [+1.7, +7.0], match +7.4 [+1.4, +13.7], ITC exact +2.6 [-1.4, +6.7], not significant), and the simulated dev sets use the old simulator formats, which this model was not trained on. The override was committed before the test set was run. It over-abstains: it left 22 visible identity fields empty on the 42 real documents and 16 visible invoice numbers empty on the 30 held-out ones (counts in `reports/hybrid.md`).
-- GRPO: the first run (step 75, from the second per-document adapter) was neutral on the dev sets and was not shipped; the second run, from the realistic-formats adapter, is the shipped pd3g287, by the override above; the AlignTune SGLang rollout backend we built for GRPO is upstream (PR #32) as infrastructure, not as a headline gain.
-- Per-field accuracy, dev sets, per-document scores on real invoices, schema-valid rates, decoding ablations and every paired test are in `reports/hybrid.md`, `reports/results.md` and `reports/pipeline.md`.
-<!-- Figures: reports/results.md (Sonnet and context-blind rows, overall, n = 120), reports/hybrid.md (semireal under doc schema v2, commit 0358900; test rows for pd3g287 and student-perdoc-sft, pending; Haiku row from the gst-eval run, pending). -->
+- Every reader feeds the same code reconciler; the 54 cases are real supplier documents with simulated books (purchase register, GSTR-2B and bank), and their labels were drafted by a model and not verified by a human.
+- ITC exact is the share of invoices whose eligible, blocked and deferred amounts are all within Rs 1 of the truth; match is match accuracy; composite is the weighted composite; invented IDs is the share of GSTIN, invoice-number and date fields a model made up where the page does not show them (lower is better).
+- The frontier readers lead on this set: Haiku 5.5 by 13.6 composite points, GPT-6 luna by 5.0 (significant) and Haiku 4.5 by 4.5 (not significant); our case is a 4B model that runs locally on one 16 GB GPU with no document leaving the machine, and it invents fewer identity fields than Haiku 4.5 and luna.
+- Our model runs with no test-time compute (Qwen3-4B-Instruct-2507 has no thinking mode, and its output is XGrammar-constrained to start with `{`), and the other readers run at their lowest reasoning setting; Haiku 5.5 cannot disable thinking through the Claude Code CLI.
+- The shipped model is pd3g287: a Qwen3-4B-Instruct-2507 LoRA trained on simulator rows with realistic identity formats, then 287 steps of GRPO, run in hybrid mode (it reads one document at a time and deterministic code does the matching, rupee arithmetic and ITC rules).
+- We chose it by a post-hoc override, and we say so plainly: our pre-registered ship rule, scored on simulated data, said not to ship it, and we overrode it because real documents are what matter. The override was committed before the test set was run. It over-abstains: it left 22 visible identity fields empty on 42 real documents and 16 visible invoice numbers empty on 30 held-out ones (counts in `reports/hybrid.md`).
+- GRPO: the first run (step 75) was neutral and was not shipped; the second run, from the realistic-formats adapter, is the shipped pd3g287, by the override above; the AlignTune SGLang rollout backend we built for GRPO is upstream (PR #32) as infrastructure, not as a headline gain.
+- Simulated-data results (test and dev), per-field accuracy, the Sonnet comparison and every paired test are in `reports/hybrid.md`, `reports/results.md`, `reports/frontier-hybrid.md` and `reports/pipeline.md`.
+<!-- Figures: reports/frontier-hybrid.md and reports/hybrid.md headline table (semireal, 54 cases, doc schema v2, reconciler v3; invented IDs from the INVENTED rule over 702 identity slots). -->
 
-Visual: the headline table as a slide, with the shipped row highlighted and the harness note in small print under it; no staircase chart, because every bar would be a different harness.
+Visual: the table as a slide, our row highlighted, and a note that every reader feeds the same reconciler.
 
 ## Slide 7 - Not claiming to beat frontier models: how close, at what cost
 
-- Claim: on the same 120 test cases pd3g287 reaches 83.1% of Claude Sonnet's ITC exact (80.0 against 96.3; Sonnet is a different harness, the whole case in one prompt, so this is a comparison of systems), fully local; Sonnet costs $226.88 per 1,000 cases at list price (token counts through the CLI), and we do not publish a student cost ratio because we have not measured the student's GPU cost.
-- Latency: p50 38.0 s per case end to end (SFT with the compact grammar, 30 simulator cases) and 61.2 s per case in hybrid mode (one document per call, first pass, slightly understated because a demo recording shared the server), against 67.9 s for Sonnet through the Claude Code CLI (not a clean API latency). <!-- reports/results.md throughput table ("SFT constrained, compact grammar (same 36 cases)", "Claude Sonnet (via Claude Code CLI)") and reports/hybrid.md hybrid throughput -->
-- Open-model reference: Qwen3-30B-A3B (the teacher, served on SGLang with a 64k context), run end to end on the same 120 test cases, scores ITC exact 59.8, match 71.1 and composite 69.1. <!-- reports/results.md, teacher-30B constrained, overall -->
-- Constrained versus unconstrained decoding on the SFT student (XGrammar, 30 simulator cases): schema-valid 70.0% -> 100.0%, ITC-exact 72.3 -> 75.7 (paired on 42 cases the difference is -2.4 points [-7.3, +2.5], p = 0.32 without the grammar, so the grammar buys valid output at no measurable accuracy cost). <!-- reports/results.md, "SFT unconstrained" and "SFT constrained, compact grammar" rows and their note -->
+- Claim: on real documents the frontier readers lead our 4B (composite 86.5, 77.9 and 77.4 against 72.9), and we say so; what we offer is the same pipeline running locally on one 16 GB GPU with no document leaving the machine.
+- Latency and cost per document for the Claude and GPT readers, and the settings they ran at, are in `reports/frontier-hybrid.md`; we do not publish a student cost ratio because we have not measured the student's GPU cost.
 
-Visual: a scatter of accuracy (y, ITC-exact) against cost per 1,000 cases (x, log scale) with five points: base 4B, SFT, per-document hybrid, 30B teacher, Claude Sonnet.
-Next to it, a two-bar chart of the constrained versus unconstrained student.
+Visual: a bar chart of the composite for the four table rows, our row highlighted, with the privacy line under it.
 
 ## Slide 8 - What we gave back to the sponsor stack
 

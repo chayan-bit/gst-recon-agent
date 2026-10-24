@@ -2,7 +2,7 @@
 
 Visual first: every shot has a picture doing the work, and the narration only names what the viewer is looking at.
 Voice-over only, no face cam, 1080p, terminal font at least 18 pt, dark theme.
-Numbers in `{{...}}` are read out loud only after they are filled from the public reports (`reports/results.md`, `reports/hybrid.md`, `reports/pipeline.md`); do not record the final voice-over before then.
+Numbers are read out loud only from the public reports (`reports/results.md`, `reports/hybrid.md`, `reports/pipeline.md`); do not record the final voice-over before then.
 
 ## Honesty rules for the recording
 
@@ -74,22 +74,19 @@ This invoice is tea and sugar, for an annual day celebration, bought by a constr
 The model blocks five thousand seven hundred and thirteen rupees of credit, and cites section 17(5)(b)(i).
 A caterer buying the same sugar could claim it, so the model has to read the buyer, not just the item."
 
-### Shot 5 - The results chart (1:34 to 2:03)
+### Shot 5 - The results table (1:34 to 2:03)
 
-On screen: the staircase chart, one step revealed at a time: base, SFT, per-document hybrid, each with ITC-exact on unseen items and layouts and a bootstrap interval.
-Then Claude Sonnet and the 30B teacher appear as two extra markers.
-Then a small bar pair: constrained versus unconstrained decoding.
-A footer on the chart reads "held-out out-of-distribution cases; base and SFT are a sample of 15".
+On screen: the four-row real-document table, our row highlighted, with the footer "54 real supplier documents with simulated books; every reader feeds the same code reconciler".
 
 Narration:
 "We do not claim to beat frontier models.
-We measured the climb.
-On unseen items and layouts, invoices exactly right go from 53.1 percent for the base model to 78.9 with SFT, on a sample of fifteen cases.
-We also trained with GRPO on a rule-checked reward, twice; the first run did not help and we dropped it, and the second ships, by an override of our own dev rule that we explain in the repository.
-On the 120 test cases Claude Sonnet gets 96.3 and our hybrid system gets 80.0, which is 83.1 percent of that, and nothing leaves the machine.
-Constrained decoding lifts valid output from 70 to 100 percent."
+This is the same reconciliation on fifty-four real supplier documents, with simulated books.
+Claude Haiku 5.5 scores 86.5 on the composite, GPT-6 luna 77.9, Haiku 4.5 77.4, and our local four-billion-parameter model 72.9.
+Every reader feeds the same code reconciler, and ours runs on one sixteen-gigabyte GPU with nothing leaving the machine.
+Our model also invents fewer identity fields than the two small readers: 9.7 percent against about 16.
+We chose it by overriding our own pre-registered rule, which was scored on simulated data, because real documents are what matter, and we say so in the repository."
 
-<!-- Sources: 96.3 (Sonnet, n = 120) and the shipped pd3g287 hybrid test ITC-exact (reconciler v3, doc schema v2, n = 120, pending) are reports/results.md and reports/hybrid.md rows; percent = pd3g287 / 96.3; the previous adapter was 79.9 / 96.3 = 83.0 percent. Base 53.1 is the "student-base constrained" test_ood row and SFT 78.9 is the "SFT constrained (compact grammar)" test_ood row, both n = 15; 70 to 100 is the SFT unconstrained versus compact-grammar schema-valid share on 30 simulator cases (commit da4120a, 42-case stratified sample); say that it is a small sample. -->
+<!-- Sources: reports/frontier-hybrid.md and the headline table of reports/hybrid.md (semireal, 54 cases, doc schema v2, reconciler v3); composite 86.5 / 77.9 / 77.4 / 72.9; invented IDs 9.7% (pd3g287) against 16.6% (Haiku 4.5) and 15.4% (luna). -->
 
 ### Shot 6 - What we built for the sponsor stack (2:03 to 2:33)
 

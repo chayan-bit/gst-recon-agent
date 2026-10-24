@@ -1,7 +1,7 @@
 # Judge Q&A: the hardest questions, with honest answers
 
 Rule for every answer: say what was measured, say what was not, and never reach past the evidence.
-Every number is copied from `reports/results.md`, `reports/hybrid.md`, `reports/pipeline.md`, `reports/curation.md` or `reports/serving.md`; a `{{...}}` token is not measured yet, and if one is still empty when you present, say "not measured yet" and move on.
+Every number is copied from `reports/results.md`, `reports/hybrid.md`, `reports/pipeline.md`, `reports/curation.md` or `reports/serving.md`.
 
 ## 1. Isn't this sim-to-sim? You train and test on your own simulator.
 
