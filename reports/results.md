@@ -924,6 +924,22 @@ student-sft hybrid, the same SFT adapter fed one document at a time, is far belo
 Paired by case_id over all 132 cases (realworld included).
 Caveat: that end-to-end SFT run used the full constrained grammar, which does not match the compact-form SFT targets (blocked and deferred fill with junk; see Notes above), so it understates the SFT model; it is kept as evidence of that grammar mismatch, and the compact-grammar pairing above replaces it for comparisons.
 
+### Claude Haiku as the per-document model (same harness, only the per-document call differs)
+
+Same per-document messages, doc schema v2, reconciler v3, fill, linker and scorer as the shipped model; the per-document model is Claude Haiku through the local `claude -p` CLI (`scripts/eval_frontier.py --mode hybrid --schema-mode flag`).
+The schema goes through the CLI's `--json-schema` structured output (a forced tool call, system prompt unchanged), which is not grammar-constrained decoding like the XGrammar runs, and the model sees no fine-tuning.
+Both Haikus run at the CLI defaults (thinking on).
+Pooled means are case means; paired bootstrap of run minus reference, 10,000 case resamples, seed 0 (`scripts/eval_hybrid_compare.py`); diagnostics use the INVENTED rule of `gst_recon/rewards/doc.py` over all identity slots (3 per document).
+
+**semireal, 54 cases (clean 9, sim-s0 9, sim-s1to4 36), 234 documents.**
+
+| run | ITC invoice exact % | Match acc % | Composite | vs v1 (ITC / match / composite) | vs pd3g287 (ITC / match / composite) | docs parsed | invented identity | s per doc | CLI cost per doc |
+|---|---|---|---|---|---|---|---|---|---|
+| Claude Haiku 5.5, hybrid | 84.8 | 88.6 | 86.7 | +26.3 [+18.3, +35.0] / +24.5 [+17.0, +32.8] / +18.1 [+13.1, +23.6] | +23.7 [+15.9, +32.2] / +17.1 [+12.8, +21.4] / +13.8 [+9.6, +18.4] | 100.0% | 7.4% (52 of 702) | 11.0 | $0.0015 |
+
+All deltas have p < 0.0005; v1 and pd3g287 are gst-hybrid's stored runs on the same 54 cases (58.5 / 64.1 / 68.6 and 61.1 / 71.5 / 72.9).
+The semireal documents are real client documents; the Haiku runs sent them to the Claude CLI only, and only aggregates are reported here.
+
 ### Throughput
 
 | run | req/s | out tok/s | p50 latency (s) | GPU $/1k cases | API list $/1k cases |
