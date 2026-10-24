@@ -490,8 +490,51 @@ If B passes (b'), the frozen test set is run once under schema v2 for v1, pd3, p
 
 False links stay at 0 register and 0 GSTR-2B (payment: 2 on small dev, 12 and 10 on big dev; v1 2 and 9).
 On realinv (table above) both variants raise the mean of invoice number and date accuracy from 40.5% to 51.2% and invent no identity (v1 8.8%), but tie v1 on ITC doc exact (57.1%): the ensemble takes amounts, categories and purposes from v1, and the identity fields do not enter that metric.
-So variant A fails rule (a) (small-dev lower bound -3.2) and variant B, which passes (a), fails rule (b) on the tie ("beats" was pre-registered); neither ships under the rule, and the test set has not been run.
+So variant A fails rule (a) (small-dev lower bound -3.2) and variant B, which passes (a), fails rule (b) on the tie ("beats" was pre-registered); neither ships under the rule as first registered; the user then replaced (b) for B by a pooled semireal criterion (amendment above), which B also fails (below).
 On sim dev an identity left empty where v1 had read it right is only recovered when the book fill finds exactly one matching entry, which is consistent with A (more abstentions) trailing v1 on match accuracy and B (fewer) staying level; the per-field split was not measured.
+
+**semireal under doc schema v2 (real documents with simulated books, end to end through reconciler v3; exploratory for the adapters, criterion (b') for ensemble B).**
+
+| level | run | ITC invoice exact % | Context acc % | ITC overclaim (Rs) | ITC underclaim (Rs) | Match acc % | Composite | fills (right) | register / GSTR-2B / payment missed | false links |
+|---|---|---|---|---|---|---|---|---|---|---|
+| clean (9 cases) | student-perdoc-sft v1 | 59.6 | 100.0 | 0 | 10,065 | 62.8 | 68.7 | 8 (8) | 14 / 14 / 7 of 39 / 38 / 21 | 0 |
+| clean (9 cases) | pd3a | 48.0 | 92.9 | 0 | 25,803 | 67.9 | 66.0 | 8 (8) | 14 / 14 / 8 of 39 / 38 / 21 | 0 |
+| clean (9 cases) | pd3 | 56.7 | 100.0 | 0 | 10,001 | 71.2 | 70.5 | 6 (6) | 12 / 12 / 7 of 39 / 38 / 21 | 0 |
+| clean (9 cases) | pd3g287 | 61.8 | 100.0 | 0 | 9,948 | 71.3 | 73.0 | 13 (13) | 14 / 14 / 8 of 39 / 38 / 21 | 0 |
+| clean (9 cases) | ensemble A | 53.2 | 100.0 | 0 | 21,173 | 65.4 | 66.8 | 8 (8) | 14 / 14 / 7 of 39 / 38 / 21 | 0 |
+| clean (9 cases) | ensemble B | 58.7 | 100.0 | 0 | 11,173 | 69.6 | 70.2 | 9 (9) | 13 / 13 / 7 of 39 / 38 / 21 | 0 |
+| sim, seed 0 (9) | student-perdoc-sft v1 | 59.6 | 100.0 | 0 | 9,495 | 66.1 | 69.3 | 7 (7) | 13 / 12 / 8 of 42 / 34 / 27 | 0 |
+| sim, seed 0 (9) | pd3a | 52.5 | 92.9 | 0 | 23,614 | 70.5 | 67.7 | 9 (9) | 13 / 13 / 8 of 42 / 34 / 27 | 0 |
+| sim, seed 0 (9) | pd3 | 58.1 | 100.0 | 0 | 8,992 | 72.9 | 71.0 | 6 (6) | 12 / 11 / 7 of 42 / 34 / 27 | 0 |
+| sim, seed 0 (9) | pd3g287 | 61.8 | 100.0 | 0 | 8,939 | 71.4 | 73.1 | 11 (11) | 15 / 14 / 8 of 42 / 34 / 27 | 0 |
+| sim, seed 0 (9) | ensemble A | 59.6 | 100.0 | 0 | 9,524 | 71.1 | 70.6 | 8 (8) | 13 / 12 / 8 of 42 / 34 / 27 | 0 |
+| sim, seed 0 (9) | ensemble B | 59.6 | 100.0 | 0 | 9,524 | 71.3 | 70.7 | 8 (8) | 13 / 12 / 8 of 42 / 34 / 27 | 0 |
+| sim, seeds 1-4 (36) | student-perdoc-sft v1 | 57.9 | 100.0 | 0 | 6,118 | 63.9 | 68.4 | 27 (27) | 55 / 52 / 29 of 160 / 143 / 103 | 0 |
+| sim, seeds 1-4 (36) | pd3a | 54.5 | 96.4 | 0 | 18,814 | 70.7 | 69.4 | 37 (37) | 50 / 48 / 30 of 160 / 143 / 103 | 0 |
+| sim, seeds 1-4 (36) | pd3 | 56.7 | 94.6 | 0 | 5,766 | 71.0 | 70.5 | 17 (17) | 52 / 48 / 28 of 160 / 143 / 103 | 0 |
+| sim, seeds 1-4 (36) | pd3g287 | 60.7 | 100.0 | 0 | 9,452 | 71.6 | 72.8 | 53 (53) | 59 / 56 / 32 of 160 / 143 / 103 | 0 |
+| sim, seeds 1-4 (36) | ensemble A | 56.2 | 100.0 | 0 | 9,380 | 67.9 | 68.7 | 30 (30) | 57 / 53 / 29 of 160 / 143 / 103 | 0 |
+| sim, seeds 1-4 (36) | ensemble B | 57.8 | 100.0 | 0 | 6,610 | 69.3 | 69.7 | 32 (32) | 55 / 52 / 29 of 160 / 143 / 103 | 0 |
+
+Pooled over the 54 cases (case mean, paired bootstrap of 10,000 case resamples):
+
+| run | ITC invoice exact % (delta vs v1 [95% CI], p) | Match acc % (delta [95% CI], p) | Composite (delta [95% CI], p) |
+|---|---|---|---|
+| student-perdoc-sft v1 | 58.5 | 64.1 | 68.6 |
+| pd3g287 | 61.1 (+2.6 [-1.4, +6.7], p = 0.20) | 71.5 (+7.4 [+1.4, +13.7], p = 0.02) | 72.9 (+4.3 [+1.7, +7.0], p < 0.005) |
+| pd3 | 56.9 (-1.5 [-4.7, +1.6], p = 0.33) | 71.4 (+7.2 [+1.9, +12.9], p = 0.01) | 70.6 (+2.0 [+0.3, +3.6], p = 0.02) |
+| pd3a | 53.1 (-5.4 [-11.0, -0.3], p = 0.04) | 70.2 (+6.1 [+0.2, +12.4], p = 0.04) | 68.6 (-0.0 [-3.2, +3.0], p = 0.99) |
+| ensemble A | 56.3 (-2.2 [-5.2, +0.0], p = 0.06) | 68.0 (+3.9 [-0.6, +9.0], p = 0.10) | 68.7 (+0.1 [-1.9, +1.8], p = 0.89) |
+| ensemble B | 58.3 (-0.2 [-1.0, +0.8], p = 0.62) | 69.7 (+5.6 [+1.7, +10.2], p < 0.005) | 69.9 (+1.3 [+0.5, +2.4], p < 0.005) |
+
+Decision: ensemble B fails criterion (b'): its pooled ITC invoice exact is 58.27% against v1's 58.47% (4 cases worse, 1 better), although it matches 5.6 points better.
+student-perdoc-sft v1 stays the shipped adapter under doc schema v2, and the test set was not run again for any of tonight's candidates.
+
+Every v3 adapter matches better than v1 on the real documents (+6 to +7 points pooled): the identity fix pays off end to end in register and GSTR-2B links, with all fills correct and no false link.
+pd3g287 is the strongest model on these real documents end to end (pooled ITC +2.6 points, not significant, and composite +4.3, significant), yet it failed rule (a) on the small simulated dev set, whose identity formats v1 was trained on.
+That tension is the main open finding for the next round: the simulated dev sets reward v1's familiarity with the simulator's formats, while the real documents reward the format and abstention fixes; rule (a) was kept as pre-registered, so no ship claim is made for pd3g287.
+pd3a's abstentions cost ITC on real documents (underclaim Rs 19k to 26k per level against v1's Rs 6k to 10k), because an empty identity is recovered only when exactly one book entry matches.
+The semireal books follow the simulator's distributions and the labels were drafted by Claude, so these are real-document reading results, not a real-world book result.
 
 ### GRPO from the per-document SFT (dev only, measured, not shipped)
 
