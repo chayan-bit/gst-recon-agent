@@ -2,6 +2,8 @@
 
 Local LLM that reconciles Indian GST input tax credit from messy documents. Syntax Error 2026, Local LLM track.
 
+Repository: https://github.com/chayan-bit/gst-recon-agent
+
 ## License
 
 GPL-3.0-only; see `LICENSE`.
