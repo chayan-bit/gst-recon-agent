@@ -71,6 +71,7 @@ Accuracy is scored by the same code on the same cases for every model, and faile
 The claim we stand behind is the ratio of accuracy on the same held-out cases, plus the fact that nothing left the machine.
 
 We also ran Claude and GPT readers in our hybrid harness (one call per document plus our reconciler, no test-time compute: Haiku 4.5 thinking off, GPT-6 luna at the lowest reasoning effort, Haiku 5.5 at minimum thinking because the Claude Code CLI cannot disable it), and on the 54 semireal real documents they lead our shipped model: composite 86.5 for Haiku 5.5 (+13.6 over pd3g287), 77.9 for luna (+5.0, significant) and 77.4 for Haiku 4.5 (+4.5, p = 0.068), with ITC exact leads of +9.6 for luna (significant) and +7.1 for Haiku 4.5 (not significant).
+On the 120 simulator test cases luna (reasoning none) scores 81.9 / 90.5 / 84.0 against 80.0 / 85.0 / 81.6 for pd3g287: ITC exact +1.9 (not significant), match +5.6 and composite +2.4 (both significant).
 Our model invents fewer identity fields on those documents (9.7% of identity slots against 16.6% for Haiku 4.5 and 15.4% for luna), which is a diagnostic and not a headline; its case is that it runs locally on one 16 GB GPU and no document leaves the machine.
 
 ## 7. With only 84 concepts, isn't the model just memorising them?
