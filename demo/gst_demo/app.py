@@ -17,7 +17,7 @@ from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from . import stream
+from . import hybrid, stream
 from .cases import Registry, detail, summary
 from .view import build_view
 
@@ -56,24 +56,27 @@ async def health() -> dict:
             "recordings": len(stream.list_recordings(RECORDINGS)), "recording_enabled": RECORD}
 
 
+KNOWN_LABELS = {"teacher": "Teacher 30B"}
+
+
 def _model_entry(name: str) -> dict:
     base, _, adapter = name.partition(":")
-    label = "Base model" if not adapter else f"Fine-tuned ({adapter.upper()})"
+    label = KNOWN_LABELS.get(name) or ("Base model" if not adapter else f"Fine-tuned ({adapter.upper()})")
     return {"name": name, "label": label, "adapter": adapter or None, "base": base}
 
 
 @app.get("/api/models")
 async def models() -> dict:
-    """Names to send as `model`: a base model, or `base:adapter` for each LoRA that /v1/models reports."""
+    """Names to send as `model`: a base model, or `base:adapter` for each LoRA that /v1/models reports.
+    Models that only exist as recordings (e.g. a bigger model run earlier) are listed with recorded_only."""
     data = await _get(f"{BASE_URL}/models")
+    served = []
     if isinstance(data, dict) and data.get("data"):
-        names = [f"{m['parent']}:{m['id']}" if m.get("parent") else m["id"] for m in data["data"]]
-        source = "server"
-    else:
-        names = sorted({r["model"] for r in stream.list_recordings(RECORDINGS)}) or ["base", "base:sft"]
-        source = "recordings"
-    names.sort(key=lambda n: (":" in n, n))
-    return {"models": [_model_entry(n) for n in names], "source": source}
+        served = [f"{m['parent']}:{m['id']}" if m.get("parent") else m["id"] for m in data["data"]]
+    recorded = sorted({r["model"] for r in stream.list_recordings(RECORDINGS)} - set(served))
+    entries = [_model_entry(n) for n in sorted(served, key=lambda n: (":" in n, n))]
+    entries += [{**_model_entry(n), "recorded_only": True} for n in sorted(recorded, key=lambda n: (":" in n, n))]
+    return {"models": entries, "source": "server" if served else "recordings"}
 
 
 @app.get("/api/cases")
@@ -122,6 +125,7 @@ class RunBody(BaseModel):
     model: str = "base"
     constrained: bool = True
     mode: str = "live"  # live | replay
+    kind: str = "e2e"  # e2e (one call returns everything) | hybrid (one call per document, code reconciles)
     max_tokens: int | None = None
     speed: float = 1.0  # replay only
 
@@ -141,17 +145,20 @@ async def run(body: RunBody) -> StreamingResponse:
             yield {"type": "error", "message": "A run is already in progress."}
             return
         async with run_lock:
+            rec = {"dir": str(RECORDINGS), "case_id": body.case_id} if RECORD else None
             if body.mode == "replay":
-                path = stream.pick_recording(RECORDINGS, body.case_id, body.model, body.constrained)
+                path = stream.pick_recording(RECORDINGS, body.case_id, body.model, body.constrained, body.kind)
                 if path is None:
                     yield {"type": "error", "message": "No recording for this case yet. Run it live once to record it."}
                     return
-                async for ev in stream.replay(path, max(body.speed, 0.1)):
-                    yield ev
-                return
-            req = stream.request_body(case.prompt, body.model, body.constrained, _max_tokens(case.meta, body.max_tokens))
-            rec = {"dir": str(RECORDINGS), "case_id": body.case_id} if RECORD else None
-            async for ev in stream.live(BASE_URL, API_KEY, req, rec):
+                speed = max(body.speed, 0.1)
+                events = hybrid.replay(path, case.prompt, speed) if body.kind == "hybrid" else stream.replay(path, speed)
+            elif body.kind == "hybrid":
+                events = hybrid.live(BASE_URL, API_KEY, case.prompt, body.model, body.constrained, rec, body.max_tokens or hybrid.DOC_MAX_TOKENS)
+            else:
+                req = stream.request_body(case.prompt, body.model, body.constrained, _max_tokens(case.meta, body.max_tokens))
+                events = stream.live(BASE_URL, API_KEY, req, rec)
+            async for ev in events:
                 yield ev
 
     async def ndjson():
