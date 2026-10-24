@@ -12,6 +12,8 @@ const S = {
   health: { live: false }, runs: {}, running: false, ctrl: null, doc: null, ocrTab: "ocr", gt: true,
   expanded: new Set(), tableKey: null,
 };
+// the shipped adapter first, else any adapter, else the base model
+const defaultModel = (ms) => ms.find((m) => /\(shipped\)/.test(m.label)) || ms.find((m) => m.adapter) || ms[0];
 const runKey = (caseId = S.caseId, model = S.model, con = S.constrained, kind = S.kind) => `${caseId}|${kind}|${model}|${con ? 1 : 0}`;
 const current = () => S.runs[runKey()] || null;
 
@@ -62,7 +64,7 @@ async function loadCases() {
 async function loadModels() {
   const m = await api("/api/models");
   S.models = m.models;
-  if (!S.models.some((x) => x.name === S.model)) S.model = (S.models.find((x) => x.adapter) || S.models[0]).name;
+  if (!S.models.some((x) => x.name === S.model)) S.model = defaultModel(S.models).name;
 }
 
 /* ------------------------------------------------------------------ controls */
@@ -109,7 +111,7 @@ async function openDir() {
 
 function syncControls() {
   const usable = S.models.filter((m) => !m.recorded_only || S.mode === "replay");
-  if (!usable.some((m) => m.name === S.model) && usable.length) S.model = (usable.find((m) => m.adapter) || usable[0]).name;
+  if (!usable.some((m) => m.name === S.model) && usable.length) S.model = defaultModel(usable).name;
   $("modelSeg").innerHTML = usable.map((m) =>
     `<button data-model="${esc(m.name)}" aria-pressed="${m.name === S.model}" title="${esc(m.name)}">${esc(m.label)}</button>`).join("");
   for (const b of $("kindSeg").children) b.setAttribute("aria-pressed", b.dataset.kind === S.kind);

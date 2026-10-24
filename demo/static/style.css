@@ -237,8 +237,12 @@ td.bad-cell::before { content: ""; position: absolute; inset: 3px 2px 2px 2px; b
 .lightbox { position: fixed; inset: 0; z-index: 50; background: rgba(4, 6, 9, .9); overflow: auto; cursor: zoom-out; padding: 24px; display: flex; justify-content: center; align-items: flex-start; }
 .lightbox img { max-width: min(1000px, 100%); height: auto; border-radius: 8px; }
 
-@media (max-width: 1500px) {
+@media (max-width: 1999px) {
   .brand-sub { display: none; } .brand { min-width: 0; }
+  select { width: 210px; }
+}
+
+@media (max-width: 1500px) {
   select { min-width: 220px; }
   .grid { grid-template-columns: 420px 400px minmax(0, 1fr); }
   .c-chk { width: 130px; } .c-e, .c-b, .c-d { width: 98px; }

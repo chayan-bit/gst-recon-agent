@@ -14,7 +14,7 @@ cd demo && uv run uvicorn gst_demo.app:app --port 8765    # no tunnel needed, re
 
 - Open `http://localhost:8765/` at 1920x1080, browser zoom 100%, dark theme, bookmarks bar and tabs hidden, nothing else in the frame.
 - Source = Replay, Speed = 8x, "Compare with ground truth" on.
-- With no tunnel the status pill reads "Offline · 10 recorded runs"; that is accurate for a replay, leave it.
+- With no tunnel the status pill reads "Offline · 12 recorded runs"; that is accurate for a replay, leave it.
 - No hostnames, usernames or paths appear in the app; do not open a terminal in frame.
 - Dry-run each shot once, then record each as its own clip so a slip costs one clip, not the take.
 
@@ -37,12 +37,12 @@ VO prompt: scans, photos and a WhatsApp message; Tesseract turns them into text;
 
 ### Shot 3 - Per-document hybrid on the hard case (0:23 to 0:58)
 
-Screen: Pipeline = Hybrid, Model = Per-document SFT (shipped), press Run (R).
-The 23 document chips tick off one by one (recorded run is 208 s; at 8x it takes about 30 s), then the line "Then: code reconciler, no model" appears (about 0.25 s), then the table fills.
-Hold 3 s on the finished screen: headline cards and "ITC exact 19/23" with ground truth on.
-Overlay text for this shot: "REPLAY, 8x speed. Recorded run: 208 s, 6,330 tokens, 23 documents."
+Screen: Pipeline = Hybrid, Model = Per-document SFT + GRPO (shipped), press Run (R).
+The 23 document chips tick off one by one (recorded run is 247 s; at 8x it takes about 31 s), then the line "Then: code reconciler, no model" appears (about 0.25 s), then the table fills.
+Hold 3 s on the finished screen: headline cards and "ITC exact 17/23" with ground truth on.
+Overlay text for this shot: "REPLAY, 8x speed. Recorded run: 247 s, 6,104 tokens, 23 documents."
 
-VO prompt: a 4B model reads one document at a time, constrained to a JSON schema so it can only produce valid output; then ordinary code does the matching to the books, GSTR-2B and bank, and applies the tax rules; 19 of 23 invoices are exactly right on the hard case, and the headline totals are still off from the truth (eligible and deferred), which the comparison view shows rather than hides.
+VO prompt: a 4B model reads one document at a time, constrained to a JSON schema so it can only produce valid output; then ordinary code does the matching to the books, GSTR-2B and bank, and applies the tax rules; 17 of 23 invoices are exactly right on the hard case, and the headline totals are still off from the truth (eligible and deferred), which the comparison view shows rather than hides.
 
 ### Shot 4 - Tea and sugar, blocked, with the reason (0:58 to 1:28)
 
@@ -66,8 +66,8 @@ When it finishes, point at the headline: deferred ₹0.00 against truth ₹5,07,
 Open D02, Chawla Networks (₹17,00,498.75): the model puts ₹2,59,398.12 under ITC eligible, while the truth is deferred ("Unpaid over 180 days, Sec 16(2), Rule 37").
 
 Part B, hybrid (about 16 s).
-Switch back to Hybrid, Per-document SFT (shipped), replay; jump to the finished table (re-run at 8x or cut to a saved clip).
-Open D02 and show the trace: "Payment: 204 days since the invoice, ₹17,00,498.75 of ₹17,00,498.75 unpaid; unpaid for over 180 days, credit must be reversed", deferred ₹2,59,398.14, "MATCHES TRUTH".
+Switch back to Hybrid, Per-document SFT + GRPO (shipped), replay; jump to the finished table (re-run at 8x or cut to a saved clip).
+Open D02 and show the trace: "Payment: 204 days since the invoice, ₹17,00,498.75 of ₹17,00,498.75 unpaid; unpaid for over 180 days, credit must be reversed", deferred ₹2,59,398.18, "MATCHES TRUTH".
 The date arithmetic is code, not a model guess.
 
 VO prompt: on the same case, the end-to-end model never defers an invoice that is unpaid for more than 180 days, so it claims credit the law says must be reversed; in hybrid the model only reads, and the code counts the days against the bank statement.
@@ -104,7 +104,7 @@ VO prompt: this is trained and tested on a simulator, so the limits are real; pr
 
 - Every table, stream and trace is a replay of a real recorded run; the replay badge is visible in shots 3 and 5; the "how it is built" slide in shot 6 is a static slide, not a run, and says so in its source line.
 - Sped-up segments carry the "8x" label.
-- The hard-case hybrid run is 19/23 exact, not perfect; the headline totals differ from truth and the video says so.
+- The shipped-model (GRPO) hard-case hybrid run is 17/23 exact (the earlier SFT-only run was 19/23; do not mix them), not perfect; the headline totals differ from truth and the video says so.
 - The reconciler version is in the footer in hybrid mode (for example `reconciler 4f60882`; it is the latest reconciler commit at start-up, so say the hash on screen), and "end-to-end (model only)" in end-to-end mode.
 - The strict-grammar SFT bar (10.9) is a format mismatch, footnoted on the page; the compact-grammar SFT bar (75.7) is the student's real end-to-end number, but it is a 30-case sample with a wide interval, so say "on a 30-case sample" and do not rank it against the 120-case bars.
 - Be ready for the obvious question: SFT end-to-end (compact) scores close to per-document v3 on ITC exact, but its overclaim is far higher (Rs 4,35,416 per case on the sample, against Rs 27,183), which is the second panel's point.

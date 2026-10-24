@@ -110,3 +110,8 @@ def test_results_page_and_its_numbers_are_served():
         assert s["value"] is None or 0 <= s["value"] <= 100
         assert s["value"] is None or s["commit"]  # every number cites where it came from
     assert all(0 <= r["context"] <= 100 and r["overclaim"] >= 0 and r["commit"] for r in d["context"]["rows"])
+
+
+def test_shipped_and_earlier_per_document_adapters_have_their_labels():
+    assert app_mod._model_entry("base:perdoc-grpo")["label"] == "Per-document SFT + GRPO (shipped)"
+    assert app_mod._model_entry("base:perdoc")["label"] == "Per-document SFT"
