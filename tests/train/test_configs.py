@@ -99,4 +99,4 @@ def test_perdoc_grpo_configs_use_the_doc_reward_grammar_and_a_1024_cap():
         assert cfg["train"]["beta"] == 0.0 and extras["rollout_json_schema"] == "doc", name
         assert cfg["datasets"][0]["name"] == "data/train/curated/grpo-perdoc" + ("-v3" if "v3" in name else "") + (
             "-2k" if "kratos" in name else "-hard" if "hard" in name else ""), name
-        assert extras["init_adapter"] == ("runs/grpo-perdoc-v3-init" if "v3" in name else "runs/grpo-perdoc-init"), name
+        assert extras["init_adapter"] == ("runs/grpo-perdoc-v3a-init" if "v3a" in name else "runs/grpo-perdoc-v3-init" if "v3" in name else "runs/grpo-perdoc-init"), name
