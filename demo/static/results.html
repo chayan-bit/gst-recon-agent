@@ -18,10 +18,10 @@
   .card .lead { color: var(--dim); margin: 0 0 18px; font-size: 13px; }
   .legend { display: flex; gap: 18px; margin-bottom: 8px; font-size: 12.5px; color: var(--muted); }
   .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
-  .chart { display: flex; align-items: flex-end; gap: 18px; height: 520px; padding: 24px 4px 0; border-bottom: 1px solid var(--line-2); position: relative; }
-  .grid { position: absolute; inset: 24px 0 0 0; pointer-events: none; }
+  .chart { padding-left: 30px !important; display: flex; align-items: flex-end; gap: 18px; height: 520px; padding: 24px 4px 0; border-bottom: 1px solid var(--line-2); position: relative; }
+  .grid { position: absolute; inset: 24px 0 0 0; padding-left: 0; pointer-events: none; }
   .grid span { position: absolute; left: 0; right: 0; border-top: 1px dashed var(--line); font-size: 10.5px; color: var(--dim); }
-  .grid span b { position: absolute; right: 0; top: -15px; font-weight: 500; }
+  .grid span b { position: absolute; left: 0; top: -15px; font-weight: 500; }
   .group { flex: 1; display: flex; align-items: flex-end; justify-content: center; gap: 8px; height: 100%; position: relative; z-index: 1; }
   .gap { width: 22px; flex: none; }
   .bar { width: 38%; max-width: 64px; border-radius: 8px 8px 0 0; position: relative; min-height: 6px; transition: height .6s cubic-bezier(.2, .8, .2, 1); }
@@ -30,7 +30,7 @@
   .bar .v { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); padding-bottom: 5px; font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; white-space: nowrap; }
   .bar.todo { background: transparent; border: 1.5px dashed var(--line-2); border-bottom: 0; height: 56px !important; }
   .bar.todo .v { color: var(--warn); font-size: 11px; letter-spacing: .08em; font-weight: 700; }
-  .labels { display: flex; gap: 18px; padding: 12px 4px 0; }
+  .labels { display: flex; gap: 18px; padding: 12px 4px 0 34px; }
   .labels > div { flex: 1; text-align: center; }
   .labels .gap { flex: none; }
   .labels b { display: block; font-size: 14px; }
@@ -42,6 +42,7 @@
   .track { height: 22px; background: var(--panel-2); border-radius: 6px; overflow: hidden; }
   .track i { display: block; height: 100%; border-radius: 6px; transition: width .6s cubic-bezier(.2, .8, .2, 1); }
   .row .n { color: var(--text); font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
+  .fn { display: block; color: var(--warn); margin-bottom: 6px; }
   .src { grid-column: 1 / -1; color: var(--dim); font-size: 12.5px; }
 </style>
 </head>
@@ -86,7 +87,7 @@ fetch("/static/results.json").then((r) => r.json()).then((d) => {
       <div class="row"><span>Unconstrained</span><div class="track"><i style="width:${r.unconstrained}%;background:var(--bad)"></i></div><span class="n">${fmt(r.unconstrained)}</span></div>
       <div class="row"><span>Constrained</span><div class="track"><i style="width:${r.constrained}%;background:var(--ok)"></i></div><span class="n">${fmt(r.constrained)}</span></div>
     </div>`).join("") + `<p class="lead" style="margin-top:20px;color:var(--warn)">${esc(dec.todo)}</p>`;
-  $("foot").textContent = `Source: ${d.source}`;
+  $("foot").innerHTML = (d.footnotes || []).map((f) => `<span class="fn">${esc(f)}</span>`).join("") + `Source: ${esc(d.source)}`;
 });
 </script>
 </body>
