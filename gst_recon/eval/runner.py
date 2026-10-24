@@ -132,6 +132,10 @@ def aggregate(records: list[dict], config: dict, run_stats: dict, ctx_sources: s
         n_requests=n_req, wall_s=wall, prompt_tokens=run_stats["prompt_tokens"],
         completion_tokens=run_stats["completion_tokens"], gpu_hour_usd=prices.get("gpu_hour_usd"),
         api_in_per_mtok=prices.get("api_in_per_mtok"), api_out_per_mtok=prices.get("api_out_per_mtok"))
+    costs = [r["cost_usd"] for r in records if r.get("cost_usd") is not None]
+    if costs and agg["cost_per_1000_cases"]["api_usd"] is None:  # CLI-reported list-basis cost, e.g. the frontier baseline
+        agg["cost_per_1000_cases"]["api_usd"] = sum(costs) / len(costs) * 1000
+        agg["cost_per_1000_cases"]["api_usd_source"] = "measured: total_cost_usd reported by the claude CLI (list basis)"
     return agg
 
 

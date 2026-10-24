@@ -1,0 +1,88 @@
+"""Frontier baseline through the local Claude Code CLI (no API key): Claude Sonnet (via Claude Code CLI).
+
+    python scripts/eval_frontier.py --cases data/rendered/test_iid data/rendered/test_ood --n-per-dir 50 --concurrency 2
+
+Same task prompt, same scorer and same report as the SGLang runs. Prompt-only: the JSON Schema is in the
+system prompt, there is no constrained decoding. Outputs go only under runs/eval/frontier/ (resumable per
+case) and are never training data. Cases that errored are retried on the next invocation.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from gst_recon.eval.cases import load_cases  # noqa: E402
+from gst_recon.eval.prompts import with_schema  # noqa: E402
+from gst_recon.eval.runner import run_eval  # noqa: E402
+
+LABEL = "Claude Sonnet (via Claude Code CLI)"
+OUT = Path("runs/eval/frontier")
+# Exact invocation: prompt on stdin, schema + task in the system prompt, no tools, no session, no user settings/hooks.
+CMD = ["claude", "-p", "--model", "{model}", "--output-format", "json", "--system-prompt", "{system}", "--tools", "",
+       "--no-session-persistence", "--setting-sources", "", "--disable-slash-commands", "--strict-mcp-config"]
+
+
+def claude_cli(prompt: str, model: str, timeout: float, retries: int, cwd: Path, cmd_prefix: list[str] | None = None) -> dict:
+    """One CLI call. Never raises. Tokens count input + cache creation + cache reads; cost is the CLI's own total_cost_usd."""
+    cmd = [c.replace("{model}", model).replace("{system}", with_schema()) for c in CMD]
+    if cmd_prefix:
+        cmd = [*cmd_prefix, *cmd[1:]]
+    err = ""
+    for attempt in range(retries + 1):
+        t0 = time.perf_counter()
+        stderr = ""
+        try:
+            p = subprocess.run(cmd, input=prompt, capture_output=True, text=True, timeout=timeout, cwd=cwd)
+            stderr = p.stderr[:200]
+            data = json.loads(p.stdout)
+            if data.get("is_error"):
+                raise RuntimeError(str(data.get("result"))[:300])
+            u = data.get("usage") or {}
+            return {"text": data.get("result") or "", "latency_s": time.perf_counter() - t0, "finish_reason": data.get("stop_reason"),
+                    "prompt_tokens": sum(u.get(k, 0) for k in ("input_tokens", "cache_creation_input_tokens", "cache_read_input_tokens")),
+                    "completion_tokens": u.get("output_tokens"), "cost_usd": data.get("total_cost_usd"), "error": None}
+        except (subprocess.SubprocessError, OSError, ValueError, RuntimeError) as e:
+            err = f"{type(e).__name__}: {e} {stderr}".strip()
+            if attempt < retries:
+                time.sleep(2 * (attempt + 1))
+    return {"text": "", "latency_s": None, "finish_reason": None, "prompt_tokens": None, "completion_tokens": None, "error": err}
+
+
+def main(argv: list[str] | None = None) -> int:
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--cases", type=Path, nargs="+", required=True)
+    ap.add_argument("--n-per-dir", type=int, default=50, help="seeded sample per test split dir (default 50)")
+    ap.add_argument("--concurrency", type=int, default=2, help="capped at 2: this runs on the Mac")
+    ap.add_argument("--model", default="sonnet")
+    ap.add_argument("--out", type=Path, default=OUT, help="must be runs/eval/frontier")
+    ap.add_argument("--timeout", type=float, default=600.0)
+    ap.add_argument("--retries", type=int, default=1)
+    ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--truth-dir", type=Path, default=Path("data/truth"))
+    a = ap.parse_args(argv)
+    if a.out.resolve().parts[-3:] != ("runs", "eval", "frontier"):
+        ap.error("--out must be runs/eval/frontier (frontier outputs must never leave runs/eval/)")
+    if a.concurrency > 2:
+        ap.error("concurrency is capped at 2 on the Mac")
+    work = a.out.resolve() / "cwd"  # neutral cwd: no project files or CLAUDE.md picked up
+    work.mkdir(parents=True, exist_ok=True)
+    cases = load_cases(a.cases, truth_dir=a.truth_dir if a.truth_dir.exists() else None, n_per_dir=a.n_per_dir, seed=a.seed)
+    config = {"label": LABEL, "model": f"claude {a.model} via `claude -p`", "endpoint": "claude CLI", "constrained": False,
+              "schema_in_prompt": True, "cases": [str(p) for p in a.cases], "n_per_dir": a.n_per_dir, "invocation": CMD,
+              "prices": {}}
+    agg = run_eval(cases, lambda c: claude_cli(c.prompt, a.model, a.timeout, a.retries, work), a.out, config,
+                   concurrency=a.concurrency, progress=lambda d, n: print(f"\r{d}/{n}", end="", file=sys.stderr, flush=True))
+    print(file=sys.stderr)
+    print((a.out / "table.md").read_text())
+    return 1 if agg["n_errors"] == agg["n_cases"] else 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
