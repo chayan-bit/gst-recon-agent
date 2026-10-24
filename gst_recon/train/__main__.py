@@ -218,6 +218,20 @@ def mask_report(labels: list[int]) -> str:
     return f"MASK row0: {start} prompt tokens labelled -100, {trained} reply tokens trained ({len(labels)} total)"
 
 
+def _use_rows_as_is(trainer, path: str) -> None:
+    """Hand TRL the prompt/completion rows unchanged. AlignTune's SFT data normaliser rewrites them as `messages`
+    with str(prompt) as the user turn (a conversational prompt becomes a stringified list), and TRL then trains
+    on every token. With prompt/completion columns TRL masks the prompt itself (completion_only_loss)."""
+
+    def load():
+        import datasets
+
+        trainer.train_dataset = datasets.load_dataset("json", data_files=str(Path(path) / "train.jsonl"), split="train")
+        trainer.eval_dataset = None
+
+    trainer.setup_data = load
+
+
 def _add_mask_check(trainer) -> None:
     """Verify completion-only loss on the first real training row, through the trainer's own collator, before step 1."""
     from transformers import TrainerCallback
@@ -250,6 +264,7 @@ def cmd_run(a: argparse.Namespace) -> None:
     responses_only = extras.pop("train_on_responses_only", None)
     init_adapter, max_hours = extras.pop("init_adapter", None), extras.pop("max_hours", None)
     check_mask = extras.pop("check_completion_mask", False)
+    rows_as_is = extras.pop("rows_as_is", False)
     if "dataset_num_proc" in extras:
         _pin_dataset_num_proc(extras.pop("dataset_num_proc"))
 
@@ -267,6 +282,8 @@ def cmd_run(a: argparse.Namespace) -> None:
     _add_step_log(trainer, max_hours)
     if check_mask:
         _add_mask_check(trainer)
+    if rows_as_is:
+        _use_rows_as_is(trainer, cfg["datasets"][0]["name"])
     if init_adapter:
         _init_from_adapter(trainer, init_adapter)
     if responses_only:

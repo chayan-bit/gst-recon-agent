@@ -52,5 +52,6 @@ gst_recon:
   lr_scheduler: cosine
   dataloader_num_workers: 0
   dataset_num_proc: 1
+  rows_as_is: true  # bypass AlignTune's messages normaliser so TRL sees prompt/completion and masks the prompt
   check_completion_mask: true  # abort before step 1 unless row 0's prompt is all -100 and its reply trained
   max_hours: 1  # wall-clock cap: save, then stop
