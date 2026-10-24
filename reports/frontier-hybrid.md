@@ -12,7 +12,7 @@ The schema goes through the CLI's `--json-schema` structured output (a forced to
 Cost is the CLI's own `total_cost_usd`.
 
 - Haiku 4.5, thinking off: `MAX_THINKING_TOKENS=0`. Verified on raw CLI JSON: 0 thinking tokens and 441 to 443 output tokens on a document where the default setting spent 16,449 (15,657 of them thinking, 153 s).
-- Haiku 5.5, minimum thinking: `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING=1 MAX_THINKING_TOKENS=0` and `claude --effort low`. Haiku 5.5 cannot disable thinking via the Claude Code CLI; run at minimum thinking (mean N tokens/doc, see the test rows); the other models use none.
+- Haiku 5.5, minimum thinking: `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING=1 MAX_THINKING_TOKENS=0` and `claude --effort low`. Haiku 5.5 cannot disable thinking via the Claude Code CLI; run at minimum thinking (mean 1,012 thinking tokens/doc, p95 2,163, measured on the test run); the other models use none.
   The setting was picked as the lowest mean thinking tokens on 5 fixed simulated test_ood documents (default adaptive thinking about 2,000 to 3,800 tokens on one document): adaptive off + max 0: 1,354; plus `--effort low`: 881; plus `CLAUDE_CODE_DISABLE_THINKING=1`: 1,153; all three plus `--effort low`: 948; `--settings alwaysThinkingEnabled=false` plus adaptive off: 1,275.
 
 **semireal, 54 cases, 234 documents** (delta vs v1 [95% CI]; delta vs pd3g287 [95% CI])
@@ -26,6 +26,19 @@ Cost is the CLI's own `total_cost_usd`.
 All deltas against v1 and pd3g287 on match accuracy and for Haiku 5.5 on every metric have p < 0.0005; Haiku 4.5 against v1 on ITC has p = 0.043 and against pd3g287 on ITC p = 0.14 and composite p = 0.068.
 A Haiku 4.5 run with default thinking was stopped after 64 documents (about 60 s and $0.043 per document, 16k thinking tokens on the check document) and is not scored.
 The 30-case subset list `reports/hybrid-haiku45-subset.txt` (fixed in 001a4eb) was fixed for that abandoned thinking-on arm; the thinking-off Haiku 4.5 arm runs the full 120 test cases.
+**simulated test, 120 cases (test_iid 60 + test_ood 60), 2,252 documents, schema v2, reconciler v3** (delta vs v1 [95% CI]; delta vs pd3g287 [95% CI]; v1 80.1 / 88.7 / 82.8, pd3g287 80.0 / 85.0 / 81.6)
+
+| run | ITC invoice exact % | Match acc % | Composite | docs parsed | invented identity | s per doc | thinking tokens per doc, mean (p95) | completion tokens per doc, mean (p95) | CLI cost per doc |
+|---|---|---|---|---|---|---|---|---|---|
+| Haiku 4.5, thinking off | 75.7 (-4.3 [-6.5, -2.3]; -4.2 [-6.6, -2.0]) | 86.4 (-2.3 [-3.5, -1.2]; +1.4 [-0.1, +3.0]) | 80.3 (-2.5 [-3.6, -1.4]; -1.4 [-2.6, -0.1]) | 99.9% (3 of 2,252 unparseable) | 25.9% (1,749 of 6,756) | 7.3 | 0 (0) | 636 (1,145) | $0.0071 |
+| Haiku 5.5, minimum thinking | 88.8 (+8.7 [+7.3, +10.2]; +8.8 [+7.3, +10.5]) | 92.4 (+3.7 [+2.7, +4.6]; +7.4 [+6.1, +8.8]) | 87.7 (+5.0 [+3.9, +6.0]; +6.1 [+5.1, +7.1]) | 100.0% | 9.8% (663 of 6,756) | 8.3 | 1,012 (2,163) | 1,580 (2,765) | $0.0011 |
+
+Reference invented-identity rates on the same 120 cases: pd3g287 854 of 6,750 = 12.7%, v1 1,785 of 6,756 = 26.4%.
+Every delta except Haiku 4.5 against pd3g287 on match accuracy (p = 0.065) and composite (p = 0.036) has p < 0.0005 or p = 0.0004; the pd3g287 ITC delta for Haiku 4.5 has p = 0.0004.
+Haiku 4.5 without thinking trails both of our per-document adapters on ITC invoice exact by about 4 points and is level with pd3g287 on match accuracy; it invents an identity as often as v1 (about 26%), which is what costs it ITC.
+Haiku 5.5 at minimum thinking beats both adapters on all three metrics on both sets, with thinking tokens that the 4B model does not use, so it is a reference for what a larger per-document reader reaches, not a like-for-like arm.
+The 12 realworld cases are not part of these runs.
+
 The semireal documents are real client documents; the Haiku runs sent them to the Claude CLI only, and only aggregates are reported here.
 
 ### GPT-6 luna (codex exec)
