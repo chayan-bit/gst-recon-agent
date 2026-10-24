@@ -105,7 +105,7 @@ VO prompt: this is trained and tested on a simulator, so the limits are real; pr
 - Every table, stream and trace is a replay of a real recorded run; the replay badge is visible in shots 3 and 5; the "how it is built" slide in shot 6 is a static slide, not a run, and says so in its source line.
 - Sped-up segments carry the "8x" label.
 - The hard-case hybrid run is 19/23 exact, not perfect; the headline totals differ from truth and the video says so.
-- The reconciler version is in the footer in hybrid mode (`reconciler 8286f1f`), and "end-to-end (model only)" in end-to-end mode.
+- The reconciler version is in the footer in hybrid mode (for example `reconciler 4f60882`; it is the latest reconciler commit at start-up, so say the hash on screen), and "end-to-end (model only)" in end-to-end mode.
 - The strict-grammar SFT bar (10.9) is a format mismatch, footnoted on the page; the compact-grammar SFT bar (75.7) is the student's real end-to-end number, but it is a 30-case sample with a wide interval, so say "on a 30-case sample" and do not rank it against the 120-case bars.
 - Be ready for the obvious question: SFT end-to-end (compact) scores close to per-document v3 on ITC exact, but its overclaim is far higher (Rs 4,35,416 per case on the sample, against Rs 27,183), which is the second panel's point.
 - The "caterer buys the same sugar" re-run is not supported by the app and is not shown.
