@@ -4,7 +4,13 @@ import json
 import pytest
 
 from gst_recon.rewards import (
-    arithmetic_consistency, extraction_f1, itc_scores, match_accuracy, parse_output, schema_valid, score,
+    arithmetic_consistency,
+    extraction_f1,
+    itc_scores,
+    match_accuracy,
+    parse_output,
+    schema_valid,
+    score,
 )
 from gst_recon.sim.world import generate_case
 
@@ -177,3 +183,16 @@ def test_eval_metrics_components():
     assert perfect["itc_abs_err_rs"] == 0 and perfect["context_doc_acc"] in (1.0, None) and perfect["grpo"] == 1.0
     garbage = eval_metrics("not json", case)
     assert garbage["field_f1"] == 0 and garbage["grpo"] == 0 and garbage["itc_abs_err_rs"] > 0
+
+
+def test_compact_output_scores_identically_to_full(truth):
+    from gst_recon.rewards import compact, expand
+
+    small = compact(truth)
+    assert expand(small) == truth and len(json.dumps(small)) < 0.85 * len(json.dumps(truth))
+    full, comp = score(json.dumps(truth), truth), score(json.dumps(small), truth)
+    assert comp == full and score(json.dumps(small), small) == full  # compact prediction and/or compact reference
+    pred = copy.deepcopy(truth)
+    next(m for m in pred["matches"] if m["flags"])["flags"] = []
+    assert score(compact(pred), truth) == score(pred, truth)  # partial credit unchanged too
+    assert schema_valid({"extractions": [], "matches": []}) == 0.0  # a missing top-level key stays invalid

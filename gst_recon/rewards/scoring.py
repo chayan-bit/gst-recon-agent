@@ -9,11 +9,11 @@ from __future__ import annotations
 
 import json
 import re
-from statistics import mean
 from datetime import datetime
-from typing import Any
+from statistics import mean
+from typing import Any, get_args, get_origin
 
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 
 from gst_recon.schema import ReconOutput
 
@@ -47,12 +47,63 @@ LINE_FIELDS = {"hsn": "docno", "taxable_value": "amt", "rate": "amt", "igst": "a
 # ---------------------------------------------------------------- parsing
 
 
+_EMPTY = (0, "", [], {})  # 0 also matches 0.0 and False
+
+
+def compact(obj: Any) -> Any:
+    """Compact form of an output: inside every record, fields that are 0, false, "", [] or {}
+    are left out (about a quarter of the target tokens). The top-level keys always stay."""
+    def drop(x: Any) -> Any:
+        if isinstance(x, list):
+            return [drop(v) for v in x]
+        if isinstance(x, dict):
+            return {k: d for k, v in x.items() if (d := drop(v)) not in _EMPTY or isinstance(d, str) and d}
+        return x
+    return {k: drop(v) for k, v in obj.items()} if isinstance(obj, dict) else obj
+
+
+def _fill(x: Any, model: type[BaseModel]) -> Any:
+    if not isinstance(x, dict):
+        return x
+    out = dict(x)
+    for name, f in model.model_fields.items():
+        ann, args = f.annotation, get_args(f.annotation)
+        sub = args[0] if get_origin(ann) is list and args else ann
+        is_model = isinstance(sub, type) and issubclass(sub, BaseModel)
+        if name not in out:
+            default = {float: 0.0, int: 0, bool: False, str: ""}.get(ann)
+            if get_origin(ann) is list:
+                out[name] = []
+            elif is_model:
+                out[name] = _fill({}, sub)
+            elif default is not None:
+                out[name] = default
+        elif is_model:
+            v = out[name]
+            out[name] = [_fill(i, sub) for i in v] if get_origin(ann) is list and isinstance(v, list) else _fill(v, sub)
+    return out
+
+
+def expand(obj: Any) -> Any:
+    """Inverse of compact(): inside each record, absent numeric, bool, string, list and nested
+    fields read as 0, false, "", [] and all-zero. Missing top-level keys stay missing (invalid)."""
+    if not isinstance(obj, dict):
+        return obj
+    out = dict(obj)
+    for name, f in ReconOutput.model_fields.items():
+        if name in out:
+            args = get_args(f.annotation)
+            v = out[name]
+            out[name] = [_fill(i, args[0]) for i in v] if args and isinstance(v, list) else _fill(v, f.annotation)
+    return out
+
+
 def parse_output(raw: Any) -> dict | None:
-    """Accept a ReconOutput, dict or raw model text; return a dict or None."""
+    """Accept a ReconOutput, dict or raw model text; return a dict (compact form expanded) or None."""
     if isinstance(raw, ReconOutput):
         return raw.model_dump(mode="json")
     if isinstance(raw, dict):
-        return raw
+        return expand(raw)
     if not isinstance(raw, str):
         return None
     text = raw.strip()
@@ -63,7 +114,7 @@ def parse_output(raw: Any) -> dict | None:
         except (ValueError, TypeError):
             continue
         if isinstance(obj, dict):
-            return obj
+            return expand(obj)
     return None
 
 
@@ -339,7 +390,7 @@ def score(raw: Any, truth: ReconOutput | dict) -> dict[str, float]:
     (training reward: 0 unless schema-valid), each in [0, 1]."""
     zero = {k: 0.0 for k in (*WEIGHTS, *GRPO_WEIGHTS, "composite", "grpo")}
     try:
-        t = truth.model_dump(mode="json") if isinstance(truth, ReconOutput) else truth
+        t = truth.model_dump(mode="json") if isinstance(truth, ReconOutput) else expand(truth)
         pred = parse_output(raw)
         if pred is None:
             return zero
