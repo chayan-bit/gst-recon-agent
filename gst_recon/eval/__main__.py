@@ -83,7 +83,11 @@ def cmd_report(a: argparse.Namespace) -> int:
     order = {k: i for i, k in enumerate(a.order or [])}
     runs.sort(key=lambda r: order.get(r["label"], order.get(Path(r["dir"]).name, len(order))))
     base = rep.load_baselines(a.baselines)
-    appendices = [p.read_text() for p in a.append or []]
+    paths = list(a.append or [])
+    hybrid = a.out.parent / "hybrid.md"  # the hybrid worker's section always rides along, so a regeneration cannot drop it
+    if hybrid.exists() and hybrid.resolve() not in {p.resolve() for p in paths}:
+        paths.append(hybrid)
+    appendices = [p.read_text() for p in paths]
     md = rep.report_md(runs, base, a.ref, appendices, a.placeholder)
     a.out.parent.mkdir(parents=True, exist_ok=True)
     a.out.write_text(md)

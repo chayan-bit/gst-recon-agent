@@ -32,6 +32,16 @@ def test_report_table_chart_baselines_and_paired_delta(world):
     assert md.index("| base |") < md.index("| SFT |")
 
 
+def test_report_includes_hybrid_md_next_to_the_output_once(world):
+    _run(world, "perfect", "sft", "--label", "SFT")
+    out = world["tmp"] / "reports" / "results.md"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    (out.parent / "hybrid.md").write_text("## Hybrid mode\n\nhybrid rows\n")
+    for extra in ([], ["--append", str(out.parent / "hybrid.md")]):
+        assert main(["report", "--runs", str(world["tmp"] / "runs" / "eval"), "--out", str(out), *extra]) == 0
+        assert out.read_text().count("## Hybrid mode") == 1
+
+
 def test_paired_delta_detects_improvement():
     mk = lambda v: [{"case_id": f"c{i}", "metrics": {"composite": x, "context_ok": 0, "context_n": 0}} for i, x in enumerate(v)]  # noqa: E731
     a, b = mk([0.1, 0.2, 0.15, 0.1, 0.2, 0.1, 0.12, 0.18]), mk([0.9, 0.8, 0.85, 0.9, 0.8, 0.9, 0.88, 0.82])
