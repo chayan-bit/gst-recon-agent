@@ -24,6 +24,9 @@ cd "$ROOT" || exit 1
 mkdir -p logs
 log() { echo "$(date +%T) $*" | tee -a "$LOG"; }
 die() { log "ABORT: $*"; exit 3; }
+# the server outlives its tmux session (heavy-run's timeout reparents it), so stop it by its port
+stop_server() { tmux kill-session -t sglang-rollout 2>/dev/null; pkill -u "$USER" -f "[s]glang.launch_server.*--port $PORT"; sleep 5
+  pkill -KILL -u "$USER" -f "[s]glang.launch_server.*--port $PORT"; }
 
 if [ "$MODE" = setup ]; then  # torch cu128 for sm_120; the rest pinned to the rs-lab env that trains with this runner
   UV=$HOME/.local/bin/uv
@@ -67,19 +70,19 @@ tmux new-session -d -s sglang-rollout -c "$ROOT" "KRATOS_GPU=1 KRATOS_GPU_MIN_FR
   python -m sglang.launch_server --model-path $BASE --quantization fp8 --host 127.0.0.1 --port $PORT \
   --mem-fraction-static $MEMFRAC --max-total-tokens $KV_TOKENS --enable-lora --max-lora-rank 32 --max-loras-per-batch 2 \
   --lora-target-modules q_proj k_proj v_proj o_proj gate_proj up_proj down_proj --context-length 6144 \
-  --max-running-requests 8 --cuda-graph-max-bs 8 --grammar-backend xgrammar --attention-backend triton \
-  --sampling-backend pytorch --skip-tokenizer-init >> $ROOT/logs/sglang-rollout-kratos.log 2>&1"
+  --max-running-requests 8 --cuda-graph-max-bs-decode 8 --grammar-backend xgrammar --attention-backend triton \
+  --sampling-backend pytorch >> $ROOT/logs/sglang-rollout-kratos.log 2>&1"
 for _ in $(seq 90); do curl -sf "127.0.0.1:$PORT/health" >/dev/null && break; sleep 10; done
-curl -sf "127.0.0.1:$PORT/health" >/dev/null || { tmux kill-session -t sglang-rollout; die "rollout server not healthy after 15 min"; }
+curl -sf "127.0.0.1:$PORT/health" >/dev/null || { stop_server; die "rollout server not healthy after 15 min"; }
 gfree=$(nvidia-smi --query-gpu=memory.free --format=csv,noheader,nounits)
 log "rollout server up: $(nvidia-smi --query-gpu=memory.used --format=csv,noheader) used, ${gfree} MiB left"
-[ "$gfree" -ge 6500 ] || { tmux kill-session -t sglang-rollout; die "only ${gfree} MiB left for the ~5.8 GiB trainer"; }
+[ "$gfree" -ge 6500 ] || { stop_server; die "only ${gfree} MiB left for the ~5.8 GiB trainer"; }
 
 if [ "$MODE" = smoke ]; then  # the fork's client against this server: LoRA load, constrained request, sync, group
   HF_HOME=$HF HF_HUB_OFFLINE=1 PYTHONPATH=$ROOT timeout 15m "$PY" -m gst_recon.train.smoke_rollout \
     "http://127.0.0.1:$PORT" "$INIT/" "$DATA/train.jsonl" "$BASE" 2>&1 | grep -v WARNING | tee -a "$LOG"
   rc=${PIPESTATUS[0]}
-  tmux kill-session -t sglang-rollout
+  stop_server
   log "SMOKE rc=$rc"; exit "$rc"
 fi
 
@@ -93,6 +96,6 @@ timeout -s TERM $((left - 120)) env KRATOS_GPU=1 KRATOS_GPU_MIN_FREE_MIB=6000 KR
 rc=$?
 
 # 3. cleanup: stop our server and drop the adapter sync dir; checkpoints stay
-tmux kill-session -t sglang-rollout
+stop_server
 rm -rf "$ROOT/runs/grpo-sync"
 log "DONE rc=$rc$([ $rc = 124 ] && echo ' (outer timeout)') checkpoints: $(cd runs/grpo-perdoc-kratos 2>/dev/null && echo checkpoint-*)"

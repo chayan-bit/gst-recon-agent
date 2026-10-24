@@ -61,7 +61,7 @@ nvidia-smi --query-compute-apps=pid,used_memory --format=csv,noheader | tee -a "
 tmux new-session -d -s sglang-rollout "cd $REPO && HF_HOME=$ROOT/hf HF_HUB_OFFLINE=1 TORCHINDUCTOR_COMPILE_THREADS=1 MALLOC_ARENA_MAX=2 \
   exec $SGLANG_PY -m sglang.launch_server --model-path $BASE --host 127.0.0.1 --port $PORT --mem-fraction-static $MEMFRAC \
   --enable-lora --max-lora-rank 32 --lora-target-modules q_proj k_proj v_proj o_proj gate_proj up_proj down_proj \
-  --context-length $CONTEXT --max-running-requests $MAX_RUNNING --cuda-graph-max-bs $MAX_RUNNING --skip-tokenizer-init --sleep-on-idle $SERVER_EXTRA \
+  --context-length $CONTEXT --max-running-requests $MAX_RUNNING --cuda-graph-max-bs $MAX_RUNNING --sleep-on-idle $SERVER_EXTRA \
   >> $ROOT/logs/sglang-rollout.log 2>&1"
 for _ in $(seq 90); do curl -sf "127.0.0.1:$PORT/health" >/dev/null && break; sleep 10; done
 curl -sf "127.0.0.1:$PORT/health" >/dev/null || { tmux kill-session -t sglang-rollout; die "rollout server not healthy after 15 min"; }
