@@ -38,7 +38,7 @@ train:
   seed: 42
 
 logging:
-  output_dir: runs/sft-perdoc-v3
+  output_dir: D:/gst/runs/perdoc-v3  # rs-lab only, on D:, outside the repo checkout
   run_name: gst-recon-sft-perdoc-v3
   loggers: [tensorboard]
 
@@ -53,5 +53,5 @@ gst_recon:
   dataset_num_proc: 1
   rows_as_is: true  # bypass AlignTune's messages normaliser so TRL sees prompt/completion and masks the prompt
   check_completion_mask: true  # abort before step 1 unless row 0's prompt is all -100 and its reply trained
-  bf16_snapshots: runs/sft-perdoc-v3/bf16
+  bf16_snapshots: D:/gst/runs/perdoc-v3/bf16
   max_hours: 2  # wall-clock cap: save, then stop
