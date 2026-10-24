@@ -4,6 +4,11 @@ Local LLM that reconciles Indian GST input tax credit from messy documents. Synt
 
 Repository: https://github.com/chayan-bit/gst-recon-agent
 
+## Weights and data
+
+- LoRA adapters for Qwen3-4B-Instruct-2507 (Apache-2.0): https://huggingface.co/broman23/gst-recon-qwen3-4b-adapters
+- Simulator-generated training and eval data (Apache-2.0, synthetic only): https://huggingface.co/datasets/broman23/gst-recon-synthetic
+
 ## License
 
 GPL-3.0-only; see `LICENSE`.
