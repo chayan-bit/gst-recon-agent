@@ -73,6 +73,65 @@ From this point realinv is a selection set; realinv2 is never used for selection
 Added 2026-10-25 02:45 IST (commit 2d18998), before anything was scored on realinv2: if no candidate passes, student-perdoc-sft v1 stays and the test set is not run again.
 realinv2 is scored for v1 as the shipped model's held-out real-document check; the four v3 candidates are scored on it as an exploratory replication after the ship decision was locked, and nothing on realinv2 can change that decision.
 
+### The v3 per-document adapters (doc schema v2, measured, not shipped)
+
+Three adapters were trained tonight against the identity inventions found on the real documents, and evaluated under doc schema v2 and reconciler v3 against student-perdoc-sft v1 run the same way:
+- pd3: per-document SFT on simulator rows with diverse per-supplier invoice-number and date formats (`fmt_version` 2);
+- pd3g287: GRPO from pd3 with the per-document reward (287 steps, one pass over 1,147 hard documents);
+- pd3a: as pd3, but an identity field (supplier GSTIN, invoice number, invoice date) that the page does not show is "" in the SFT target, so the model is taught to leave it empty.
+
+A GRPO run from pd3a was planned but dropped (its host stopped responding), and none of the three passes the pre-registered rule, so student-perdoc-sft v1 stays the shipped adapter and the test set was not run again.
+
+**Simulated dev under doc schema v2 (paired against student-perdoc-sft v1 under schema v2, bootstrap 95% CI over cases).**
+
+| dev set | run | ITC invoice exact % | Context acc % | Match acc % | Composite | unparsed doc replies | ITC delta [95% CI] | Composite delta [95% CI] | rule (a) |
+|---|---|---|---|---|---|---|---|---|---|
+| small (120) | student-perdoc-sft v1 | 87.9 | 90.7 | 92.4 | 91.3 | 0 | | | |
+| small (120) | pd3 | 86.2 | 85.7 | 91.8 | 90.1 | 3 | -1.8 [-4.4, +0.7] | -1.2 [-2.8, +0.4] | fails |
+| small (120) | pd3g287 | 86.2 | 86.4 | 90.7 | 89.7 | 2 | -1.7 [-4.5, +0.9] | -1.5 [-3.2, +0.0] | fails |
+| small (120) | pd3a | 83.1 | 86.4 | 90.0 | 88.2 | 3 | -4.8 [-8.4, -1.5] | -3.0 [-5.1, -1.1] | fails |
+| big (60) | student-perdoc-sft v1 | 81.2 | 80.4 | 89.4 | 82.6 | 1 | | | |
+| big (60) | pd3 | 80.0 | 78.5 | 87.4 | 81.5 | 5 | -1.3 [-2.5, -0.1] | -1.1 [-1.9, -0.4] | passes |
+| big (60) | pd3g287 | 80.3 | 79.1 | 86.2 | 81.9 | 1 | -1.0 [-2.1, +0.1] | -0.7 [-1.7, +0.4] | passes |
+| big (60) | pd3a | 78.0 | 78.3 | 84.8 | 80.4 | 1 | -3.3 [-4.7, -1.9] | -2.3 [-3.2, -1.3] | fails |
+
+Rule (a) needs a lower bound of at least -3.0 on both sets; every candidate misses it on the small set, whose identity formats are the ones v1 was trained on, and pd3a misses it on both.
+The unparsed replies left under schema v2 are long hard-case documents that run into the 4,096-token cap inside the line items, not invoice-number loops.
+Under schema v1 the same pd3 adapter left 81 small-dev replies unparsed (ITC 69.7%); GRPO cut the loop to 38 replies at step 100 and 4 at step 125 (old schema, small dev), before the schema change made it moot.
+False links stayed at 0 register and 0 GSTR-2B for every run, with 1 false payment link on small dev and 8 to 12 on big dev (v1: 2 and 9).
+
+**realinv under doc schema v2 (42 real documents; a selection set from 02:21 on).**
+
+| run | cap hits | GSTIN | Invoice no | Date | mean no + date | ITC doc exact | Invented identity | Doc reward | identity blanks (right / wrong) | wrong invoice no in sim format |
+|---|---|---|---|---|---|---|---|---|---|---|
+| student-perdoc-sft v1 | 0 | 66.7 | 30.9 | 50.0 | 40.5 | 57.1 | 8.8 | 0.687 | 0 / 0 | 18 of 29 |
+| pd3 (v3 SFT) | 1 | 66.7 | 47.6 | 52.4 | 50.0 | 50.0 | 8.9 | 0.702 | 0 / 0 | 0 of 21 |
+| pd3g287 (GRPO from pd3) | 1 | 71.4 | 21.4 | 69.0 | 45.2 | 54.8 | 0.0 | 0.762 | 17 / 22 | 0 of 2 |
+| pd3a (v3 abstention SFT) | 0 | 59.5 | 42.9 | 66.7 | 54.8 | 57.1 | 3.5 | 0.817 | 24 / 16 | 0 of 10 |
+| ensemble A (v1 + pd3 + pd3a) | 0 | 69.0 | 42.9 | 59.5 | 51.2 | 57.1 | 0.0 | 0.823 | 26 / 15 | 0 of 5 |
+| ensemble B (A + pd3g287 confirmation) | 0 | 71.4 | 42.9 | 59.5 | 51.2 | 57.1 | 0.0 | 0.779 | 16 / 14 | 0 of 5 |
+
+On realinv no candidate passes rule (b) either: pd3 and pd3a read invoice numbers and dates better than v1 but do not beat its ITC doc exact (50.0% and a tie at 57.1%), and pd3g287 trails it (54.8%).
+The format fix worked as intended: v1 writes 18 of its 29 wrong invoice numbers in the simulator's own formats, the three v3 adapters none.
+The two ways of teaching abstention behave very differently: pd3a (blank SFT targets) leaves 24 unseen identities empty, invents 3.5% of identities against v1's 8.8% and reads dates best (66.7% against 50.0%), while GRPO from pd3 drives invention to 0 by over-abstaining (22 visible identities left empty, invoice number accuracy 21.4%).
+"Identity blanks" counts empty GSTIN, invoice number and date fields in parsed replies, split by whether the truth value is visible in the model's input text; v1 and pd3 never leave one empty.
+
+**realinv2: held-out real documents (30 invoices from 30 suppliers, none in realinv; scored once).**
+student-perdoc-sft v1 is the shipped model's held-out check; the other rows are exploratory, scored after the ship decision was locked, and cannot change it.
+
+| run | cap hits | GSTIN | Invoice no | Date | mean no + date | ITC doc exact | Invented identity | Doc reward | identity blanks (right / wrong) | wrong invoice no in sim format |
+|---|---|---|---|---|---|---|---|---|---|---|
+| student-perdoc-sft v1 | 0 | 73.3 | 40.0 | 46.7 | 43.3 | 70.0 | 2.6 | 0.693 | 0 / 0 | 10 of 18 |
+| pd3 (v3 SFT) | 0 | 66.7 | 76.7 | 53.3 | 65.0 | 60.0 | 5.3 | 0.728 | 0 / 0 | 0 of 7 |
+| pd3g287 (GRPO from pd3) | 0 | 73.3 | 30.0 | 60.0 | 45.0 | 60.0 | 0.0 | 0.740 | 7 / 16 | 0 of 1 |
+| pd3a (v3 abstention SFT) | 0 | 66.7 | 50.0 | 80.0 | 65.0 | 66.7 | 2.6 | 0.784 | 10 / 10 | 0 of 3 |
+| ensemble A (v1 + pd3 + pd3a) | 0 | 70.0 | 60.0 | 63.3 | 61.7 | 70.0 | 0.0 | 0.795 | 11 / 7 | 0 of 1 |
+| ensemble B (A + pd3g287 confirmation) | 0 | 70.0 | 60.0 | 63.3 | 61.7 | 70.0 | 0.0 | 0.761 | 6 / 7 | 0 of 1 |
+
+On fresh documents the shipped v1 reads 73.3% of GSTINs, 40.0% of invoice numbers and 46.7% of dates, with ITC doc exact 70.0%, and again writes 10 of its 18 wrong invoice numbers in the simulator's formats.
+Both findings replicate: no v3 adapter writes a simulator-format number, pd3a abstains and reads dates best (80.0%), and pd3g287 again over-abstains (16 visible invoice numbers left empty) with no invented identity.
+The ensemble rows are explained in the next section.
+
 ### Ensemble of v1, pd3 and pd3a (combiner rule pre-registered 2026-10-25 03:10 IST, before any ensemble number)
 
 The ensemble combines the saved per-document replies of student-perdoc-sft v1, pd3 and pd3a offline (no new model calls), then runs the same reconciler (v3) and scorer.
@@ -86,6 +145,22 @@ It is scored on small and big dev (schema v2 replies), realinv (selection set), 
 Ablation, variant B (pre-registered 2026-10-25 03:13 IST, commit 5c95f97, after variant A's realinv and realinv2 numbers had been computed and before any variant B number): as A, but when no identity value has two votes and pd3g287 emitted a non-blank value equal (after the same normalisation) to one of the three members' values, that value is used instead of "".
 Rationale: pd3g287 almost never invents an identity (0% on both real sets), so a non-blank value from it is a confirmation rather than a vote.
 Variant A stays the primary ensemble whichever scores higher; there are no other variants.
+
+**Ensemble results (0 new model calls; reconciler v3, doc schema v2; paired against student-perdoc-sft v1).**
+
+| dev set | run | ITC invoice exact % | Context acc % | Match acc % | Composite | ITC delta [95% CI] | Composite delta [95% CI] | rule (a) |
+|---|---|---|---|---|---|---|---|---|
+| small (120) | student-perdoc-sft v1 | 87.9 | 90.7 | 92.4 | 91.3 | | | |
+| small (120) | ensemble A | 86.1 | 90.7 | 90.5 | 89.6 | -1.9 [-3.2, -0.8] | -1.6 [-2.6, -0.8] | fails |
+| small (120) | ensemble B | 87.4 | 90.7 | 92.0 | 90.8 | -0.6 [-1.7, +0.4] | -0.5 [-1.2, +0.2] | passes |
+| big (60) | student-perdoc-sft v1 | 81.2 | 80.4 | 89.4 | 82.6 | | | |
+| big (60) | ensemble A | 78.9 | 80.4 | 86.0 | 80.9 | -2.3 [-3.2, -1.5] | -1.8 [-2.6, -1.0] | fails |
+| big (60) | ensemble B | 80.7 | 80.4 | 87.5 | 82.2 | -0.5 [-1.0, -0.1] | -0.5 [-0.8, +0.0] | passes |
+
+False links stay at 0 register and 0 GSTR-2B (payment: 2 on small dev, 12 and 10 on big dev; v1 2 and 9).
+On realinv (table above) both variants raise the mean of invoice number and date accuracy from 40.5% to 51.2% and invent no identity (v1 8.8%), but tie v1 on ITC doc exact (57.1%): the ensemble takes amounts, categories and purposes from v1, and the identity fields do not enter that metric.
+So variant A fails rule (a) (small-dev lower bound -3.2) and variant B, which passes (a), fails rule (b) on the tie ("beats" was pre-registered); neither ships under the rule, and the test set has not been run.
+On sim dev an identity left empty where v1 had read it right is only recovered when the book fill finds exactly one matching entry, which is consistent with A (more abstentions) trailing v1 on match accuracy and B (fewer) staying level; the per-field split was not measured.
 
 ### GRPO from the per-document SFT (dev only, measured, not shipped)
 
