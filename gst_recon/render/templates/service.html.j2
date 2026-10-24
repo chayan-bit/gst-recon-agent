@@ -1,0 +1,24 @@
+{% extends "base.html.j2" %}{% import "macros.j2" as m %}
+{% block margin %}14mm{% endblock %}
+{% block css %}
+h1{font-size:20pt;margin:0;color:{{ ex.accent }};letter-spacing:2px}
+.two{display:table;width:100%}.two>div{display:table-cell;vertical-align:top;width:50%}
+.box{border:1px solid #bbb;padding:6px 8px;margin:6px 0}
+table.lines th{background:{{ ex.accent }};color:#fff;padding:4px;font-size:8.5pt}
+table.lines td{padding:4px;border-bottom:1px solid #ccc}
+table.totals{width:60%;margin-left:40%}table.totals td{padding:2px 4px}.totals .grand td{font-weight:bold;font-size:11pt;border-top:2px solid {{ ex.accent }}}
+table.taxsum th,table.taxsum td{border:1px solid #ccc;padding:2px 5px;font-size:8pt}
+.bank{font-size:8.5pt}
+{% endblock %}
+{% block body %}
+<div class="two"><div><h1>{{ title }}</h1><b style="font-size:11pt">{{ supplier.name }}</b><br>{{ supplier.address }}<br>{{ L.gstin }}: {{ supplier.gstin }} &nbsp; PAN: {{ ex.pan }}<br>{{ ex.email }} | {{ ex.phone }}</div>
+<div class="r"><table style="width:70%;margin-left:30%"><tr><td class="l">{{ L.inv_no }}</td><td class="r b">{{ inv_no }}</td></tr><tr><td class="l">{{ L.date }}</td><td class="r b">{{ date }}</td></tr>
+<tr><td class="l">{{ L.pos }}</td><td class="r">{{ pos }}</td></tr><tr><td class="l">Reverse Charge</td><td class="r">{{ rcm_text }}</td></tr></table></div></div>
+<div class="box"><span class="muted">{{ L.buyer }}</span><br><b>{{ buyer.name }}</b><br>{{ buyer.address }}<br>{{ L.gstin }}: {{ buyer.gstin }}</div>
+{{ m.lines(cols, rows) }}
+<br>{{ m.totals(totals) }}
+<p><b>Amount in words:</b> {{ words }} &nbsp; <i>E. &amp; O.E.</i></p>
+{{ m.remarks(remarks) }}
+<div class="two"><div>{{ m.bank(ex, supplier) }}<p style="font-size:8pt">Payment terms: within 30 days. Interest @18% p.a. on delayed payment. Subject to jurisdiction of courts at {{ supplier.address.split(',')[-2]|trim }}.</p></div>
+<div class="r" style="vertical-align:bottom">{{ m.taxsum(tax_summary, intra, has_cess) }}<br>for {{ supplier.name }}<br><br>Authorised Signatory</div></div>
+{% endblock %}

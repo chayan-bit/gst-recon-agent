@@ -1,0 +1,34 @@
+{% extends "base.html.j2" %}{% import "macros.j2" as m %}
+{% block css %}
+body{font-size:8.5pt}
+.box{border:1px solid #000}
+.title{text-align:center;font-weight:bold;font-size:12pt;padding:4px;border-bottom:1px solid #000}
+.cell{vertical-align:top;padding:4px 6px;border:1px solid #000}
+.cell small{display:block;color:#333;font-size:7pt}
+table.lines{height:105mm}
+table.lines th{border:1px solid #000;padding:3px 4px;font-weight:bold;background:#f3f3f3;font-size:8pt}
+table.lines td{border-left:1px solid #000;border-right:1px solid #000;padding:3px 4px;vertical-align:top}
+table.lines tbody tr:last-child td{border-bottom:1px solid #000;padding-bottom:20px}
+table.totals td{padding:2px 6px}.totals .grand td{font-weight:bold;border-top:1px solid #000;font-size:10pt}
+table.taxsum th,table.taxsum td{border:1px solid #000;padding:2px 5px;font-size:8pt}
+.bank,.decl{font-size:8pt;padding:4px 6px}
+{% endblock %}
+{% block body %}
+<div class="box">
+<div class="title">{{ title }}{% if is_credit_note %}{% else %} <span style="font-weight:normal;font-size:8pt;float:right">(ORIGINAL FOR RECIPIENT)</span>{% endif %}</div>
+<table><tr>
+<td class="cell" style="width:55%" rowspan="3"><b style="font-size:11pt">{{ supplier.name }}</b><br>{{ supplier.address }}<br>{{ L.gstin }}: {{ supplier.gstin }}<br>State Name : {{ supplier.state }}, Code : {{ supplier.state_code }}<br>E-Mail : {{ ex.email }}{% if ex.irn %}<br>IRN : {{ ex.irn }}{% endif %}</td>
+<td class="cell"><small>{{ L.inv_no }}</small><b>{{ inv_no }}</b></td><td class="cell"><small>{{ L.date }}</small><b>{{ date }}</b></td></tr>
+<tr><td class="cell"><small>Delivery Note</small>&nbsp;</td><td class="cell"><small>Mode/Terms of Payment</small>30 Days</td></tr>
+<tr><td class="cell"><small>{% if is_credit_note %}Against Invoice No.{% else %}Buyer's Order No.{% endif %}</small>{{ orig_no }}</td><td class="cell"><small>Reverse Charge</small>{{ rcm_text }}</td></tr>
+<tr><td class="cell" colspan="3"><small>{{ L.buyer }}</small><b>{{ buyer.name }}</b><br>{{ buyer.address }}<br>{{ L.gstin }}: {{ buyer.gstin }}<br>State Name : {{ buyer.state }}, Code : {{ buyer.state_code }}<br>{{ L.pos }}: {{ pos }}</td></tr>
+</table>
+{{ m.lines(cols, rows) }}
+<table><tr><td style="width:55%;vertical-align:bottom;padding:4px 6px">{{ m.taxsum(tax_summary, intra, has_cess) }}</td><td style="vertical-align:top">{{ m.totals(totals) }}</td></tr></table>
+<div class="cell" style="border-width:1px 0 0 0">Amount Chargeable (in words)<span style="float:right"><i>E. &amp; O.E.</i></span><br><b>{{ words }}</b></div>
+{{ m.remarks(remarks) }}
+<table><tr><td class="cell" style="width:55%">{{ m.bank(ex, supplier) }}<div class="decl"><b>Declaration</b><br>We declare that this invoice shows the actual price of the goods/services described and that all particulars are true and correct.</div></td>
+<td class="cell" style="text-align:right;vertical-align:bottom">for {{ supplier.name }}<br><br><br>Authorised Signatory</td></tr></table>
+</div>
+<div class="c muted" style="font-size:7.5pt;margin-top:4px">This is a Computer Generated Invoice</div>
+{% endblock %}

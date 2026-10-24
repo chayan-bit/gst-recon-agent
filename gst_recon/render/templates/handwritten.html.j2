@@ -1,0 +1,24 @@
+{% extends "base.html.j2" %}{% import "macros.j2" as m %}
+{% block margin %}6mm{% endblock %}
+{% block css %}
+body{font-family:LibSerif,serif;font-size:9pt}
+.frame{border:2px solid #7f1d1d;padding:6px 8px;height:133mm;background:#fffdf5}
+.head{text-align:center;color:#7f1d1d}.head h1{margin:0;font-size:16pt}
+.ink,.ink td,.ink th{font-family:{{ 'Kalam' if ex.upper_name else 'Caveat' }},cursive;color:#14213d;font-size:{{ '10.5pt' if ex.upper_name else '13pt' }}}
+table.lines th{font-family:LibSerif;color:#7f1d1d;border:1px solid #7f1d1d;padding:2px 4px;font-size:8.5pt}
+table.lines td{border:1px solid #c9a9a9;padding:1px 4px;font-family:inherit}
+table.totals{width:50%;margin-left:50%}table.totals td{padding:1px 4px}.totals .grand td{font-weight:bold;border-top:1px solid #14213d}
+table.taxsum th,table.taxsum td{font-size:9pt;padding:1px 4px;border:1px solid #c9a9a9}
+{% endblock %}
+{% block body %}
+<div class="frame">
+<div class="head"><div class="b">{{ title }}</div><h1>{{ supplier.name }}</h1><div style="font-size:8pt">{{ supplier.address }} &nbsp; Ph: {{ ex.phone }}<br>{{ L.gstin }}: {{ supplier.gstin }}</div></div>
+<table style="margin:6px 0"><tr><td>{{ L.inv_no }}: <span class="ink">{{ inv_no }}</span></td><td class="r">{{ L.date }}: <span class="ink">{{ date }}</span></td></tr>
+<tr><td colspan="2">M/s <span class="ink">{{ buyer.name }}</span> &nbsp; {{ L.gstin }}: <span class="ink">{{ buyer.gstin }}</span><br>{{ L.pos }}: <span class="ink">{{ pos }}</span>{% if orig_no %} &nbsp; Against: <span class="ink">{{ orig_no }}</span>{% endif %}{% if rcm %} &nbsp; Reverse Charge: <span class="ink">{{ rcm_text }}</span>{% endif %}</td></tr></table>
+<div class="ink">{{ m.lines(cols, rows) }}</div><br>
+<table><tr><td style="vertical-align:top;width:50%"><div class="ink">{{ m.taxsum(tax_summary, intra, has_cess) }}</div></td><td class="ink" style="vertical-align:top">{{ m.totals(totals) }}</td></tr></table>
+<div class="ink" style="margin-top:4px">{{ words }}</div>
+<div class="ink">{{ m.remarks(remarks) }}</div>
+<div class="r" style="margin-top:8px">For {{ supplier.name }}<br><span class="ink" style="font-size:16pt">{{ ex.signatory.split()[0] }}</span></div>
+</div>
+{% endblock %}

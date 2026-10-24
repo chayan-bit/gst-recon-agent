@@ -1,0 +1,30 @@
+{% extends "base.html.j2" %}{% import "macros.j2" as m %}
+{% block margin %}7mm{% endblock %}
+{% block css %}
+body{font-family:LibSerif,serif;font-size:9.5pt}
+.frame{border:3px double #222;padding:6px 8px;height:132mm}
+h1{margin:0;text-align:center;font-size:17pt;letter-spacing:1px}
+.sub{text-align:center;font-size:8.5pt}
+.row{display:table;width:100%;margin:4px 0}.row>div{display:table-cell}
+table.lines th{border-top:1px solid #000;border-bottom:1px solid #000;padding:2px 4px;font-size:8.5pt}
+table.lines td{padding:2px 4px;border-bottom:1px dotted #777}
+table.totals{width:55%;margin-left:45%}table.totals td{padding:1px 4px}.totals .grand td{font-weight:bold;font-size:11pt;border-top:1px solid #000}
+table.taxsum{width:60%}table.taxsum th,table.taxsum td{font-size:8pt;padding:1px 4px;border:1px solid #888}
+{% endblock %}
+{% block body %}
+<div class="frame">
+<div class="sub b">{{ title }}</div>
+<h1>{{ supplier.name }}</h1>
+<div class="sub">{{ supplier.address }}<br>Ph: {{ ex.phone }} &nbsp; {{ L.gstin }}: <b>{{ supplier.gstin }}</b></div>
+<hr>
+<div class="row"><div>{{ L.inv_no }}: <b>{{ inv_no }}</b>{% if orig_no %} (against {{ orig_no }}){% endif %}</div><div class="r">{{ L.date }}: <b>{{ date }}</b></div></div>
+<div>M/s <b>{{ buyer.name }}</b>, {{ buyer.address }}<br>{{ L.gstin }}: {{ buyer.gstin }} &nbsp; {{ L.pos }}: {{ pos }}{% if rcm %} &nbsp; Reverse Charge: {{ rcm_text }}{% endif %}</div>
+<br>
+{{ m.lines(cols, rows) }}
+<br>
+<table><tr><td style="vertical-align:top">{{ m.taxsum(tax_summary, intra, has_cess) }}</td><td style="vertical-align:top">{{ m.totals(totals) }}</td></tr></table>
+<div style="margin-top:6px"><b>{{ words }}</b> &nbsp; <i>E. &amp; O.E.</i></div>
+{{ m.remarks(remarks) }}
+<div class="row" style="margin-top:10px"><div style="font-size:8pt">Goods once sold will not be taken back.<br>Subject to local jurisdiction.</div><div class="r">For <b>{{ supplier.name }}</b><br><br>Proprietor</div></div>
+</div>
+{% endblock %}

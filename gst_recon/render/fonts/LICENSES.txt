@@ -1,0 +1,3 @@
+All bundled fonts are licensed under the SIL Open Font License 1.1 (see OFL.txt for the license text):
+- Caveat (Impallari Type), Kalam (Indian Type Foundry), Courier Prime (Quote-Unquote Apps): from github.com/google/fonts (ofl/).
+- Liberation Sans / Liberation Serif 2.1.5 (Red Hat): from the nixpkgs liberation_ttf package.

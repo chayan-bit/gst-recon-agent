@@ -1,0 +1,23 @@
+{% extends "base.html.j2" %}{% import "macros.j2" as m %}
+{% block margin %}0{% endblock %}
+{% block css %}
+.wrap{position:relative}
+.side{position:absolute;top:0;left:0;bottom:0;width:62mm;background:#f4f5f7;padding:14mm 8mm;vertical-align:top;font-size:8.5pt}
+.main{margin-left:62mm;padding:14mm 12mm;min-height:280mm}
+.k{color:#6b7280;font-size:7.5pt;text-transform:uppercase;letter-spacing:.8px;margin-top:10px}
+.big{font-size:19pt;font-weight:bold;color:{{ ex.accent }}}
+table.lines th{text-align:left;color:#6b7280;font-size:7.5pt;text-transform:uppercase;padding:5px 3px;border-bottom:1px solid #d1d5db}
+table.lines th.r{text-align:right}
+table.lines td{padding:6px 3px;border-bottom:1px solid #eef0f3;font-size:8.5pt}
+table.totals{width:70%;margin-left:30%}table.totals td{padding:2px 3px}.totals .grand td{font-weight:bold;font-size:12pt;color:{{ ex.accent }};border-top:1px solid #d1d5db}
+table.taxsum th,table.taxsum td{font-size:7.5pt;padding:2px 4px;border-bottom:1px solid #e5e7eb;text-align:left}
+{% endblock %}
+{% block body %}
+<div class="wrap"><div class="side"><div class="b" style="font-size:11pt">{{ supplier.name }}</div><div class="muted">{{ supplier.address }}</div>
+<div class="k">{{ L.gstin }}</div>{{ supplier.gstin }}<div class="k">{{ L.inv_no }}</div><b>{{ inv_no }}</b><div class="k">{{ L.date }}</div>{{ date }}
+<div class="k">{{ L.pos }}</div>{{ pos }}<div class="k">Reverse charge</div>{{ rcm_text }}{% if orig_no %}<div class="k">Original invoice</div>{{ orig_no }}{% endif %}
+<div class="k">{{ L.buyer }}</div><b>{{ buyer.name }}</b><br>{{ buyer.address }}<br>{{ L.gstin }}: {{ buyer.gstin }}
+<div class="k">Pay to</div>{{ ex.bank_name }}<br>A/c {{ ex.acct }}<br>IFSC {{ ex.ifsc }}<div class="k">Contact</div>{{ ex.email }}<br>{{ ex.phone }}</div>
+<div class="main"><div class="muted" style="text-transform:uppercase;letter-spacing:2px;font-size:8pt">{{ title }}</div><div class="big">{{ total }}</div><div class="muted" style="margin-bottom:14px">{{ words }}</div>
+{{ m.lines(cols, rows) }}<br>{{ m.totals(totals) }}<br>{{ m.taxsum(tax_summary, intra, has_cess) }}{{ m.remarks(remarks) }}<p class="muted" style="font-size:7.5pt">E. &amp; O.E. This is a system generated invoice and does not require a signature.</p></div></div>
+{% endblock %}

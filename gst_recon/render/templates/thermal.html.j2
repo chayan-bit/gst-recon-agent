@@ -1,0 +1,27 @@
+{% extends "base.html.j2" %}{% import "macros.j2" as m %}
+{% block margin %}3mm{% endblock %}
+{% block css %}
+body{font-family:CPrime,monospace;font-size:8.5pt;line-height:1.25}
+.dash{border-top:1px dashed #000;margin:3px 0}
+.item{margin:2px 0}.item .n{font-weight:bold}.kv{display:table;width:100%}.kv>span{display:table-cell}.kv>span+span{text-align:right}
+{% endblock %}
+{% block body %}
+<div class="c b" style="font-size:10.5pt">{{ supplier.name }}</div>
+<div class="c">{{ supplier.address }}<br>Tel {{ ex.phone }}<br>{{ L.gstin }}: {{ supplier.gstin }}</div>
+<div class="dash"></div>
+<div class="c b">{{ title }}</div>
+<div class="kv"><span>{{ L.inv_no }}: {{ inv_no }}</span><span>{{ date }}</span></div>
+{% if orig_no %}<div>Ref Inv: {{ orig_no }}</div>{% endif %}
+<div>To: {{ buyer.name }}<br>{{ L.gstin }}: {{ buyer.gstin }}<br>{{ L.pos }}: {{ pos }}{% if rcm %}<br>Reverse Charge: {{ rcm_text }}{% endif %}</div>
+<div class="dash"></div>
+{% for it in items %}<div class="item"><div class="n">{{ it.desc }}</div><div class="kv"><span>HSN {{ it.hsn }} {{ it.qty_unit }} x {{ it.price }}</span><span>{{ it.taxable }}</span></div><div class="muted">GST {{ it.rate }}%</div></div>{% endfor %}
+<div class="dash"></div>
+{% for g in tax_summary %}<div class="kv"><span>{{ g.rate }}% on {{ g.taxable }}</span><span></span></div>
+{% if intra %}<div class="kv"><span>&nbsp;CGST {{ g.cgst }}</span><span>SGST {{ g.sgst }}</span></div>{% else %}<div class="kv"><span>&nbsp;IGST {{ g.igst }}</span><span></span></div>{% endif %}{% if has_cess %}<div>&nbsp;Cess {{ g.cess }}</div>{% endif %}{% endfor %}
+<div class="dash"></div>
+{% for label, value in totals %}<div class="kv {{ 'b' if loop.last else '' }}"><span>{{ label }}</span><span>{{ value }}</span></div>{% endfor %}
+<div class="dash"></div>
+<div style="font-size:7.5pt">{{ words }}</div>
+{{ m.remarks(remarks) }}
+<div class="c" style="margin-top:6px">Thank You. Visit Again!<br>E. &amp; O.E.</div>
+{% endblock %}

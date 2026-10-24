@@ -1,0 +1,23 @@
+{% macro lines(cols, rows, cls='') -%}
+<table class="lines {{ cls }}"><thead><tr>{% for c in cols %}<th class="{{ c.align }}">{{ c.label }}</th>{% endfor %}</tr></thead>
+<tbody>{% for r in rows %}<tr>{% for v in r %}<td class="{{ cols[loop.index0].align }}">{{ v }}</td>{% endfor %}</tr>{% endfor %}</tbody></table>
+{%- endmacro %}
+
+{% macro totals(items, cls='') -%}
+<table class="totals {{ cls }}">{% for label, value in items %}<tr class="{{ 'grand' if loop.last else '' }}"><td>{{ label }}</td><td class="r">{{ value }}</td></tr>{% endfor %}</table>
+{%- endmacro %}
+
+{% macro taxsum(tax_summary, intra, has_cess, cls='') -%}
+<table class="taxsum {{ cls }}"><thead><tr><th>Tax Rate %</th><th class="r">Taxable Value</th>
+{% if intra %}<th class="r">CGST</th><th class="r">SGST</th>{% else %}<th class="r">IGST</th>{% endif %}{% if has_cess %}<th class="r">Cess</th>{% endif %}</tr></thead>
+<tbody>{% for g in tax_summary %}<tr><td>{{ g.rate }}</td><td class="r">{{ g.taxable }}</td>
+{% if intra %}<td class="r">{{ g.cgst }}</td><td class="r">{{ g.sgst }}</td>{% else %}<td class="r">{{ g.igst }}</td>{% endif %}{% if has_cess %}<td class="r">{{ g.cess }}</td>{% endif %}</tr>{% endfor %}</tbody></table>
+{%- endmacro %}
+
+{% macro remarks(text) -%}
+{% if text %}<div class="remarks"><b>Remarks / Purpose:</b> {{ text }}</div>{% endif %}
+{%- endmacro %}
+
+{% macro bank(ex, supplier) -%}
+<div class="bank"><b>Bank Details</b><br>Bank: {{ ex.bank_name }} &nbsp; A/c No.: {{ ex.acct }}<br>IFSC: {{ ex.ifsc }} &nbsp; Branch: {{ ex.branch }}<br>A/c Name: {{ supplier.name }}</div>
+{%- endmacro %}

@@ -5,6 +5,18 @@ description = "GST ITC reconciliation: world simulator, rules engine, rewards"
 requires-python = ">=3.11"
 dependencies = ["pydantic>=2.6"]
 
+[project.optional-dependencies]
+render = [
+  "jinja2>=3.1",
+  "weasyprint>=62",
+  "pypdfium2>=4.30",
+  "augraphy>=8.2",
+  "faker>=25",
+  "pillow>=10",
+  "numpy>=1.26",
+  "tokenizers>=0.20",
+]
+
 [dependency-groups]
 dev = ["pytest>=8"]
 

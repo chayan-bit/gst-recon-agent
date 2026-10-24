@@ -1,0 +1,22 @@
+{% extends "base.html.j2" %}{% import "macros.j2" as m %}
+{% block margin %}14mm{% endblock %}
+{% block css %}
+h1{font-size:22pt;margin:0;color:#b91c1c;border-bottom:3px solid #b91c1c;padding-bottom:3px}
+.two{display:table;width:100%;margin:8px 0}.two>div{display:table-cell;vertical-align:top;width:50%}
+table.lines th{background:#fee2e2;border:1px solid #b91c1c;padding:4px;font-size:8.5pt}
+table.lines td{border:1px solid #e5b4b4;padding:4px}
+table.totals{width:55%;margin-left:45%}table.totals td{padding:2px 5px}.totals .grand td{font-weight:bold;font-size:11pt;border-top:2px solid #b91c1c}
+table.taxsum th,table.taxsum td{border:1px solid #e5b4b4;padding:2px 5px;font-size:8pt}
+{% endblock %}
+{% block body %}
+<h1>{{ title }}</h1>
+<div class="two"><div><b style="font-size:11pt">{{ supplier.name }}</b><br>{{ supplier.address }}<br>{{ L.gstin }}: {{ supplier.gstin }}<br>{{ ex.email }}</div>
+<div class="r">{{ L.inv_no }}: <b>{{ inv_no }}</b><br>{{ L.date }}: <b>{{ date }}</b><br>Against Invoice No.: <b>{{ orig_no }}</b><br>{{ L.pos }}: {{ pos }}</div></div>
+<div class="two"><div><span class="muted">Credited to</span><br><b>{{ buyer.name }}</b><br>{{ buyer.address }}<br>{{ L.gstin }}: {{ buyer.gstin }}</div>
+<div class="r"><span class="muted">Reason</span><br>Rate difference / sales return / post-sale discount</div></div>
+{{ m.lines(cols, rows) }}<br>{{ m.totals(totals) }}
+<p><b>Credit amount in words:</b> {{ words }} &nbsp; E. &amp; O.E.</p>
+{{ m.remarks(remarks) }}
+<p style="font-size:8pt">Issued under section 34 of the CGST Act, 2017. The recipient should adjust input tax credit accordingly.</p>
+<div class="two"><div>{{ m.taxsum(tax_summary, intra, has_cess) }}</div><div class="r" style="vertical-align:bottom">for {{ supplier.name }}<br><br><br>Authorised Signatory</div></div>
+{% endblock %}

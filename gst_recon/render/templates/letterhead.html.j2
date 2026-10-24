@@ -1,0 +1,28 @@
+{% extends "base.html.j2" %}{% import "macros.j2" as m %}
+{% block margin %}0{% endblock %}
+{% block css %}
+.band{background:{{ ex.accent }};color:#fff;padding:12mm 14mm 6mm}
+.band h1{margin:0;font-family:LibSerif;font-size:22pt;letter-spacing:1px}
+.band div{font-size:8.5pt;opacity:.95}
+.main{padding:8mm 14mm}
+table.lines th{border-bottom:2px solid {{ ex.accent }};border-top:1px solid #999;padding:4px;font-size:8.5pt}
+table.lines td{padding:4px;border-bottom:1px solid #ddd}
+table.totals{width:55%;margin-left:45%}table.totals td{padding:2px 4px}.totals .grand td{font-weight:bold;border-top:1px solid #000;font-size:11pt}
+table.taxsum th,table.taxsum td{border:1px solid #bbb;padding:2px 5px;font-size:8pt}
+.stamp{display:inline-block;width:34mm;height:34mm;border:2px solid #1d4ed8;border-radius:50%;color:#1d4ed8;text-align:center;font-size:7pt;padding-top:9mm;transform:rotate(-14deg);opacity:.75;font-weight:bold;line-height:1.3}
+.stamp:before{content:"";}
+.sig{font-family:Caveat;font-size:20pt;color:#1e3a8a;transform:rotate(-6deg);display:inline-block}
+{% endblock %}
+{% block body %}
+<div class="band"><h1>{{ supplier.name }}</h1><div>{{ supplier.address }} &nbsp;|&nbsp; {{ ex.phone }} &nbsp;|&nbsp; {{ ex.email }}</div><div>{{ L.gstin }}: {{ supplier.gstin }} &nbsp; PAN: {{ ex.pan }}</div></div>
+<div class="main">
+<table style="margin-bottom:8px"><tr><td style="vertical-align:top;width:55%">To,<br><b>{{ buyer.name }}</b><br>{{ buyer.address }}<br>{{ L.gstin }}: {{ buyer.gstin }}</td>
+<td class="r" style="vertical-align:top"><b style="font-size:12pt">{{ title }}</b><br>{{ L.inv_no }}: <b>{{ inv_no }}</b><br>{{ L.date }}: <b>{{ date }}</b><br>{{ L.pos }}: {{ pos }}{% if orig_no %}<br>Against Invoice: {{ orig_no }}{% endif %}<br>Reverse Charge: {{ rcm_text }}</td></tr></table>
+{{ m.lines(cols, rows) }}<br>
+{{ m.totals(totals) }}
+<p><b>{{ words }}</b> &nbsp; E. &amp; O.E.</p>
+{{ m.remarks(remarks) }}
+<table style="margin-top:6px"><tr><td style="vertical-align:top;width:50%">{{ m.bank(ex, supplier) }}<br>{{ m.taxsum(tax_summary, intra, has_cess) }}</td>
+<td class="r" style="vertical-align:bottom">for <b>{{ supplier.name }}</b><br><span class="stamp">{{ supplier.name }}<br>{{ supplier.state|upper }}<br>GST REGD.</span><span class="sig">{{ ex.signatory.split()[0] }}</span><br>Authorised Signatory<br><span class="muted" style="font-size:7.5pt">{{ ex.signatory }}</span></td></tr></table>
+</div>
+{% endblock %}

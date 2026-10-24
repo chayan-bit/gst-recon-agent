@@ -1,0 +1,19 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><style>
+@font-face{font-family:LibSans;src:url("{{ fonts }}/LiberationSans-Regular.ttf")}
+@font-face{font-family:LibSans;font-weight:bold;src:url("{{ fonts }}/LiberationSans-Bold.ttf")}
+@font-face{font-family:LibSerif;src:url("{{ fonts }}/LiberationSerif-Regular.ttf")}
+@font-face{font-family:LibSerif;font-weight:bold;src:url("{{ fonts }}/LiberationSerif-Bold.ttf")}
+@font-face{font-family:CPrime;src:url("{{ fonts }}/CourierPrime-Regular.ttf")}
+@font-face{font-family:CPrime;font-weight:bold;src:url("{{ fonts }}/CourierPrime-Bold.ttf")}
+@font-face{font-family:Kalam;src:url("{{ fonts }}/Kalam-Regular.ttf")}
+@font-face{font-family:Caveat;src:url("{{ fonts }}/Caveat.ttf")}
+@page{size:{{ page }};margin:{% block margin %}12mm{% endblock %}}
+*{box-sizing:border-box}
+body{margin:0;font-family:LibSans,sans-serif;font-size:9pt;color:#111}
+table{border-collapse:collapse;width:100%}
+.r{text-align:right}.c{text-align:center}.l{text-align:left}
+.remarks{margin:5px 0;padding:3px 6px;font-size:8.5pt}
+.b{font-weight:bold}.muted{color:#555}
+{% block css %}{% endblock %}
+</style></head><body>{% block body %}{% endblock %}</body></html>
