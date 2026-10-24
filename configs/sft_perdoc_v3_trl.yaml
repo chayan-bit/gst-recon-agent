@@ -2,7 +2,8 @@
 # for v1's 124 steps, on rows from fmt_version 2 cases (diverse per-supplier invoice-number and date formats; sim seeds
 # 8301-8303, disjoint from every eval/dev/test/grpo seed). v1 learned to emit the simulator's own number formats instead
 # of copying the page. Differences from v1: max_steps 124 (v1 was cut at 124 of 298 by its 1 h cap), so cosine decays
-# to 0 by step 124; batch 2 x 8 (v2's split) to keep the logits under 48 GB; 2 h cap.
+# to 0 by step 124; batch 1 x 16 (2 x 8 peaked at 52.4 GB on the 48 GB A6000 and stalled a step for 20 min in
+# WDDM shared-memory paging, 22:26-22:47); 2 h cap.
 #   configs/launch_sft_perdoc_rslab.ps1 -Config configs\sft_perdoc_v3_trl.yaml -Name sft_perdoc_v3 -Data sft-perdoc-v3-pc
 # Data (rs-lab, D:\gst\gst-render\v3): python -m gst_recon.sim generate --size sft --fmt-version 2 for easy/medium/hard
 # 420/420/210 cases at seeds 8301/8302/8303 (perdoc v1's 1050-case mix), python -m gst_recon.render, then
@@ -28,8 +29,8 @@ datasets:
 train:
   epochs: 1
   max_steps: 124  # perdoc v1's step count (1984 rows)
-  per_device_batch_size: 2
-  gradient_accumulation_steps: 8
+  per_device_batch_size: 1
+  gradient_accumulation_steps: 16
   learning_rate: 1.0e-4
   warmup_ratio: 0.03
   weight_decay: 0.0
