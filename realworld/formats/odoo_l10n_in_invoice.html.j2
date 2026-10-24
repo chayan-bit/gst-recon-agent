@@ -1,0 +1,55 @@
+{#- Port of Odoo 18 account.report_invoice_document as inherited by l10n_in (LGPL-3.0)
+    addons/l10n_in/views/report_invoice.xml @ 60fdb53: title "<journal> <number>" or "Credit Note <number>",
+    GSTIN under the delivery address, "Place of supply", HSN/SAC column after Description, the HSN Summary table
+    (HSN/SAC, Quantity, Rate %, Taxable Value, SGST, CGST, IGST) after the payment terms. The base
+    account.report_invoice_document blocks (company header, information row, totals, payment communication,
+    terms) follow Odoo 18's standard "Light" layout; Bootstrap 5 is approximated by the <style> block. -#}
+<!doctype html><html><head><meta charset="utf-8"><style>
+@page { size: A4; margin: 12mm 12mm 18mm; @bottom-center { content: "Page: " counter(page) " / " counter(pages); font: 8pt "Liberation Sans"; color: #666; } }
+body { font-family: "Liberation Sans", sans-serif; font-size: 9.5pt; color: #222; }
+.header { display: flex; justify-content: space-between; border-bottom: 1px solid #999; padding-bottom: 6px; margin-bottom: 14px; }
+.company { font-size: 8.5pt; line-height: 1.35; } .company strong { font-size: 10pt; }
+.addr { width: 46%; margin-left: 54%; margin-bottom: 16px; line-height: 1.35; }
+h2 { font-size: 17pt; font-weight: normal; margin: 6px 0 12px; }
+.info { display: flex; gap: 40px; margin-bottom: 14px; } .info strong { display: block; font-size: 8.5pt; }
+table { width: 100%; border-collapse: collapse; } th { text-align: left; border-bottom: 1px solid #222; padding: 4px; font-size: 9pt; }
+td { padding: 4px; border-bottom: 1px solid #ddd; font-size: 9pt; vertical-align: top; } .text-end { text-align: right; }
+.totals { width: 45%; margin-left: 55%; margin-top: 8px; } .totals td { border-bottom: 1px solid #ddd; } .totals tr.total td { border-top: 1px solid #222; font-weight: bold; }
+.small { font-size: 8.5pt; } h3 { font-size: 11pt; margin: 16px 0 6px; } .hsn { width: 70%; } .hsn td, .hsn th { border: 0; padding: 2px 4px; font-size: 8.5pt; }
+</style></head><body>
+<div class="header">
+  <div style="font-size:15pt;font-weight:bold;color:#71639e">{{ s.name.split(' ')[0] | upper }}</div>
+  <div class="company text-end"><strong>{{ s.name }}</strong><br>{% set a = pin_city(s.address) %}{{ a[0] }}<br>{{ a[1] }} {{ a[2] }}<br>{{ state(s.state_code) }} IN<br>GSTIN: {{ s.gstin }}</div>
+</div>
+<div class="addr">
+  {% set c = pin_city(b.address) %}{{ b.name }}<br>{{ c[0] }}<br>{{ c[1] }} {{ c[2] }}<br>{{ state(b.state_code) }} ({{ b.state_code }}) IN<br>
+  <div>GSTIN: {{ b.gstin }}</div>
+  <div>Place of supply: {{ state(inv.place_of_supply) }}</div>
+</div>
+<h2>{% if is_cn %}Credit Note {{ inv.invoice_no }}{% else %}Tax Invoices {{ inv.invoice_no }}{% endif %}</h2>
+<div class="info">
+  <div><strong>{{ 'Credit Note Date' if is_cn else 'Invoice Date' }}</strong>{{ dmy(inv.invoice_date, '/') }}</div>
+  {% if not is_cn %}<div><strong>Due Date</strong>{{ dmy(inv.invoice_date, '/') }}</div>{% endif %}
+  {% if is_cn %}<div><strong>Reference</strong>Reversal of: {{ inv.original_invoice_no }}</div>{% endif %}
+</div>
+<table><thead><tr><th>Description</th><th>HSN/SAC</th><th class="text-end">Quantity</th><th class="text-end">Unit Price</th><th class="text-end">Taxes</th><th class="text-end">Amount</th></tr></thead>
+<tbody>{% for l in inv.line_items %}<tr><td>{{ l.description }}</td><td>{{ l.hsn }}</td><td class="text-end">{{ '%.2f' % l.quantity }} {{ l.unit }}</td><td class="text-end">{{ money(l.unit_price) }}</td>
+<td class="text-end">{{ ('GST ' ~ ('%g' % l.rate) ~ '%') if h.intra else ('IGST ' ~ ('%g' % l.rate) ~ '%') }}{{ ' (RC)' if inv.reverse_charge else '' }}</td><td class="text-end">{{ rupees(l.taxable_value) }}</td></tr>{% endfor %}</tbody></table>
+<table class="totals">
+  <tr><td><strong>Untaxed Amount</strong></td><td class="text-end">{{ rupees(inv.taxable_value) }}</td></tr>
+  {% if h.intra %}<tr><td>SGST</td><td class="text-end">{{ rupees(inv.sgst) }}</td></tr><tr><td>CGST</td><td class="text-end">{{ rupees(inv.cgst) }}</td></tr>
+  {% else %}<tr><td>IGST</td><td class="text-end">{{ rupees(inv.igst) }}</td></tr>{% endif %}
+  <tr class="total"><td>Total</td><td class="text-end">{{ rupees(inv.total) }}</td></tr>
+</table>
+<p class="small" style="margin-top:10px">Total amount in words: <br><i>{{ words(inv.total) | replace(' Only', '') }}</i></p>
+{% if not is_cn %}<p class="small">Payment Communication: <b>{{ inv.invoice_no }}</b></p>{% endif %}
+<div id="payment_term"></div>
+<div name="l10n_in_hsn_summary" style="page-break-inside: avoid;">
+  <h3>HSN Summary</h3>
+  <table class="hsn"><thead><tr><th>HSN/SAC</th><th class="text-end">Quantity</th><th class="text-end">Rate %</th><th class="text-end">Taxable Value</th>
+  {% if h.intra %}<th class="text-end">SGST</th><th class="text-end">CGST</th>{% else %}<th class="text-end">IGST</th>{% endif %}</tr></thead>
+  <tbody>{% for l in inv.line_items %}<tr><td>{{ l.hsn }}</td><td class="text-end">{{ '%g' % l.quantity }} ({{ l.unit }})</td><td class="text-end">{{ '%g' % l.rate }}</td><td class="text-end">{{ rupees(l.taxable_value) }}</td>
+  {% if h.intra %}<td class="text-end">{{ rupees(l.sgst) }}</td><td class="text-end">{{ rupees(l.cgst) }}</td>{% else %}<td class="text-end">{{ rupees(l.igst) }}</td>{% endif %}</tr>{% endfor %}</tbody></table>
+</div>
+{% if inv.remarks %}<p class="small" style="margin-top:14px">{{ inv.remarks }}</p>{% endif %}
+</body></html>

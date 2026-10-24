@@ -1,0 +1,68 @@
+{#- Port of technodweep/gst-invoice (MIT) views/invoice-order/print.php @ dcce9b6 (Yii2 + Bootstrap 3).
+    Kept verbatim: the inline <style>, "TAX INVOICE" heading, buyer block with GST Invoice no / P.O. No / Challan no and
+    three "Date:" cells, item table columns, "Add CGST/SGST/IGST (x%)" rows (all three always printed), rupees in words,
+    supplier GSTIN and PAN only in the footer, certification text, "For <firm>" signature block (the upstream file
+    hardcodes a firm name there; it is replaced by the synthetic supplier). The upstream view prints no supplier
+    letterhead (pre-printed stationery); a plain letterhead line is added so the supplier name and address exist. -#}
+<!DOCTYPE html><html><head><meta charset="utf-8"><title></title><style>
+@page { size: A4; margin: 10mm; }
+@media all {
+body { font-family: "Liberation Sans", Arial; background: #fff; font-size: 0.4cm; }
+table { border-collapse: collapse; }
+table.main_table tr td { border-bottom: 1px solid #000; } table.main_table { width:20cm; }
+table.table { width: 100%; margin-top: 0; margin-bottom: 0; } table.table td, table.table th { padding: 5px 8px; vertical-align: top; }
+table.table tbody tr td { line-height: 1; }
+table.item_table tbody tr td { font-size: 0.35cm; padding: 0 10px; line-height: 0.65cm; border-right:1px solid #000; }
+table.item_table thead tr th { border:1px solid #000; }
+table.item_table{ border-bottom:1px solid #000; border-top:1px solid #000; border-left:1px solid #000; }
+td.line-item-order{ border-bottom:1px solid #000; }
+#footer_main{ width:100%; margin: 20px auto 10px auto; }
+.footer_box1 { width:400px; margin-left:10px; margin-right:10px; margin-bottom:10px; float:left; }
+.footer_box2 { width:auto; float:right; margin-right:10px; }
+.div_item{ margin:0 5px 7px 0; }
+table.toptable tbody tr td{ border-top:0 none; padding: 0; } table.toptable{ margin:10px 0 20px 0; }
+.text-center { text-align: center; } .text-right { text-align: right; } h3 { font-size: 0.55cm; } address { font-style: normal; }
+.letterhead { text-align: center; border-bottom: 2px solid #000; padding-bottom: 6px; margin-bottom: 8px; }
+.letterhead .firm { font-size: 0.7cm; font-weight: bold; letter-spacing: 1px; }
+}
+</style></head><body>
+<div class="letterhead"><div class="firm">{{ s.name | upper }}</div><div>{{ s.address }}</div></div>
+<div style="padding:0 10px; ">
+    <div style="min-height: 700px;">
+        <div class="text-center"><h3 style="margin:0 0 20px 0;"><u>TAX INVOICE</u></h3></div>
+        <table class="table toptable"><tbody>
+            <tr>
+                <td width="45%" colspan="2"><b>{{ b.name }}</b><br><address style="margin: 5px 0;">{{ b.address }}</address></td>
+                <td><div class="div_item"><b>GST Invoice no:</b> {{ inv.invoice_no }}</div>
+                    <div class="div_item"><b>P.O. No:</b> {{ x.po_no }}</div>
+                    <div class="div_item"><b>Challan no:</b> {{ x.challan_no }}</div></td>
+                <td><div class="div_item"><b>Date:</b> {{ dmy(inv.invoice_date) }}</div>
+                    <div class="div_item"><b>Date:</b> {{ x.po_date[8:10] }}-{{ x.po_date[5:7] }}-{{ x.po_date[:4] }}</div>
+                    <div class="div_item"><b>Date:</b> {{ dmy(inv.invoice_date) }}</div></td>
+            </tr>
+            <tr><td colspan="2"><b>GSTIN:</b> {{ b.gstin }}</td><td colspan="2"><b>Mode of transport:</b> {{ x.transport }}</td></tr>
+        </tbody></table>
+        <table class="table item_table">
+            <thead><tr><th class="text-center">Sr.No</th><th width="50%">Description of item</th><th>HSN Code</th><th class="text-right">Rate</th><th class="text-center">Quantity</th><th class="text-right">Per</th><th class="text-right">Total</th></tr></thead>
+            <tbody>
+            {% for l in inv.line_items %}<tr>
+                <td class="text-center line-item-order">{{ loop.index }}</td><td class="line-item-order">{{ l.description }}</td><td class="line-item-order">{{ l.hsn }}</td>
+                <td class="text-right line-item-order">{{ '%g' % l.unit_price }}</td><td class="text-center line-item-order">{{ '%g' % l.quantity }}</td>
+                <td class="text-right line-item-order">{{ l.unit }}</td><td class="text-right line-item-order">{{ '%.2f' % l.taxable_value }}</td>
+            </tr>{% endfor %}
+            {% set r = inv.line_items[0].rate %}
+            <tr><td colspan="2">&nbsp;</td><td colspan="4" class="text-right">Add CGST ({{ '%g' % (r / 2) if h.intra else 0 }}%): </td><td class="text-right">{{ '%.2f' % inv.cgst }}</td></tr>
+            <tr><td colspan="2">&nbsp;</td><td colspan="4" class="text-right">Add SGST ({{ '%g' % (r / 2) if h.intra else 0 }}%): </td><td class="text-right">{{ '%.2f' % inv.sgst }}</td></tr>
+            <tr><td colspan="2">&nbsp;</td><td colspan="4" class="text-right">Add IGST ({{ 0 if h.intra else '%g' % r }}%): </td><td class="text-right">{{ '%.2f' % inv.igst }}</td></tr>
+            <tr><td colspan="2">&nbsp;</td><td colspan="4" class="text-right">Total tax amount: </td><td class="text-right">{{ '%.2f' % h.tax }}</td></tr>
+            <tr><td colspan="2"><b>Rupees in words: </b>{{ words(inv.total) | lower | capitalize }}</td><td colspan="4" class="text-right">Grand total: </td><td class="text-right"><b>{{ '%.2f' % inv.total }}</b></td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div id="footer_main"><div class="row">
+        <div class="footer_box1"><b>GST IN:</b> {{ s.gstin }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>PAN:</b> {{ pan }}<br>
+            <small style="font-size:65%;">I hereby certify that my registration certificate under the GST Act 2017 is in force on the date on which the sale of goods specified in this tax invoice is made by me and the transaction of sale covered by this tax invoice has been effected by me and it shall be accounted for in the turnover of sales while filing of return and the due tax, if any payable on the sales has been paid or shall be paid.</small></div>
+        <div class="footer_box2"><h5 style="margin:0;" class="text-right">For {{ s.name }}</h5><br><br><div style="padding-top:10px;" class="text-right">Proprietor/Manager</div></div>
+    </div></div>
+</div>
+</body></html>

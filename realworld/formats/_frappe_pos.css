@@ -1,0 +1,8 @@
+/* frappe POS print: Bootstrap 3 table rules at receipt width (see ic_gst_pos_invoice.html @media screen). */
+body { font-family: "Liberation Sans", sans-serif; font-size: 8.5pt; margin: 0; }
+.print-format { width: 100%; padding: 0; }
+.text-center { text-align: center; } .text-right { text-align: right; }
+table { border-collapse: collapse; width: 100%; } .table td, .table th { padding: 3px 2px; vertical-align: top; text-align: left; }
+.table th.text-right, .table td.text-right { text-align: right; }
+.table.cart thead th { border-bottom: 1px solid #000; } hr { border: 0; border-top: 1px dashed #000; }
+p { margin: 0 0 6px; }

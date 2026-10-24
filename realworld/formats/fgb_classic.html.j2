@@ -1,0 +1,85 @@
+{#- Port of the "classic" A4 layout of IamRamgarhia/Free-GST-Billing-Software (MIT)
+    src/components/InvoicePreview.jsx @ f96be46 (renderClassicHeader, renderParties, items table, totals section).
+    Kept: title block (No./Date/Reverse Charge) left and business block right, Bill To / Place of Supply with the
+    "Intrastate (CGST + SGST)" or "Interstate (IGST)" badge, the India item table (CGST %/Amt, SGST %/Amt), the
+    Subtotal/CGST/SGST/IGST/Round-off/Total Due rows, Amount in Words, Notes, Authorized Signatory.
+    Reproduced as upstream: for an interstate invoice the header row has only #, Description and Amt while the
+    body rows still carry HSN, Qty, Rate, % and Amt cells (upstream rendering quirk at this commit). -#}
+<!doctype html><html><head><meta charset="utf-8"><style>
+@page { size: A4; margin: 10mm; }
+body { font-family: "Liberation Sans", sans-serif; color: #0f172a; font-size: 9.5pt; margin: 0; }
+.bar { height: 6px; background: #2563eb; }
+.inv-header { display: flex; justify-content: space-between; padding: 14px 0 10px; border-bottom: 1px solid #e2e8f0; }
+.inv-title { color: #2563eb; font-size: 20pt; letter-spacing: .04em; margin: 0 0 8px; }
+.inv-meta-row { display: flex; gap: 10px; font-size: 9pt; } .inv-meta-label { color: #64748b; width: 95px; } .inv-meta-value { font-weight: 600; }
+.inv-header-right { text-align: right; } .inv-business-name { font-size: 13pt; margin: 0 0 4px; } .inv-business-details p { margin: 1px 0; font-size: 8.5pt; color: #334155; }
+.inv-parties { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e2e8f0; margin-bottom: 10px; }
+.inv-section-label { font-size: 7.5pt; text-transform: uppercase; letter-spacing: .08em; color: #64748b; margin: 0 0 4px; }
+.inv-party-name { font-weight: 700; margin: 0 0 2px; } .inv-party-details p { margin: 1px 0; font-size: 8.5pt; } .inv-party-right { text-align: right; }
+.inv-tax-badge { display: inline-block; font-size: 7.5pt; padding: 2px 6px; border-radius: 4px; background: #eff6ff; color: #1d4ed8; margin-top: 4px; }
+.inv-tax-badge-green { background: #ecfdf5; color: #047857; }
+table.inv-table { width: 100%; border-collapse: collapse; } .inv-th { background: #f1f5f9; font-size: 8pt; padding: 5px; text-align: left; border-bottom: 1px solid #cbd5e1; }
+.inv-th-center { text-align: center; } .inv-th-right { text-align: right; }
+.inv-td { padding: 5px; font-size: 8.5pt; border-bottom: 1px solid #e2e8f0; } .inv-td-center { text-align: center; } .inv-td-right { text-align: right; } .inv-td-muted { color: #64748b; }
+.inv-tr-even { background: #f8fafc; }
+.inv-totals-section { display: flex; justify-content: space-between; margin-top: 12px; } .inv-words { width: 55%; } .inv-words-text { font-size: 8.5pt; font-style: italic; }
+.inv-totals { width: 40%; } .inv-total-row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 9pt; }
+.inv-total-final { border-top: 2px solid #0f172a; font-weight: 700; font-size: 11pt; margin-top: 4px; padding-top: 6px; }
+.inv-footer-block { margin-top: 16px; } .inv-terms { font-size: 8.5pt; } .sign { margin-top: 40px; text-align: right; font-size: 8.5pt; }
+</style></head><body>
+<div class="bar"></div>
+<div class="inv-header">
+  <div class="inv-header-left">
+    <h1 class="inv-title">{{ 'CREDIT NOTE' if is_cn else 'TAX INVOICE' }}</h1>
+    {% if is_cn and inv.original_invoice_no %}<p style="font-size:8pt;color:#475569">Against Invoice: <strong>{{ inv.original_invoice_no }}</strong></p>{% endif %}
+    <div class="inv-meta">
+      <div class="inv-meta-row"><span class="inv-meta-label">No.</span><span class="inv-meta-value">{{ inv.invoice_no }}</span></div>
+      <div class="inv-meta-row"><span class="inv-meta-label">Date</span><span class="inv-meta-value">{{ dmy(inv.invoice_date, '/') }}</span></div>
+      <div class="inv-meta-row"><span class="inv-meta-label">Reverse Charge</span><span class="inv-meta-value">{{ 'Yes' if inv.reverse_charge else 'No' }}</span></div>
+    </div>
+  </div>
+  <div class="inv-header-right">
+    <h2 class="inv-business-name">{{ s.name }}</h2>
+    {% set a = pin_city(s.address) %}
+    <div class="inv-business-details"><p>{{ a[0] }}</p><p>{{ a[1] }} - {{ a[2] }}</p><p>{{ state(s.state_code) }}</p><p>GSTIN: <strong>{{ s.gstin }}</strong></p></div>
+  </div>
+</div>
+<div class="inv-parties">
+  <div class="inv-party">
+    <h4 class="inv-section-label">Bill To</h4>
+    {% set c = pin_city(b.address) %}
+    <p class="inv-party-name">{{ b.name }}</p>
+    <div class="inv-party-details"><p>{{ c[0] }}</p><p>{{ c[1] }} - {{ c[2] }}</p><p>{{ state(b.state_code) }}</p><p>GSTIN: <strong>{{ b.gstin }}</strong></p></div>
+  </div>
+  <div class="inv-party inv-party-right">
+    <h4 class="inv-section-label">Place of Supply</h4>
+    <p class="inv-party-name">{{ state(inv.place_of_supply) }}</p>
+    {% if h.intra %}<span class="inv-tax-badge inv-tax-badge-green">Intrastate (CGST + SGST)</span>{% else %}<span class="inv-tax-badge">Interstate (IGST)</span>{% endif %}
+  </div>
+</div>
+<table class="inv-table"><thead>
+  {% if not h.intra %}<tr><th class="inv-th" rowspan="2">#</th><th class="inv-th" rowspan="2">Description</th><th class="inv-th inv-th-right">Amt</th></tr>
+  {% else %}<tr><th class="inv-th" rowspan="2">#</th><th class="inv-th" rowspan="2">Description</th><th class="inv-th inv-th-center" rowspan="2">HSN/SAC</th><th class="inv-th inv-th-center" rowspan="2">Qty</th><th class="inv-th inv-th-right" rowspan="2">Rate</th><th class="inv-th inv-th-center" colspan="2">CGST</th><th class="inv-th inv-th-center" colspan="2">SGST</th><th class="inv-th inv-th-right" rowspan="2">Amount</th></tr>
+  <tr><th class="inv-th inv-th-center">%</th><th class="inv-th inv-th-right">Amt</th><th class="inv-th inv-th-center">%</th><th class="inv-th inv-th-right">Amt</th></tr>{% endif %}
+</thead><tbody>
+{% for l in inv.line_items %}<tr class="{{ 'inv-tr-even' if loop.index0 % 2 == 0 else '' }}">
+  <td class="inv-td inv-td-muted">{{ loop.index }}</td><td class="inv-td">{{ l.description }}</td><td class="inv-td inv-td-center inv-td-muted">{{ l.hsn }}</td>
+  <td class="inv-td inv-td-center">{{ '%g' % l.quantity }} {{ l.unit }}</td><td class="inv-td inv-td-right">{{ rupees(l.unit_price) | replace(' ', '') }}</td>
+  {% if h.intra %}<td class="inv-td inv-td-center">{{ '%g' % (l.rate / 2) }}%</td><td class="inv-td inv-td-right">{{ rupees(l.cgst) | replace(' ', '') }}</td><td class="inv-td inv-td-center">{{ '%g' % (l.rate / 2) }}%</td><td class="inv-td inv-td-right">{{ rupees(l.sgst) | replace(' ', '') }}</td>
+  {% else %}<td class="inv-td inv-td-center">{{ '%g' % l.rate }}%</td><td class="inv-td inv-td-right">{{ rupees(l.igst) | replace(' ', '') }}</td>{% endif %}
+  <td class="inv-td inv-td-right">{{ rupees(l.taxable_value) | replace(' ', '') }}</td>
+</tr>{% endfor %}
+</tbody></table>
+<div class="inv-totals-section">
+  <div class="inv-words"><h4 class="inv-section-label">Amount in Words</h4><p class="inv-words-text">{{ words(inv.total) }}</p></div>
+  <div class="inv-totals">
+    <div class="inv-total-row"><span>Subtotal</span><span>{{ rupees(inv.taxable_value) | replace(' ', '') }}</span></div>
+    {% if h.intra %}<div class="inv-total-row"><span>CGST</span><span>{{ rupees(inv.cgst) | replace(' ', '') }}</span></div><div class="inv-total-row"><span>SGST</span><span>{{ rupees(inv.sgst) | replace(' ', '') }}</span></div>
+    {% else %}<div class="inv-total-row"><span>IGST</span><span>{{ rupees(inv.igst) | replace(' ', '') }}</span></div>{% endif %}
+    {% if h.round_off %}<div class="inv-total-row" style="color:#64748b;font-style:italic"><span>Round-off</span><span>{{ '+' if h.round_off > 0 else '' }}{{ rupees(h.round_off) | replace(' ', '') }}</span></div>{% endif %}
+    <div class="inv-total-row inv-total-final"><span>{{ 'Credit Amount' if is_cn else 'Total Due' }}</span><span style="color:#2563eb">{{ rupees(inv.total) | replace(' ', '') }}</span></div>
+  </div>
+</div>
+{% if inv.remarks %}<div class="inv-footer-block"><h4 class="inv-section-label">Notes</h4><div class="inv-terms">{{ inv.remarks }}</div></div>{% endif %}
+<div class="sign">For {{ s.name }}<br><br><br>Authorized Signatory</div>
+</body></html>

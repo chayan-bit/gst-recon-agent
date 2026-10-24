@@ -1,0 +1,20 @@
+/* Minimal stand-in for frappe's print.bundle.css (Bootstrap 3 grid + print-format rules) so the
+   vendored ERPNext/india-compliance templates lay out as in the browser print view. */
+* { box-sizing: border-box; }
+body { font-family: "Liberation Sans", sans-serif; font-size: 9pt; color: #000; margin: 0; }
+.print-format { font-size: 9pt; line-height: 1.42; }
+.print-format h1 { font-size: 18pt; margin: 4px 0; } .print-format h2 { font-size: 14pt; margin: 4px 0; }
+.print-format h5 { font-size: 10pt; } .print-format h6 { font-size: 9pt; } .print-format p { margin: 0 0 3px; }
+.print-format label { color: #444; font-weight: normal; }
+.print-format small { font-size: 70%; color: #444; }
+.row { margin: 0 -8px; } .row::after { content: ""; display: table; clear: both; }
+[class*="col-xs-"] { float: left; padding: 0 8px; min-height: 1px; }
+.col-xs-12 { width: 100%; } .col-xs-8 { width: 66.66%; } .col-xs-6 { width: 50%; } .col-xs-4 { width: 33.33%; } .col-xs-5 { width: 41.66%; } .col-xs-7 { width: 58.33%; } .col-xs-3 { width: 25%; } .col-xs-9 { width: 75%; }
+.text-right { text-align: right; } .text-center { text-align: center; } .text-left { text-align: left; } .text-nowrap { white-space: nowrap; }
+table { border-collapse: collapse; width: 100%; }
+.table { margin-bottom: 10px; } .table td, .table th { padding: 4px 6px; vertical-align: top; border-top: 1px solid #d1d8dd; }
+.table-bordered td, .table-bordered th { border: 1px solid #d1d8dd; } .table th { font-weight: bold; background: #f7f7f7; }
+.data-field { margin-top: 3px; margin-bottom: 3px; } .data-field .value { word-wrap: break-word; }
+.print-heading { border-bottom: 1px solid #d1d8dd; padding-bottom: 6px; margin-bottom: 10px; }
+.print-heading h2 { font-size: 20pt; margin: 0; }
+.hidden-pdf, .visible-pdf { }

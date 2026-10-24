@@ -1,0 +1,70 @@
+{#- Port of ghoshbishakh/billgst (GPL-3.0) gstbillingapp/templates/gstbillingapp/invoice_printer.html @ 9a45e01.
+    Django template syntax translated to Jinja (forloop.counter -> loop.index, |floatformat:2 -> money); markup,
+    labels and Bootstrap 4 card layout kept. Bootstrap 4 is approximated by the <style> block. currency = "Rs." -#}
+<!doctype html><html><head><meta charset="utf-8"><style>
+@page { size: A4; margin: 10mm; }
+body { font-family: "Liberation Sans", sans-serif; font-size: 10pt; color: #212529; }
+.card { border: 1px solid rgba(0,0,0,.125); border-radius: 4px; } .card-header { background: rgba(0,0,0,.03); border-bottom: 1px solid rgba(0,0,0,.125); padding: 10px 16px; }
+.card-body { padding: 16px; } .row { display: flex; } .col-6 { width: 50%; } .text-right { text-align: right; } .text-center { text-align: center; } .text-left { text-align: left; }
+h6 { font-size: 10pt; margin: 0 0 8px; font-weight: 500; } .mb-3 { margin-bottom: 8px; }
+table { border-collapse: collapse; width: 100%; } .table td, .table th { padding: 6px; border-top: 1px solid #dee2e6; font-size: 8.5pt; vertical-align: top; }
+.table thead th { border-bottom: 2px solid #dee2e6; } .table-striped tbody tr:nth-of-type(odd) { background: rgba(0,0,0,.05); }
+#invoice-grand-total-table td { border-top: 1px solid #dee2e6; font-size: 9.5pt; } #invoice-signature-row td { height: 50px; }
+</style></head><body>
+{% set currency = "Rs." %}
+	<div class="card">
+		<div class="card-header"><div class="row">
+			<div class="col-6"><strong>Invoice Date: {{ inv.invoice_date.isoformat() }}</strong></div>
+			<div class="col-6 text-right"><strong>Invoice No:{{ inv.invoice_no }}</strong></div>
+		</div></div>
+		<div class="card-body">
+			<div class="row">
+				<div class="col-6">
+					<div><strong>{{ s.name }}</strong></div>
+					<div id="invoice_profile_data">{{ s.address }}</div>
+					<div>GST No: {{ s.gstin }}</div>
+				</div>
+				<div class="col-6">
+					<h6 class="mb-3">Billed To:</h6>
+					<div><strong>{{ b.name }}</strong></div>
+					<div>{{ b.address }}</div>
+					<div>Phone: </div>
+					<div>GST No: {{ b.gstin }}</div>
+				</div>
+			</div>
+			<br>
+			<table class="table table-striped table-invoice">
+				<thead><tr>
+					<th class="text-center">#</th><th class="text-left">Item</th><th class="text-center">HSN / SAC</th><th class="text-center">Unit</th>
+					<th class="text-right">Qty</th><th class="text-right">Rate ({{ currency }})</th><th class="text-right">Taxable Amount ({{ currency }})</th><th class="text-right">GST (%)</th>
+					{% if not h.intra %}<th class="text-right">IGST ({{ currency }})</th>{% else %}<th class="text-right">CGST ({{ currency }})</th><th class="text-right">SGST ({{ currency }})</th>{% endif %}
+					<th class="text-right">Total Amount ({{ currency }})</th>
+				</tr></thead>
+				<tbody>
+					{% for l in inv.line_items %}<tr>
+						<td class="text-center">{{ loop.index }}</td><td class="text-left strong">{{ l.description }}</td><td class="text-center">{{ l.hsn }}</td><td class="text-center">{{ l.unit }}</td>
+						<td class="text-right">{{ '%g' % l.quantity }}</td><td class="text-right">{{ '%.2f' % l.unit_price }}</td><td class="text-right">{{ '%.2f' % l.taxable_value }}</td><td class="text-right">{{ '%g' % l.rate }}</td>
+						{% if not h.intra %}<td class="text-right">{{ '%.2f' % l.igst }}</td>{% else %}<td class="text-right">{{ '%.2f' % l.cgst }}</td><td class="text-right">{{ '%.2f' % l.sgst }}</td>{% endif %}
+						<td class="text-right">{{ '%.2f' % (l.taxable_value + l.igst + l.cgst + l.sgst) }}</td>
+					</tr>{% endfor %}
+					<tr id="table-invoice-total-row">
+						<td class="text-right" colspan="6">Total: </td><td class="text-right">{{ currency }} {{ '%.2f' % inv.taxable_value }}</td><td class="text-right"></td>
+						{% if not h.intra %}<td class="text-right">{{ currency }} {{ '%.2f' % inv.igst }}</td>{% else %}<td class="text-right">{{ currency }} {{ '%.2f' % inv.cgst }}</td><td class="text-right">{{ currency }} {{ '%.2f' % inv.sgst }}</td>{% endif %}
+						<td class="text-right"><strong>{{ currency }} {{ '%.2f' % inv.total }}</strong></td>
+					</tr>
+				</tbody>
+			</table>
+			<div class="row"><div class="col-6"></div><div class="col-6">
+				<table class="table text-right" id="invoice-grand-total-table">
+					<tr><td>Total Taxable Amount: </td><td>{{ currency }} {{ '%.2f' % inv.taxable_value }}</td></tr>
+					{% if not h.intra %}<tr><td>IGST: </td><td>{{ currency }} {{ '%.2f' % inv.igst }}</td></tr>
+					{% else %}<tr><td>CGST: </td><td>{{ currency }} {{ '%.2f' % inv.cgst }}</td></tr><tr><td>SGST: </td><td>{{ currency }} {{ '%.2f' % inv.sgst }}</td></tr>{% endif %}
+					<tr><td>Invoice Total: </td><td>{{ currency }} {{ '%.2f' % inv.total }}</td></tr>
+					<tr><td colspan="2" class="text-middle">Invoice Total In Words: {{ words(inv.total) | replace(' Only', '') }} only.</td></tr>
+					<tr id="invoice-signature-row"><td colspan="2"></td></tr>
+					<tr id="invoice-signature-text-row"><td colspan="2">Authorized Signatory<br> E, &amp; O.E.</td></tr>
+				</table>
+			</div></div>
+		</div>
+	</div>
+</body></html>
