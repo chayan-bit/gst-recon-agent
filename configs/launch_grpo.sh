@@ -13,6 +13,8 @@ ALIGN_PY=${ALIGN_PY:-$ROOT/venv-align/bin/python}     # PENDING: the venv with t
 SGLANG_PY=${SGLANG_PY:-$ROOT/venv-sglang/bin/python}  # PENDING: sglang 0.5.10.post1 env the rollout worker verified
 PORT=30001; MEMFRAC=0.40; HOURS=${HOURS:-3}           # port and mem fraction must match configs/grpo_sglang.yaml
 cd "$REPO" || exit 1
+export HF_HOME=$ROOT/hf
+[ -e runs ] || ln -s "$ROOT/runs" runs
 log() { echo "$(date +%T) $*" | tee -a "$LOG"; }
 die() { log "ABORT: $*"; exit 3; }
 
