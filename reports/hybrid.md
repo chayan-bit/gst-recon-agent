@@ -53,7 +53,7 @@ A single temperature-0.7 sample scores 79.3% to 80.7% under v2, so greedy is alr
 The per-document SFT v3 adapter (trained on the simulator's diverse identity formats, `fmt_version` 2) fell into a greedy loop inside `invoice_no` on 81 of the 384 small-dev document replies: after a fiscal-year prefix such as `2627` it kept choosing `0` until the 4,096-token cap, so the reply did not parse and the document dropped out of the reconciliation (ITC invoice exact 69.7% against 87.8% for student-perdoc-sft v1, all of the gap from the unparsed documents; on the parsed documents it read every header field better than v1).
 Doc schema v2 caps `invoice_no` and `original_invoice_no` at 16 characters (`maxLength` in `doc_json_schema`), the legal maximum of an invoice number under CGST Rule 46(b), so grammar-constrained decoding has to close the string.
 It is the default for every arm from 61f4b63 on, including the shipped system; the reconciler (v3) is unchanged.
-Sanity check on an adapter that never looped (student-perdoc-sft v1, fresh replies, schema v2 vs v1): small dev ITC invoice exact 87.9% vs 87.8%, composite 91.3 vs 91.2, context 90.7% vs 90.7%, 0 unparsed replies (big dev pending).
+Sanity check on an adapter that never looped (student-perdoc-sft v1, fresh replies, schema v2 vs v1): small dev ITC invoice exact 87.9% vs 87.8%, composite 91.3 vs 91.2, context 90.7% vs 90.7%; big dev ITC 81.2% vs 81.1%, composite 82.6 vs 82.6, context 80.4% vs 80.4%.
 Two cases of the 12-case realworld set carry an 18-character invoice number (beyond the Rule 46 limit, which that hand-built set did not enforce), so no arm can read those two fields under v2; every other set's invoice numbers are at most 16 characters long.
 Results labelled "doc schema v2" below were run with fresh replies under this protocol; earlier rows are schema v1.
 
@@ -70,6 +70,8 @@ A candidate ships instead of student-perdoc-sft v1 if and only if:
 Among the candidates that pass (a), the best on (b) is chosen.
 That candidate and v1 are then run once on the simulated test set (paired, schema v2; this is v1's second test run, under a protocol change applied to both arms) and scored once on realinv2, a fresh held-out set of about 30 real invoices labelled the same way.
 From this point realinv is a selection set; realinv2 is never used for selection.
+Added 2026-10-25 02:48 IST, before anything was scored on realinv2: if no candidate passes, student-perdoc-sft v1 stays and the test set is not run again.
+realinv2 is scored for v1 as the shipped model's held-out real-document check; the four v3 candidates are scored on it as an exploratory replication after the ship decision was locked, and nothing on realinv2 can change that decision.
 
 ### GRPO from the per-document SFT (dev only, measured, not shipped)
 
