@@ -10,6 +10,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from datetime import date
 
+from gst_recon.hybrid.fill import fill_identity
 from gst_recon.hybrid.docschema import HEADS, DocRecord, invoice_date, to_extraction, to_truth_invoice
 from gst_recon.hybrid.inputs import PromptParts, parse_prompt
 from gst_recon.hybrid.linker import lev, link_documents
@@ -34,14 +35,17 @@ def _goods_vehicles(rec: DocRecord) -> tuple[DocRecord, list[str]]:
 
 def _gstin_fix(inv: TruthInvoice, link: rules.Link, inputs: CaseInputs, twob: dict) -> str | None:
     """An invoice GSTIN that fails the mod-36 check digit is a misread: take the valid GSTIN of the linked
-    GSTR-2B entry (else of a linked register row) when it is within 2 edits. A valid GSTIN is never changed,
-    so a real registration under another GSTIN (same PAN, other state) still shows as gstin_mismatch."""
+    GSTR-2B entry (else of a linked register row) when it is within 2 edits and differs either in the state code
+    or in the rest, never both (another state's registration with a misread check digit is not a misread of
+    this one). A valid GSTIN is never changed, so a real registration under another GSTIN (same PAN, other
+    state) still shows as gstin_mismatch."""
     if is_valid_gstin(inv.supplier_gstin):
         return None
     regs = {r.voucher_no: r for r in inputs.purchase_register}
     entry = twob.get(link.gstr2b) if link.gstr2b else None
     cands = ([entry.ctin] if entry else []) + [regs[v].party_gstin.upper() for v in link.register_vouchers if v in regs]
-    return next((g for g in cands if is_valid_gstin(g) and lev(g, inv.supplier_gstin.strip().upper()) <= 2), None)
+    read = inv.supplier_gstin.strip().upper()
+    return next((g for g in cands if is_valid_gstin(g) and (g[:2] == read[:2] or g[2:] == read[2:]) and lev(g, read) <= 2), None)
 
 
 def _explain(inv: TruthInvoice, inputs: CaseInputs, link: rules.Link, twob: dict, out_row, itc_row) -> dict:
@@ -88,6 +92,12 @@ def reconcile_prompt(prompt: str, records: Mapping[str, DocRecord]) -> tuple[Rec
         if notes:
             trace["repairs"][doc_id] = notes
     records = fixed
+    trace["fills"] = {}
+    for d in parts.docs:
+        if d.doc_id in records:
+            records[d.doc_id], notes = fill_identity(records[d.doc_id], d.text, parts.register, parts.gstr2b)
+            if notes:
+                trace["fills"][d.doc_id] = notes
     invoices = []
     for d in parts.docs:
         rec = records.get(d.doc_id)

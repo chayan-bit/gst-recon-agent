@@ -199,7 +199,7 @@ def _pay_score(due: _Due, t: BankTxn) -> tuple[float, list[str]] | None:
         why.append(f"part payment {t.debit:.2f} of {due.net:.2f}")
     else:
         return None
-    s -= 0.0001 * (t.txn_date - inv.invoice_date).days  # tie-break: the earliest open invoice is paid first
+    s -= 0.0001 * (t.txn_date - inv.invoice_date).days  # tie-break: the earliest payment after the invoice
     return s, why
 
 
