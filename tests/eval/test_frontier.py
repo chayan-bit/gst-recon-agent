@@ -123,3 +123,15 @@ def test_codex_cli_maps_failures_to_the_error_field_after_retries(tmp_path, monk
     monkeypatch.setattr(mod.time, "sleep", lambda s: None)
     r = mod.codex_cli("p", "gpt-6-luna", 30, 2, tmp_path, cmd_prefix=[str(_fake_codex(tmp_path, "fail"))], system="s")
     assert r["text"] == "" and "rate limit" in r["error"]
+
+
+def test_effort_flag_is_appended_to_the_invocation_and_recorded(world, monkeypatch):
+    mod = _load()
+    exe = fake_claude(world["tmp"], world["targets"])
+    monkeypatch.setattr(mod, "CMD", [str(exe), *mod.CMD[1:]])
+    monkeypatch.setenv("MAX_THINKING_TOKENS", "0")
+    out = world["tmp"] / "runs" / "eval" / "frontier-low"
+    mod.main(["--cases", str(world["dirs"]["test_iid"]), "--n-per-dir", "1", "--out", str(out), "--claude-effort", "low",
+              "--truth-dir", str(world["truth"])])
+    cfg = json.loads((out / "config.json").read_text())
+    assert cfg["invocation"][-2:] == ["--effort", "low"] and cfg["env"] == {"MAX_THINKING_TOKENS": "0"}

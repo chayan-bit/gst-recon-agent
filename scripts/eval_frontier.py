@@ -128,6 +128,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--retries", type=int, default=1)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--truth-dir", type=Path, default=Path("data/truth"))
+    ap.add_argument("--claude-effort", choices=("low", "medium", "high", "xhigh", "max"), default=None,
+                    help="claude --effort level (low gives the least thinking; thinking cannot be switched off for every model)")
     ap.add_argument("--schema-mode", choices=("prompt", "flag"), default="prompt",
                     help="hybrid only: prompt = doc schema appended to the system prompt (the Sonnet hybrid run); "
                          "flag = the CLI's --json-schema structured output, system prompt unchanged")
@@ -148,12 +150,14 @@ def main(argv: list[str] | None = None) -> int:
         ap.error("--backend codex needs --mode hybrid")
     if a.concurrency > (6 if a.backend == "codex" else 4):
         ap.error(f"concurrency is capped at {6 if a.backend == 'codex' else 4} on the Mac")
+    if a.claude_effort:
+        CMD.extend(["--effort", a.claude_effort])
     work = a.out.resolve() / "cwd"  # neutral cwd: no project files or CLAUDE.md picked up
     work.mkdir(parents=True, exist_ok=True)
     cases = load_cases(a.cases, truth_dir=a.truth_dir if a.truth_dir.exists() else None, n_per_dir=a.n_per_dir, seed=a.seed)
     config = {"label": a.label, "model": f"claude {a.model} via `claude -p`", "endpoint": "claude CLI", "constrained": False,
               "schema_in_prompt": True, "cases": [str(p) for p in a.cases], "n_per_dir": a.n_per_dir, "invocation": CMD,
-              "prices": {}}
+              "env": {k: os.environ[k] for k in os.environ if "THINKING" in k}, "prices": {}}
     gen = lambda c: claude_cli(c.prompt, a.model, a.timeout, a.retries, work)  # noqa: E731
     if a.mode == "hybrid":
         from gst_recon.hybrid.docschema import doc_json_schema
