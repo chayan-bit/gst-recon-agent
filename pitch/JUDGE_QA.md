@@ -36,7 +36,8 @@ If the model of the law is wrong, the student faithfully learns the error, but t
 Nothing we ship, and we say so.
 SFT teaches the model to imitate a reference answer token by token, which is how it learns the format and the common patterns.
 GRPO samples several answers to the same case and rewards the outcome we care about, which code can check exactly: schema validity, flag and reason-code sets, and exact ITC on the invoices that are not fully eligible, with a dense term so partial progress still counts.
-We built the SGLang rollout backend for it and upstreamed it to AlignTune (PR #32), and we ran GRPO from the per-document SFT once (step 75).
+We built the SGLang rollout backend for it and upstreamed it to AlignTune (PR #32), and we ran GRPO from the per-document SFT once (step 75, started from the second per-document adapter).
+On the two dev sets it was neutral against its starting point (ITC-exact +0.9 points [-0.5, +2.5], p = 0.23 on 120 cases and -0.4 [-1.0, +0.2], p = 0.19 on 60, scored under reconciler v3, nothing significant).
 On the semireal set it adds 1 to 2 points of ITC-exact over the per-document SFT but loses 4 to 7 points of match accuracy, and on 42 real purchase documents it reads invoice numbers worse (21.4% against 30.9%) and invents more identity fields (12.3% against 8.8%), even though its reward credits abstention.
 So GRPO is infrastructure we built and a measured negative result, not a headline gain; what SFT adds end to end is the number to quote: over the base model, paired on 30 simulator cases, +25.7 ITC-exact points [18.8, 32.6] and +45.9 on context accuracy [35.0, 56.5], all p = 0.0005.
 One limit we know about: our GRPO cases are short (2 to 4 invoices, prompts up to 6,144 tokens).
