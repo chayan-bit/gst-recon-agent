@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # GRPO on rs-epyc (configs/grpo_sglang.yaml): start the SGLang rollout server (base snapshot + LoRA slots),
-# wait for health, then the trainer under run_guarded (CAP_GB=8, abort below 8 GB available).
+# wait for health, then the trainer under run_guarded (CAP_GB=8, abort below 12 GB available).
+# Rollouts are unconstrained (no JSON-schema grammar), capped at max_completion_length 4096; the reward expands
+# the compact output form (tests/train/test_reward_plugin_compact.py).
 # The runner stops at 3 h wall clock after saving (gst_recon.max_hours); an outer timeout of 3 h 15 m is the
 # backstop. Adapters are saved every 50 steps (save_total_limit 2) to ~/gst-recon/runs/grpo-sglang.
 #   tmux new-session -d -s grpo 'bash ~/gst-recon/repo/configs/launch_grpo.sh'
@@ -37,7 +39,7 @@ disk=$(df -BG --output=avail ~ | tail -1 | tr -dc 0-9)
 log "preflight avail=${avail}G gpu_free=${gpu}MiB disk=${disk}G load=$(cut -d' ' -f1 /proc/loadavg) rows=$(wc -l < data/train/curated/grpo-merged/train.jsonl)"
 nvidia-smi --query-compute-apps=pid,used_memory --format=csv,noheader | tee -a "$LOG"
 [ "$gpu" -ge 85000 ] || die "only ${gpu} MiB GPU free (plan: ~45 GiB server + ~25 GiB trainer)"
-[ "$avail" -ge 8 ] || die "only ${avail} GB host RAM available"
+[ "$avail" -ge 12 ] || die "only ${avail} GB host RAM available"
 [ "$disk" -ge 8 ] || die "only ${disk} GB disk (5 GB floor + 2 checkpoints + adapter sync)"
 
 # 1. rollout server in its own tmux session (outside the trainer's process group and time box)
@@ -55,7 +57,7 @@ log "rollout server up: $(nvidia-smi --query-gpu=memory.used --format=csv,nohead
   log "first 5 steps: $(( ($(date +%s) - t0) / 5 )) s/step incl. model load (see step lines for the steady rate)" ) &
 
 # 3. GRPO under the host-RAM watchdog; timeout signals its whole process group (run_guarded, trainer, children)
-timeout -s TERM 195m env PYTHON="$ALIGN_PY" MODEL="$BASE" CAP_GB=8 DUMP_GB=6 MIN_AVAIL_GB=8 \
+timeout -s TERM 195m env PYTHON="$ALIGN_PY" MODEL="$BASE" CAP_GB=8 DUMP_GB=6 MIN_AVAIL_GB=12 \
   bash configs/run_guarded.sh configs/grpo_sglang.yaml >> "$LOG" 2>&1
 rc=$?
 
