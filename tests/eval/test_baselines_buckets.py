@@ -38,3 +38,18 @@ def test_baseline_script_and_report_with_length_split_difficulty_and_placeholder
     md = out.read_text()
     assert "context-blind rules (oracle extraction and links)" in md and "SFT+GRPO (not run yet)" in md
     assert "By case prompt length" in md and "<=16k" in md and "By split and difficulty" in md
+
+
+def test_manifest_write_and_verify_detects_changes(world, capsys):
+    from gst_recon.eval import manifest
+
+    rendered = world["dirs"]["test_iid"].parent
+    out = world["tmp"] / "m.json"
+    assert manifest.main(["write", "--rendered", str(rendered), "--out", str(out), "--seed", "test_iid=9001", "--seed", "test_ood=9002"]) == 0
+    m = json.loads(out.read_text())
+    assert m["splits"]["test_iid"]["seed"] == 9001 and m["splits"]["test_iid"]["n_cases"] == 3
+    assert manifest.main(["verify", "--rendered", str(rendered), "--manifest", str(out)]) == 0
+    victim = next(world["dirs"]["test_ood"].iterdir())
+    (victim / "prompt.txt").write_text("tampered")
+    assert manifest.main(["verify", "--rendered", str(rendered), "--manifest", str(out)]) == 1
+    assert "content changed" in capsys.readouterr().out
