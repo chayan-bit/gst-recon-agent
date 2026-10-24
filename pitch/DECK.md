@@ -67,8 +67,8 @@ Visual: a split bar showing train / test_iid / test_ood, with the held-out items
 
 | System | Test ITC exact | Test match | Test composite | Semireal ITC exact | Semireal match | Semireal composite |
 |---|---|---|---|---|---|---|
-| pd3g287 (shipped): per-document model + our reconciler | {{SHIP_ITC_PT}} | {{SHIP_MATCH_PT}} | {{SHIP_COMP_PT}} | 61.1 | 71.5 | 72.9 |
-| student-perdoc-sft (v1): first per-document model + our reconciler | {{V1_ITC_PT}} | {{V1_MATCH_PT}} | {{V1_COMP_PT}} | 58.5 | 64.1 | 68.6 |
+| pd3g287 (shipped): per-document model + our reconciler | 80.0 | 85.0 | 81.6 | 61.1 | 71.5 | 72.9 |
+| student-perdoc-sft (v1): first per-document model + our reconciler | 80.1 | 88.7 | 82.8 | 58.5 | 64.1 | 68.6 |
 | Claude Haiku 5.5, same hybrid harness (one call per document + our reconciler); minimum thinking (mean {{HAIKU_THINK_TOKENS}} tokens per document), cannot be disabled via the CLI | {{HAIKU_TEST_ITC}} | {{HAIKU_TEST_MATCH}} | {{HAIKU_TEST_COMP}} | {{HAIKU_SEMI_ITC}} | {{HAIKU_SEMI_MATCH}} | {{HAIKU_SEMI_COMP}} |
 | Claude Haiku 4.5, same hybrid harness (one call per document + our reconciler); thinking off (0 thinking tokens) | {{HAIKU45_TEST_ITC}} | {{HAIKU45_TEST_MATCH}} | {{HAIKU45_TEST_COMP}} | {{HAIKU45_SEMI_ITC}} | {{HAIKU45_SEMI_MATCH}} | {{HAIKU45_SEMI_COMP}} |
 | GPT-6 luna, same hybrid harness (one call per document + our reconciler); lowest reasoning effort | {{LUNA_TEST_ITC}} | {{LUNA_TEST_MATCH}} | {{LUNA_TEST_COMP}} | {{LUNA_SEMI_ITC}} | {{LUNA_SEMI_MATCH}} | {{LUNA_SEMI_COMP}} |
@@ -77,6 +77,7 @@ Visual: a split bar showing train / test_iid / test_ood, with the held-out items
 - Test is the 120 simulator test cases; semireal is 54 cases built around real documents with simulated purchase register, GSTR-2B and bank books, pooled, so it measures document reading and not real book messiness, and its labels were drafted by a model and not verified by a human.
 - ITC exact is the share of invoices whose eligible, blocked and deferred amounts are all within Rs 1 of the truth; match is match accuracy; composite is the weighted composite, which has a high floor.
 - pd3g287 and student-perdoc-sft run under reconciler v3 and doc schema v2, and their test rows were scored once.
+- On the test set pd3g287 ties student-perdoc-sft on ITC exact (80.0 against 80.1) and matches 3.8 points worse (85.0 against 88.7, composite 81.6 against 82.8); on the semireal real documents it is ahead on all three, significantly on match and composite.
 - Sonnet ran through the Claude Code CLI with the whole case in one prompt, so its row is a different harness and not a like-for-like comparison with the hybrid rows.
 - No model gets test-time compute beyond what its harness cannot remove: our 4B (Qwen3-4B-Instruct-2507) has no thinking mode and its output is XGrammar-constrained to start with `{`, Haiku 4.5 runs with thinking off, GPT-6 luna at the lowest reasoning effort, and Haiku 5.5 cannot disable thinking through the Claude Code CLI, so its row is at minimum thinking.
 - Sonnet's whole-case run used the Claude Code CLI defaults, and its report does not record the thinking setting, so we say thinking at CLI default.
@@ -91,7 +92,7 @@ Visual: the headline table as a slide, with the shipped row highlighted and the 
 
 ## Slide 7 - Not claiming to beat frontier models: how close, at what cost
 
-- Claim: on the same 120 test cases pd3g287 reaches {{SHIP_PCT_SONNET}}% of Claude Sonnet's ITC exact ({{SHIP_ITC_PT}} against 96.3; Sonnet is a different harness, the whole case in one prompt, so this is a comparison of systems), fully local; Sonnet costs $226.88 per 1,000 cases at list price (token counts through the CLI), and we do not publish a student cost ratio because we have not measured the student's GPU cost.
+- Claim: on the same 120 test cases pd3g287 reaches 83.1% of Claude Sonnet's ITC exact (80.0 against 96.3; Sonnet is a different harness, the whole case in one prompt, so this is a comparison of systems), fully local; Sonnet costs $226.88 per 1,000 cases at list price (token counts through the CLI), and we do not publish a student cost ratio because we have not measured the student's GPU cost.
 - Latency: p50 38.0 s per case end to end (SFT with the compact grammar, 30 simulator cases) and 61.2 s per case in hybrid mode (one document per call, first pass, slightly understated because a demo recording shared the server), against 67.9 s for Sonnet through the Claude Code CLI (not a clean API latency). <!-- reports/results.md throughput table ("SFT constrained, compact grammar (same 36 cases)", "Claude Sonnet (via Claude Code CLI)") and reports/hybrid.md hybrid throughput -->
 - Open-model reference: Qwen3-30B-A3B (the teacher, served on SGLang with a 64k context), run end to end on the same 120 test cases, scores ITC exact 59.8, match 71.1 and composite 69.1. <!-- reports/results.md, teacher-30B constrained, overall -->
 - Constrained versus unconstrained decoding on the SFT student (XGrammar, 30 simulator cases): schema-valid 70.0% -> 100.0%, ITC-exact 72.3 -> 75.7 (paired on 42 cases the difference is -2.4 points [-7.3, +2.5], p = 0.32 without the grammar, so the grammar buys valid output at no measurable accuracy cost). <!-- reports/results.md, "SFT unconstrained" and "SFT constrained, compact grammar" rows and their note -->

@@ -86,7 +86,7 @@ Narration:
 We measured the climb.
 On unseen items and layouts, invoices exactly right go from 53.1 percent for the base model to 78.9 with SFT, on a sample of fifteen cases.
 We also trained with GRPO on a rule-checked reward, twice; the first run did not help and we dropped it, and the second ships, by an override of our own dev rule that we explain in the repository.
-On the 120 test cases Claude Sonnet gets 96.3 and our hybrid system gets {{SHIP_ITC_PT}}, which is {{SHIP_PCT_SONNET}} percent of that, and nothing leaves the machine.
+On the 120 test cases Claude Sonnet gets 96.3 and our hybrid system gets 80.0, which is 83.1 percent of that, and nothing leaves the machine.
 Constrained decoding lifts valid output from 70 to 100 percent."
 
 <!-- Sources: 96.3 (Sonnet, n = 120) and the shipped pd3g287 hybrid test ITC-exact (reconciler v3, doc schema v2, n = 120, pending) are reports/results.md and reports/hybrid.md rows; percent = pd3g287 / 96.3; the previous adapter was 79.9 / 96.3 = 83.0 percent. Base 53.1 is the "student-base constrained" test_ood row and SFT 78.9 is the "SFT constrained (compact grammar)" test_ood row, both n = 15; 70 to 100 is the SFT unconstrained versus compact-grammar schema-valid share on 30 simulator cases (commit da4120a, 42-case stratified sample); say that it is a small sample. -->

@@ -10,8 +10,8 @@ Full-reconciliation numbers only: every row is the whole pipeline scored end to 
 
 | System | Test ITC exact | Test match | Test composite | Semireal ITC exact | Semireal match | Semireal composite |
 |---|---|---|---|---|---|---|
-| pd3g287 (shipped): per-document model + our reconciler | {{SHIP_ITC_PT}} | {{SHIP_MATCH_PT}} | {{SHIP_COMP_PT}} | 61.1 | 71.5 | 72.9 |
-| student-perdoc-sft (v1): first per-document model + our reconciler | {{V1_ITC_PT}} | {{V1_MATCH_PT}} | {{V1_COMP_PT}} | 58.5 | 64.1 | 68.6 |
+| pd3g287 (shipped): per-document model + our reconciler | 80.0 | 85.0 | 81.6 | 61.1 | 71.5 | 72.9 |
+| student-perdoc-sft (v1): first per-document model + our reconciler | 80.1 | 88.7 | 82.8 | 58.5 | 64.1 | 68.6 |
 | Claude Haiku 5.5, same hybrid harness (one call per document + our reconciler); minimum thinking (mean {{HAIKU_THINK_TOKENS}} tokens per document), cannot be disabled via the CLI | {{HAIKU_TEST_ITC}} | {{HAIKU_TEST_MATCH}} | {{HAIKU_TEST_COMP}} | {{HAIKU_SEMI_ITC}} | {{HAIKU_SEMI_MATCH}} | {{HAIKU_SEMI_COMP}} |
 | Claude Haiku 4.5, same hybrid harness (one call per document + our reconciler); thinking off (0 thinking tokens) | {{HAIKU45_TEST_ITC}} | {{HAIKU45_TEST_MATCH}} | {{HAIKU45_TEST_COMP}} | {{HAIKU45_SEMI_ITC}} | {{HAIKU45_SEMI_MATCH}} | {{HAIKU45_SEMI_COMP}} |
 | GPT-6 luna, same hybrid harness (one call per document + our reconciler); lowest reasoning effort | {{LUNA_TEST_ITC}} | {{LUNA_TEST_MATCH}} | {{LUNA_TEST_COMP}} | {{LUNA_SEMI_ITC}} | {{LUNA_SEMI_MATCH}} | {{LUNA_SEMI_COMP}} |
@@ -20,6 +20,7 @@ Full-reconciliation numbers only: every row is the whole pipeline scored end to 
 Test is the 120 simulator test cases; semireal is 54 cases built around real documents with simulated purchase register, GSTR-2B and bank books, pooled, so it measures document reading and not real book messiness, and its labels were drafted by a model and not verified by a human.
 ITC exact is the share of invoices whose eligible, blocked and deferred amounts are all within Rs 1 of the truth; match is match accuracy; composite is the weighted composite, which has a high floor.
 pd3g287 and student-perdoc-sft run under reconciler v3 and doc schema v2, and their test rows were scored once.
+On the test set pd3g287 ties student-perdoc-sft on ITC exact (80.0 against 80.1) and matches 3.8 points worse (85.0 against 88.7, composite 81.6 against 82.8); on the semireal real documents it is ahead on all three, significantly on match and composite.
 Sonnet ran through the Claude Code CLI with the whole case in one prompt, so its row is a different harness and not a like-for-like comparison with the hybrid rows.
 No model gets test-time compute beyond what its harness cannot remove: our 4B (Qwen3-4B-Instruct-2507) has no thinking mode and its output is XGrammar-constrained to start with `{`, Haiku 4.5 runs with thinking off, GPT-6 luna at the lowest reasoning effort, and Haiku 5.5 cannot disable thinking through the Claude Code CLI, so its row is at minimum thinking.
 Sonnet's whole-case run used the Claude Code CLI defaults, and its report does not record the thinking setting, so we say thinking at CLI default.
