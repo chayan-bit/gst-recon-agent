@@ -23,7 +23,7 @@ from pydantic import ValidationError
 
 from gst_recon.hybrid.docschema import DocRecord
 from gst_recon.hybrid.inputs import parse_date
-from gst_recon.render.fmt import DATE_FORMATS, fmt_date
+from gst_recon.render.fmt import DATE_FORMATS_V2, fmt_date
 from gst_recon.render.holdout import OOD_DATE_FORMATS
 
 IDENTITY = ("supplier_gstin", "invoice_no", "invoice_date")
@@ -80,7 +80,7 @@ def visible(field: str, value: str, doc_text: str) -> bool:
         d = parse_date(value)
     except (ValueError, KeyError):
         return False
-    return any(_fold(fmt_date(d, f)) in page for f in {*DATE_FORMATS, *OOD_DATE_FORMATS, "YYYY-MM-DD"})
+    return any(_fold(fmt_date(d, f)) in page for f in {*DATE_FORMATS_V2, *OOD_DATE_FORMATS})
 
 
 def identity_score(field: str, pred: str, truth: str, doc_text: str) -> float:

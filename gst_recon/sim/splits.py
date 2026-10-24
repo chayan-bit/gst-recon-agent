@@ -151,8 +151,9 @@ def _vocab(pool: Sequence, key: str, split: str, frac: float = 0.3) -> tuple:
 class View:
     """Everything the generator may draw for one split."""
 
-    def __init__(self, split: str):
+    def __init__(self, split: str, fmt_version: int = 1):
         self.split = check_split(split)
+        self.fmt_version = fmt_version  # 2: per-supplier invoice-number formats from suppliers.v2_number_format
 
     def concepts(self, family: str, ood_only: bool = False) -> list[Concept]:
         fam = [c for c in CONCEPTS if c.family == family and concept_cores(c, self.split)]

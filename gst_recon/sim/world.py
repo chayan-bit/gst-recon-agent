@@ -164,10 +164,15 @@ def _draft_invoices(rng: random.Random, knobs: Knobs, view: View, ctx: BuyerCont
 
 
 def generate_case(seed: int, difficulty: str = "medium", index: int = 0,
-                  periods: list[tuple[int, int]] | None = None, split: str = "train", size: str | None = None) -> Case:
+                  periods: list[tuple[int, int]] | None = None, split: str = "train", size: str | None = None,
+                  fmt_version: int = 1) -> Case:
     """`size` ("sft" or "grpo", train split only) picks a TRAIN_SIZES document-count profile;
-    such cases get their own rng stream and a "<size>-" case_id prefix."""
-    knobs, view = DIFFICULTY[difficulty], View(check_split(split))
+    such cases get their own rng stream and a "<size>-" case_id prefix.
+    `fmt_version` 2 draws diverse per-supplier invoice-number formats here and date styles in the renderer;
+    1 (default) keeps every existing case byte-identical."""
+    if fmt_version not in (1, 2):
+        raise ValueError(f"fmt_version must be 1 or 2, got {fmt_version!r}")
+    knobs, view = DIFFICULTY[difficulty], View(check_split(split), fmt_version)
     if size is not None:
         if split != "train" or size not in TRAIN_SIZES:
             raise ValueError(f"size must be one of {sorted(TRAIN_SIZES)} and only for the train split")
@@ -202,4 +207,4 @@ def generate_case(seed: int, difficulty: str = "medium", index: int = 0,
                                   "household", "giftable") or d.inv.line_items[0].purpose.value != "business"]
     prefix = ("" if split == "train" else f"{split}-") + (f"{size}-" if size else "")
     return Case(case_id=f"{prefix}{difficulty}-{seed}-{index:05d}", seed=seed, difficulty=difficulty, split=split,
-                inputs=inputs, expected=reconcile(inputs, links), anomalies=anomalies)
+                inputs=inputs, expected=reconcile(inputs, links), anomalies=anomalies, fmt_version=fmt_version)

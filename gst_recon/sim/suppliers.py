@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import random
+import re
 from dataclasses import dataclass, field
 from datetime import date, timedelta
 
@@ -24,6 +25,61 @@ def fy_label(d: date) -> str:
     return f"{start % 100:02d}-{(start + 1) % 100:02d}"
 
 
+def fy_tags(d: date) -> dict[str, str]:
+    """Financial-year spellings a number format may use: {fy} 24-25 (v1), {fyl} 2024-25, {fyc} 2425, {fys} 24/25,
+    {fyn} FY25, {yr} 2024 (calendar year of the document)."""
+    start = d.year if d.month >= 4 else d.year - 1
+    return {"fy": fy_label(d), "fyl": f"{start}-{(start + 1) % 100:02d}", "fyc": f"{start % 100:02d}{(start + 1) % 100:02d}",
+            "fys": f"{start % 100:02d}/{(start + 1) % 100:02d}", "fyn": f"FY{(start + 1) % 100:02d}", "yr": str(d.year)}
+
+
+# fmt_version 2: per-supplier invoice-number formats built from parts, within CGST Rule 46(b): at most 16 characters,
+# letters, digits, hyphen and slash only, a consecutive serial unique per financial year. Train data only (no split
+# holdout); v1 cases keep catalog.NUMBER_FORMATS.
+MAX_NO_LEN = 16
+LEGAL_NO = re.compile(r"[A-Za-z0-9/-]{1,16}")
+_PREFIXES = ("INV", "TI", "GST", "SI", "TAX", "B", "S", "BL", "INV", "T", "GT", "SB", "RI", "TIN", "SL", "IN", "BILL")
+_BRANCHES = ("MH", "DL", "KA", "TN", "GJ", "UP", "WB", "TS", "RJ", "HR", "BLR", "PNQ", "DEL", "HYD", "CHN", "MUM",
+             "AHM", "JPR", "NDA", "GGN", "01", "02", "A", "B", "HO", "BR1")
+_CN_PREFIXES = ("CN", "CRN", "CR", "CN", "SCN", "C")
+
+
+def _initials(name: str) -> str:
+    return "".join(w[0] for w in re.findall(r"[A-Za-z]+", name) if w[0].isupper())[:4] or "S"
+
+
+def _serial(rng: random.Random) -> str:
+    return rng.choice(("{:d}", "{:d}", "{:03d}", "{:04d}", "{:04d}", "{:05d}", "{:06d}"))
+
+
+def v2_number_format(rng: random.Random, name: str, cn: bool = False) -> str:
+    """One supplier's numbering scheme, as a str.format template over (counter, **fy_tags)."""
+    pre = rng.choice(_CN_PREFIXES) if cn else rng.choice((*_PREFIXES, _initials(name), _initials(name)))
+    fy = rng.choice(("{fy}", "{fyl}", "{fyc}", "{fys}", "{fyn}", "{yr}"))
+    br, sep, ser = rng.choice(_BRANCHES), rng.choice(("/", "/", "-", "-", "")), _serial(rng)
+    shapes = (f"{pre}{sep}{fy}{sep}{ser}", f"{pre}{sep}{ser}", f"{pre}{sep}{ser}{sep or '/'}{fy}", f"{fy}{sep}{ser}",
+              f"{pre}{sep}{br}{sep}{fy}{sep}{ser}", f"{br}{sep}{pre}{sep}{ser}", f"{fy}{sep or '/'}{pre}{sep}{ser}",
+              f"{pre}{ser}")
+    shapes += () if cn else ("{:d}", "{:05d}", f"{br}{sep}{ser}", "{fyc}{:08d}", "9{:09d}", f"{pre}{sep}{br}{sep}{{:06d}}")
+    fmt = rng.choice(shapes)
+    case = rng.random()
+    if case < 0.12:
+        fmt = re.sub(r"[A-Z]+(?![^{]*})", lambda m: m.group().lower(), fmt)  # inv/24-25/12 (placeholders untouched)
+    elif case < 0.2:
+        fmt = re.sub(r"[A-Z]+(?![^{]*})", lambda m: m.group().capitalize(), fmt)
+    return fmt
+
+
+def v2_counter(rng: random.Random) -> int:
+    """Serial already reached at the case start: log-uniform 1..~30000, so unpadded serials vary in width."""
+    return int(10 ** rng.uniform(0, 4.5))
+
+
+def fits(fmt: str, counter: int, d: date) -> bool:
+    """The template renders a legal Rule 46(b) number for this counter (and the next 100) on date d."""
+    return all(LEGAL_NO.fullmatch(fmt.format(n, **fy_tags(d))) for n in (counter, counter + 100))
+
+
 @dataclass
 class Supplier:
     party: Party
@@ -33,6 +89,7 @@ class Supplier:
     number_fmt: str
     counter: int
     credit_notes: set[str] = field(default_factory=set)  # CN numbers issued in this case (GSTR-2B key part)
+    cn_fmt: str | None = None  # fmt_version 2: this supplier's credit-note numbering (v1: CN/NNN)
 
 
 def _name(rng: random.Random, view: View) -> str:
@@ -67,8 +124,22 @@ def _new_supplier(rng: random.Random, view: View, buyer: Party, family: str, poo
         pool = held
     k = 1 if family in SINGLE_CONCEPT_FAMILIES else rng.randint(1, 4)
     concepts = tuple(rng.sample(pool, min(len(pool), k)))
+    if view.fmt_version >= 2:
+        return _v2_supplier(rng, party, make_gstin(other, party.gstin[2:12]), concepts, family)
     return Supplier(party, make_gstin(other, party.gstin[2:12]), concepts, family, rng.choice(view.number_formats),
                     rng.randint(1, 900))
+
+
+def _v2_supplier(rng: random.Random, party: Party, alt: str, concepts: tuple, family: str) -> Supplier:
+    probe = date(2026, 3, 31)  # widest fy tags; checked again at issue time
+    counter = v2_counter(rng)
+    fmt = v2_number_format(rng, party.name)
+    while not fits(fmt, counter, probe):
+        fmt = v2_number_format(rng, party.name)
+    cn = v2_number_format(rng, party.name, cn=True)
+    while not fits(cn, 400, probe):
+        cn = v2_number_format(rng, party.name, cn=True)
+    return Supplier(party, alt, concepts, family, fmt, counter, cn_fmt=cn)
 
 
 def _line(rng: random.Random, view: View, c: Concept, intra: bool, supply_date: date,
@@ -111,7 +182,7 @@ def purchase_invoice(rng: random.Random, view: View, ctx: BuyerContext, buyer: P
     if family == "food" and not is_service and purpose == LinePurpose.BUSINESS and extra and rng.random() < P_MIXED_BILL:
         lines.append(_line(rng, view, rng.choice(extra), intra, dt, LinePurpose.BUSINESS))  # mixed: blocked + eligible
     s.counter += 1
-    no = s.number_fmt.format(s.counter, fy=fy_label(dt))
+    no = s.number_fmt.format(s.counter, **fy_tags(dt))  # v1 templates use only {fy}
     rcm = any(c.reverse_charge for c in concepts)
     return assemble(s, buyer, lines, no, dt, DocType.INVOICE, rcm, remarks=remark_for(rng, purpose, view)), s
 
@@ -125,8 +196,10 @@ def credit_note(rng: random.Random, inv: TruthInvoice, s: Supplier, buyer: Party
                                       quantity=1, unit_price=taxable, taxable_value=taxable, igst=igst,
                                       cgst=cgst, sgst=sgst, cess=r2(taxable * src.cess / max(src.taxable_value, 1))))
     dt = min(period_end, inv.invoice_date + timedelta(days=rng.randint(1, 10)))
-    no = f"CN/{rng.randint(1, 400):03d}"
+    draw = (lambda: s.cn_fmt.format(rng.randint(1, 400), **fy_tags(dt))) if s.cn_fmt else \
+        (lambda: f"CN/{rng.randint(1, 400):03d}")
+    no = draw()
     while no in s.credit_notes:  # redraw only on a repeat, so every case without one stays byte-identical
-        no = f"CN/{rng.randint(1, 400):03d}"
+        no = draw()
     s.credit_notes.add(no)
     return assemble(s, buyer, [line], no, dt, DocType.CREDIT_NOTE, False, inv.invoice_no)

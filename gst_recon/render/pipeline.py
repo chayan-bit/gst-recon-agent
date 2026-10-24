@@ -93,7 +93,7 @@ def render_case(case: Case, out_root: Path, *, split: str | None = None, keep_im
 
     rest_ix = Index.of(rest)
     by_id = {i.doc_id: i for i in inp.invoices}
-    recalls = [check_doc(d["doc_id"], doc_facts(by_id[d["doc_id"]], d["ctx"]["date"]), d["text"], rest_ix) for d in docs]
+    recalls = [check_doc(d["doc_id"], doc_facts(by_id[d["doc_id"]], d["ctx"].get("date_only", d["ctx"]["date"])), d["text"], rest_ix) for d in docs]
     stats = case_recall(recalls, {d["doc_id"] for d in docs if d["delivery"] == "scan"})
 
     target = case.expected.model_dump_json(indent=None)

@@ -11,7 +11,7 @@ import random
 from dataclasses import dataclass
 from functools import lru_cache
 
-from gst_recon.render.fmt import DATE_FORMATS, NUM_FORMATS, fmt_amount, fmt_date
+from gst_recon.render.fmt import DATE_FORMATS, DATE_FORMATS_V2, NUM_FORMATS, fmt_amount, fmt_date
 from gst_recon.render.holdout import OOD_DATE_FORMATS, pick
 from gst_recon.render.layouts import LAYOUTS, is_service
 from gst_recon.render.words import amount_in_words
@@ -190,12 +190,32 @@ def _totals(inv: TruthInvoice, f, L: dict[str, str], single_rate: str | None) ->
     return out
 
 
+TIME_STYLES = ("24h", "12h", "24h_sec")
+P_TIME = 0.25  # v2: share of suppliers (POS / e-invoice systems) that print a time next to the date
+
+
+def _v2_date(case: Case, inv: TruthInvoice, style_rng: random.Random) -> tuple[str, str]:
+    """(date style, shown date text) for a fmt_version 2 case: the style, and whether and how a time is printed,
+    are per supplier (`style_rng`); the time itself is per document, from its own stream."""
+    style = style_rng.choice(DATE_FORMATS_V2)
+    tstyle = style_rng.choice(TIME_STYLES) if style_rng.random() < P_TIME else None
+    shown = fmt_date(inv.invoice_date, style)
+    if not tstyle:
+        return style, shown
+    t = random.Random(f"{case.case_id}:{inv.doc_id}:time")
+    h, m, sec = t.randint(8, 21), t.randint(0, 59), t.randint(0, 59)
+    clock = {"24h": f"{h:02d}:{m:02d}", "24h_sec": f"{h:02d}:{m:02d}:{sec:02d}",
+             "12h": f"{(h - 1) % 12 + 1:02d}:{m:02d} {'AM' if h < 12 else 'PM'}"}[tstyle]
+    return style, f"{shown} {clock}"
+
+
 def build_context(case: Case, inv: TruthInvoice, layout_id: str, style_rng: random.Random,
                   doc_rng: random.Random, split: str = "train") -> dict:
     """Display data for one document. `style_rng` is per supplier, `doc_rng` per document."""
     layout = LAYOUTS.get(layout_id)
     mode = layout.table if layout else "full"
-    date_fmt = pick(style_rng, DATE_FORMATS, OOD_DATE_FORMATS, split)
+    v2 = case.fmt_version >= 2
+    date_fmt, shown_date = _v2_date(case, inv, style_rng) if v2 else (pick(style_rng, DATE_FORMATS, OOD_DATE_FORMATS, split), None)
     num_fmt = style_rng.choices(NUM_FORMATS, weights=(70, 20, 10))[0]
     L = _pick_labels(style_rng, inv, split)
     ex = supplier_extras(case, inv, style_rng)
@@ -227,7 +247,8 @@ def build_context(case: Case, inv: TruthInvoice, layout_id: str, style_rng: rand
                   "state": _state(buyer.state_code), "state_code": buyer.state_code},
         "remarks": getattr(inv, "remarks", "") or "",
         "inv_no": inv.invoice_no,
-        "date": fmt_date(inv.invoice_date, date_fmt),
+        "date": shown_date or fmt_date(inv.invoice_date, date_fmt),
+        **({"date_only": fmt_date(inv.invoice_date, date_fmt)} if v2 else {}),
         "orig_no": inv.original_invoice_no or "",
         "pos": doc_rng.choice((f"{pos}-{_state(pos)}", f"{_state(pos)} ({pos})", f"{_state(pos)} - {pos}")),
         "rcm": inv.reverse_charge,

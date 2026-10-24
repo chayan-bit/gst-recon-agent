@@ -9,6 +9,10 @@ MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()
 
 DATE_FORMATS = ("DD-MM-YYYY", "DD/MM/YY", "D Mon YYYY", "DD-Mon-YY", "DD.MM.YYYY", "DD/MM/YYYY")
 NUM_FORMATS = ("indian", "plain", "western")
+# fmt_version 2 (train data only): wider per-supplier date styles; v1 cases keep DATE_FORMATS
+MONTHS_LONG = "January February March April May June July August September October November December".split()
+DATE_FORMATS_V2 = (*DATE_FORMATS, "YYYY-MM-DD", "DD.MM.YY", "DD-Mon-YYYY", "D Month YYYY", "Mon D, YYYY",
+                   "DD Mon YYYY", "D/M/YYYY", "DD-MM-YY")
 
 
 def fmt_date(d: date, style: str = "DD-MM-YYYY") -> str:
@@ -26,6 +30,20 @@ def fmt_date(d: date, style: str = "DD-MM-YYYY") -> str:
         return f"{d.day:02d}-{MONTHS[d.month - 1]}-{d.year % 100:02d}"
     if style == "YYYY-MM-DD":
         return d.isoformat()
+    if style == "DD.MM.YY":
+        return f"{d.day:02d}.{d.month:02d}.{d.year % 100:02d}"
+    if style == "DD-Mon-YYYY":
+        return f"{d.day:02d}-{MONTHS[d.month - 1]}-{d.year}"
+    if style == "D Month YYYY":
+        return f"{d.day} {MONTHS_LONG[d.month - 1]} {d.year}"
+    if style == "Mon D, YYYY":
+        return f"{MONTHS[d.month - 1]} {d.day}, {d.year}"
+    if style == "DD Mon YYYY":
+        return f"{d.day:02d} {MONTHS[d.month - 1]} {d.year}"
+    if style == "D/M/YYYY":
+        return f"{d.day}/{d.month}/{d.year}"
+    if style == "DD-MM-YY":
+        return f"{d.day:02d}-{d.month:02d}-{d.year % 100:02d}"
     raise ValueError(f"unknown date style {style!r}")
 
 

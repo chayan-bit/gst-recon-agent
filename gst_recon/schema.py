@@ -364,6 +364,8 @@ class Case(_Strict):
     expected: ReconOutput
     split: str = "train"  # train | test_iid | test_ood
     anomalies: list[str] = Field(default_factory=list)  # generator log, for debugging/stratified eval
+    # 2 = diverse per-supplier invoice-number and date formats (train data); omitted at 1 so v1 files stay byte-identical
+    fmt_version: int = Field(default=1, exclude_if=lambda v: v == 1)
 
 
 # ------------------------------------------------------------- schema export
