@@ -395,8 +395,18 @@ A candidate ships instead of student-perdoc-sft v1 if and only if:
 Among the candidates that pass (a), the best on (b) is chosen.
 That candidate and v1 are then run once on the simulated test set (paired, schema v2; this is v1's second test run, under a protocol change applied to both arms) and scored once on realinv2, a fresh held-out set of about 30 real invoices labelled the same way.
 From this point realinv is a selection set; realinv2 is never used for selection.
-Added 2026-10-25 02:46 IST, before anything was scored on realinv2: if no candidate passes, student-perdoc-sft v1 stays and the test set is not run again.
+Added 2026-10-25 02:45 IST (commit 2d18998), before anything was scored on realinv2: if no candidate passes, student-perdoc-sft v1 stays and the test set is not run again.
 realinv2 is scored for v1 as the shipped model's held-out real-document check; the four v3 candidates are scored on it as an exploratory replication after the ship decision was locked, and nothing on realinv2 can change that decision.
+
+### Ensemble of v1, pd3 and pd3a (combiner rule pre-registered 2026-10-25 03:10 IST, before any ensemble number)
+
+The ensemble combines the saved per-document replies of student-perdoc-sft v1, pd3 and pd3a offline (no new model calls), then runs the same reconciler (v3) and scorer.
+Per document and per field, over the three parsed DocRecords (an unparsed reply is absent):
+- Identity fields (supplier_gstin, invoice_no, invoice_date, original_invoice_no): the value that at least 2 of the 3 models emit, compared after the scorer's normalisation (`norm`, and `parse_date` for the date), written as the first of v1, pd3a, pd3 that emitted it; otherwise "" (abstain, so the v3 identity fill can act). A "" counts as a vote.
+- All other header fields and the lines array: v1's value (the dev-validated model); if v1 is unparsed, the value the other two agree on, else pd3a's (or the only parsed one).
+- No tuning after this commit.
+
+It is scored on small and big dev (schema v2 replies), realinv (selection set), realinv2 (exploratory: that set had already been seen for the three members) and semireal, and checked against rules (a) and (b); the test set is not run for it unless decided separately.
 
 ### GRPO from the per-document SFT (dev only, measured, not shipped)
 
