@@ -1,27 +1,23 @@
 #!/bin/bash
-# Run `python -m gst_recon.train run CONFIG` (or any other gst_recon.train subcommand) on a shared GPU host
-# with a host-RAM cap.
+# Run `python -m gst_recon.train run CONFIG` on a shared GPU host with a host-RAM cap.
 #   PYTHON=~/gst-recon/venv-align/bin/python MODEL=/path/to/local/snapshot bash configs/run_guarded.sh configs/sft.yaml
-#   PYTHON=... bash configs/run_guarded.sh merge --base BASE --adapter ADAPTER --out OUT
 # rs-epyc has no user systemd manager (systemd-run --user fails) and ulimit -v / prlimit --as break CUDA
 # init (it reserves tens of GB of address space), so a 1 s watchdog is the cap: it SIGKILLs the run when
 # the process tree's anonymous+shmem PSS passes CAP_GB (default 12), after a SIGUSR1 stack dump at
 # DUMP_GB (default 8). It refuses to start below MIN_AVAIL_GB (default 20) of available host RAM.
 set -u
-CFG=${1:?usage: run_guarded.sh CONFIG | SUBCOMMAND ARGS...}
+CFG=${1:?usage: run_guarded.sh CONFIG}
 PY=${PYTHON:-python}
 CAP_KB=$(( ${CAP_GB:-12} * 1024 * 1024 )); DUMP_KB=$(( ${DUMP_GB:-8} * 1024 * 1024 ))
 avail=$(free -g | awk '/Mem:/{print $7}')
 [ "$avail" -ge "${MIN_AVAIL_GB:-20}" ] || { echo "ABORT: only ${avail} GB host RAM available"; exit 3; }
-if [ "${CFG##*.}" != yaml ]; then :  # a subcommand: arguments pass through unchanged
-elif [ -n "${MODEL:-}" ]; then  # local snapshot instead of the hub id (offline hosts, no unsloth remapping)
+if [ -n "${MODEL:-}" ]; then  # local snapshot instead of the hub id (offline hosts, no unsloth remapping)
   R=$(mktemp --suffix=.yaml); sed "s#^\(  name_or_path:\).*#\1 $MODEL#" "$CFG" > "$R"; CFG=$R
 fi
 export HF_HUB_OFFLINE=${HF_HUB_OFFLINE:-1} HF_DATASETS_OFFLINE=${HF_DATASETS_OFFLINE:-1} TOKENIZERS_PARALLELISM=false \
   OMP_NUM_THREADS=4 TORCHINDUCTOR_COMPILE_THREADS=1 HF_DEACTIVATE_ASYNC_LOAD=1 MALLOC_ARENA_MAX=2 PYTHONUNBUFFERED=1
 echo "start $(date +%T) avail=${avail}G config=$CFG"; nvidia-smi --query-gpu=memory.used,memory.free --format=csv,noheader; df -h . | tail -1
-if [ "${CFG##*.}" = yaml ]; then set -- run "$CFG"; fi
-"$PY" -m gst_recon.train "$@" &
+"$PY" -m gst_recon.train run "$CFG" &
 PID=$!
 procs() { echo $PID $(pgrep -P $PID) $(for c in $(pgrep -P $PID); do pgrep -P $c; done); }
 # proportional set size: forked workers share copy-on-write pages that plain RSS counts once per process

@@ -33,20 +33,23 @@ def test_grpo_refuses_anything_but_sglang_rollouts(monkeypatch, tmp_path):
 
     from gst_recon.train.__main__ import require_sglang_rollout
 
-    ok = {"rollout_backend": "sglang", "sglang_sync_dir": "runs/sync"}
-    for bad in ({}, {**ok, "rollout_backend": "hf"}, {**ok, "sglang_sync_dir": "/dev/shm/x"}, {**ok, "sglang_sync_dir": ""}):
-        monkeypatch.setattr(importlib.util, "find_spec", lambda name: object())
+    ok = {"rollout_backend": "sglang", "sglang_server_url": "http://127.0.0.1:30001", "sglang_sync_dir": "runs/sync"}
+    bad = ({}, {**ok, "rollout_backend": "hf"}, {**ok, "sglang_sync_dir": "/dev/shm/x"}, {**ok, "sglang_sync_dir": ""},
+           {**ok, "sglang_server_url": ""})
+    monkeypatch.setattr(importlib.util, "find_spec", lambda name: object())
+    for train in bad:
         with pytest.raises(SystemExit):
-            require_sglang_rollout(bad)
+            require_sglang_rollout(train)
     monkeypatch.setattr(importlib.util, "find_spec", lambda name: None)  # stock AlignTune: silent HF fallback
     with pytest.raises(SystemExit, match="no SGLang rollout"):
         require_sglang_rollout(ok)
     monkeypatch.setattr(importlib.util, "find_spec", lambda name: object())
     monkeypatch.chdir(tmp_path)
-    assert require_sglang_rollout(ok)["sglang_sync_dir"] == str(tmp_path.resolve() / "runs/sync")
+    kwargs = require_sglang_rollout(ok)  # forwarded as kwargs, which override the parsed YAML in create_rl_trainer
+    assert kwargs == {**ok, "sglang_sync_dir": str(tmp_path.resolve() / "runs/sync")}
 
 
 def test_every_grpo_config_uses_sglang_rollouts():
     pytest.importorskip("yaml")
-    grpo = [p for p in CONFIGS if load_config(str(p))[0]["algo"] == "grpo"]
-    assert grpo and all(load_config(str(p))[1]["rollout_backend"] == "sglang" for p in grpo)
+    grpo = [load_config(str(p))[0] for p in CONFIGS if load_config(str(p))[0]["algo"] == "grpo"]
+    assert grpo and all(c["train"]["rollout_backend"] == "sglang" and c["backend"] == "trl" for c in grpo)

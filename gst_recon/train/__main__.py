@@ -124,24 +124,52 @@ def step_line(step: int, max_steps: int, logs: dict) -> str | None:
 SGLANG_ROLLOUT = "aligntune.backends.trl.rl.rollout.sglang_rollout"  # AlignTune fork, feat/sglang-rollout
 
 
-def require_sglang_rollout(extras: dict) -> dict:
-    """GRPO runs only on SGLang rollouts (user decision, no HF fallback). Stock AlignTune 0.1.28 takes
-    rollout_backend and silently generates with HF, so refuse unless the fork's rollout is installed.
-    Returns the kwargs with the weight-sync dir made absolute (the server resolves it from its own cwd)."""
+def require_sglang_rollout(train: dict) -> dict:
+    """GRPO runs only on SGLang rollouts (user decision, no HF fallback). The keys live in the YAML train
+    section and are also returned as create_rl_trainer kwargs: there kwargs override the parsed YAML and
+    rollout_backend defaults to "hf", so a key the YAML parser drops would silently fall back to HF.
+    Stock AlignTune 0.1.28 has no SGLang rollout at all, so refuse unless the fork's is installed."""
     import importlib.util
 
-    if extras.get("rollout_backend") != "sglang":
-        raise SystemExit("GRPO must set gst_recon.rollout_backend: sglang (see configs/grpo_sglang.yaml)")
+    if train.get("rollout_backend") != "sglang":
+        raise SystemExit("GRPO must set train.rollout_backend: sglang (see configs/grpo_sglang.yaml)")
     try:
         found = importlib.util.find_spec(SGLANG_ROLLOUT) is not None
     except ModuleNotFoundError:  # a parent package (aligntune itself, or its rollout package) is missing
         found = False
     if not found:
         raise SystemExit(f"installed AlignTune has no SGLang rollout ({SGLANG_ROLLOUT}); install the fork ref")
-    sync = Path(extras.get("sglang_sync_dir") or "").resolve()
-    if not extras.get("sglang_sync_dir") or str(sync).startswith("/dev/shm"):
-        raise SystemExit("set gst_recon.sglang_sync_dir to a disk path (never /dev/shm on shared hosts)")
-    return {**extras, "sglang_sync_dir": str(sync)}
+    raw = train.get("sglang_sync_dir")
+    sync = Path(raw).expanduser().resolve() if raw else None  # absolute: the server resolves it from its own cwd
+    if sync is None or str(sync).startswith("/dev/shm"):
+        raise SystemExit("set train.sglang_sync_dir to a disk path (never /dev/shm on shared hosts)")
+    if not train.get("sglang_server_url"):
+        raise SystemExit("set train.sglang_server_url")
+    return {"rollout_backend": "sglang", "sglang_server_url": train["sglang_server_url"], "sglang_sync_dir": str(sync)}
+
+
+def _init_from_adapter(trainer, path: str) -> None:
+    """Start the trainable LoRA from a saved adapter (GRPO from the SFT adapter). AlignTune's model loader only
+    attaches a fresh LoRA, so let it (keeping its checkpointing and grad hooks) and load the saved weights in."""
+    setup = trainer.setup_model
+
+    def setup_then_load():
+        setup()
+        from peft import PeftConfig, set_peft_model_state_dict
+        from safetensors.torch import load_file
+
+        saved, live = PeftConfig.from_pretrained(path), trainer.model.peft_config["default"]
+        same = ("r", "lora_alpha", "use_rslora", "use_dora", "modules_to_save")
+        if set(saved.target_modules) != set(live.target_modules) or any(getattr(saved, k) != getattr(live, k) for k in same):
+            raise SystemExit(f"LoRA in the config does not match the adapter at {path}: {saved} vs {live}")
+        weights = load_file(str(Path(path) / "adapter_model.safetensors"))
+        res = set_peft_model_state_dict(trainer.model, weights)
+        missing = [k for k in res.missing_keys if "lora_" in k]
+        if res.unexpected_keys or missing:
+            raise SystemExit(f"adapter {path}: unexpected {res.unexpected_keys[:3]}, missing LoRA {missing[:3]}")
+        print(f"init adapter {path}: {len(weights)} tensors loaded into the trainable LoRA", flush=True)
+
+    trainer.setup_model = setup_then_load
 
 
 def _responses_only(trainer, parts: dict) -> None:
@@ -159,14 +187,22 @@ def _responses_only(trainer, parts: dict) -> None:
     trainer.setup_trainer = setup_then_mask  # train() calls self.setup_trainer(), so the instance attribute wins
 
 
-def _add_step_log(trainer) -> None:
+def _add_step_log(trainer, max_hours: float | None = None) -> None:
     from transformers import TrainerCallback
 
     class StepLog(TrainerCallback):
+        def on_train_begin(self, args, state, control, **kwargs):
+            self.t0 = time.time()
+
         def on_log(self, args, state, control, logs=None, **kwargs):
             line = step_line(state.global_step, state.max_steps, logs or {})
             if line:
                 print(line, flush=True)
+
+        def on_step_end(self, args, state, control, **kwargs):
+            if max_hours and time.time() - self.t0 > max_hours * 3600:  # wall-clock cap: save, then stop
+                print(f"time cap {max_hours} h at step {state.global_step}: saving and stopping", flush=True)
+                control.should_save = control.should_training_stop = True
 
     callbacks = trainer.get_hf_callbacks  # both SFT and GRPO trainers build their HF callbacks from this
     trainer.get_hf_callbacks = lambda: [*callbacks(), StepLog()]
@@ -184,6 +220,7 @@ def cmd_run(a: argparse.Namespace) -> None:
     from aligntune.core.backend_factory import create_rl_trainer, create_sft_trainer
 
     responses_only = extras.pop("train_on_responses_only", None)
+    init_adapter, max_hours = extras.pop("init_adapter", None), extras.pop("max_hours", None)
     if "dataset_num_proc" in extras:
         _pin_dataset_num_proc(extras.pop("dataset_num_proc"))
 
@@ -192,13 +229,15 @@ def cmd_run(a: argparse.Namespace) -> None:
     register()
     is_sft = cfg.get("algo", "sft").lower() == "sft"
     make = create_sft_trainer if is_sft else create_rl_trainer
-    extras = extras if is_sft else require_sglang_rollout(extras)
+    extras = extras if is_sft else {**extras, **require_sglang_rollout(cfg.get("train", {}))}
     trainer = make(config=cfg, **shadowed_args(cfg), **extras)
     # datasets fingerprints every .map() function by dill-pickling its closure. AlignTune 0.1.28's
     # unsloth SFT formatter closes over the trainer, so hashing it copied the whole model into host
     # RAM (42 GB, rs-epyc OOM on 2026-10-24). Hash the trainer by identity instead.
     type(trainer).__getstate__ = lambda self: {"trainer_id": id(self)}
-    _add_step_log(trainer)
+    _add_step_log(trainer, max_hours)
+    if init_adapter:
+        _init_from_adapter(trainer, init_adapter)
     if responses_only:
         _responses_only(trainer, responses_only)
     print(json.dumps(trainer.train(), indent=1, default=str))
@@ -210,19 +249,6 @@ def cmd_perdoc(a: argparse.Namespace) -> None:
 
     stats = build_perdoc(Path(a.rendered), [Path(t) for t in a.truth], Path(a.out), count_tokens)
     print(json.dumps(stats, indent=1))
-
-
-def cmd_merge(a: argparse.Namespace) -> None:
-    """Fold a LoRA adapter into its base model on the GPU (GRPO starts from the merged SFT model).
-    1 GB shards keep the host-RAM staging of save_pretrained small."""
-    import torch
-    from peft import PeftModel
-    from transformers import AutoModelForCausalLM, AutoTokenizer
-
-    model = AutoModelForCausalLM.from_pretrained(a.base, dtype=torch.bfloat16, device_map="cuda", low_cpu_mem_usage=True)
-    PeftModel.from_pretrained(model, a.adapter).merge_and_unload().save_pretrained(a.out, max_shard_size="1GB")
-    AutoTokenizer.from_pretrained(a.adapter).save_pretrained(a.out)
-    print(f"merged {a.adapter} into {a.base} -> {a.out}")
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -252,11 +278,6 @@ def main(argv: list[str] | None = None) -> None:
     d.add_argument("--truth", nargs="+", required=True, help="directories of truth Case JSON (<case_id>.json)")
     d.add_argument("--out", required=True)
     d.set_defaults(fn=cmd_perdoc)
-    m = sub.add_parser("merge", help="fold a LoRA adapter into its base model (GPU)")
-    m.add_argument("--base", required=True)
-    m.add_argument("--adapter", required=True)
-    m.add_argument("--out", required=True)
-    m.set_defaults(fn=cmd_merge)
     a = ap.parse_args(argv)
     a.fn(a)
 
