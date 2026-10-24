@@ -19,7 +19,7 @@
 #   12 GB run_guarded cap is marginal; it needs CAP_GB=16, which the coordinator must approve.
 # Disk: the sync file (~8 GB, overwritten every step) goes to runs/grpo-sglang-sync, never /dev/shm.
 #
-# Launch from the repo root on rs-epyc, after the preflight checks:
+# configs/launch_grpo.sh does all of this (merge, server, guarded 3 h run). By hand, from the repo root:
 #   TORCHINDUCTOR_COMPILE_THREADS=1 ~/gst-recon/venv-sglang/bin/python -m sglang.launch_server \
 #     --model-path $PWD/runs/sft-curated/merged --host 127.0.0.1 --port 30001 \
 #     --mem-fraction-static 0.40 --context-length 10240 --max-running-requests 32 --cuda-graph-max-bs 32 \
@@ -49,7 +49,10 @@ rewards:
     weight: 1.0
 
 train:
-  max_steps: 300
+  # one pass over grpo-merged (668 prompts / 4 per step). Estimated 60-90 s/step (rollout ~15-60 s, update
+  # ~30 s, weight sync to disk ~10-40 s), so ~3-4 h; configs/launch_grpo.sh time-boxes it at 3 h and the
+  # step-50/100/150 adapters are the stop-anytime results.
+  max_steps: 167
   # 2 x 16 = 32 completions per optimizer step = 4 prompts x 8 generations, one SGLang request with n=8
   # per prompt (shared prefill). Batch 2 keeps the 10k-token logits and activations inside the trainer budget.
   per_device_batch_size: 2
@@ -65,7 +68,7 @@ train:
   max_completion_length: 4096  # ~1k tokens of slack over the longest target
   logging_steps: 1
   save_steps: 50
-  save_total_limit: 1  # rs-epyc disk is tight
+  save_total_limit: 2  # LoRA + 8-bit optimizer state, well under 1 GB per checkpoint
   seed: 42
 
 logging:

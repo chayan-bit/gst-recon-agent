@@ -116,7 +116,8 @@ def step_line(step: int, max_steps: int, logs: dict) -> str | None:
     """One greppable progress line per logged step: `step N/M loss X [reward R]`."""
     if "loss" not in logs:
         return None
-    reward = next((logs[k] for k in ("reward", "rewards/gst_recon_grpo/mean") if k in logs), None)
+    keys = ("reward", "rewards/gst_recon_grpo/mean", "rewards/registry_gst_recon_grpo/mean")
+    reward = next((logs[k] for k in keys if k in logs), None)
     return f"step {step}/{max_steps} loss {float(logs['loss']):.4f}" + ("" if reward is None else f" reward {float(reward):.4f}")
 
 
@@ -203,6 +204,27 @@ def cmd_run(a: argparse.Namespace) -> None:
     print(json.dumps(trainer.train(), indent=1, default=str))
 
 
+def cmd_perdoc(a: argparse.Namespace) -> None:
+    from gst_recon.render.tokens import count_tokens
+    from gst_recon.train.perdoc import build_perdoc
+
+    stats = build_perdoc(Path(a.rendered), [Path(t) for t in a.truth], Path(a.out), count_tokens)
+    print(json.dumps(stats, indent=1))
+
+
+def cmd_merge(a: argparse.Namespace) -> None:
+    """Fold a LoRA adapter into its base model on the GPU (GRPO starts from the merged SFT model).
+    1 GB shards keep the host-RAM staging of save_pretrained small."""
+    import torch
+    from peft import PeftModel
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+
+    model = AutoModelForCausalLM.from_pretrained(a.base, dtype=torch.bfloat16, device_map="cuda", low_cpu_mem_usage=True)
+    PeftModel.from_pretrained(model, a.adapter).merge_and_unload().save_pretrained(a.out, max_shard_size="1GB")
+    AutoTokenizer.from_pretrained(a.adapter).save_pretrained(a.out)
+    print(f"merged {a.adapter} into {a.base} -> {a.out}")
+
+
 def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(prog="python -m gst_recon.train")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -225,6 +247,16 @@ def main(argv: list[str] | None = None) -> None:
     r = sub.add_parser("run", help="train with AlignTune from a YAML config")
     r.add_argument("config")
     r.set_defaults(fn=cmd_run)
+    d = sub.add_parser("perdoc", help="rendered SFT-role train cases + truth -> per-document SFT rows (hybrid mode)")
+    d.add_argument("--rendered", required=True)
+    d.add_argument("--truth", nargs="+", required=True, help="directories of truth Case JSON (<case_id>.json)")
+    d.add_argument("--out", required=True)
+    d.set_defaults(fn=cmd_perdoc)
+    m = sub.add_parser("merge", help="fold a LoRA adapter into its base model (GPU)")
+    m.add_argument("--base", required=True)
+    m.add_argument("--adapter", required=True)
+    m.add_argument("--out", required=True)
+    m.set_defaults(fn=cmd_merge)
     a = ap.parse_args(argv)
     a.fn(a)
 
