@@ -1,4 +1,5 @@
 # Haiku 4.5 n=30 subset: 5 cases per split x difficulty cell, random.Random(f'0/{split}/{difficulty}').sample over sorted case ids, fixed before any 4.5 test result
+# Fixed for the thinking-on Haiku 4.5 arm, which was abandoned at about 60 s per document and is unused; the thinking-off Haiku 4.5 arm runs the full 120 test cases, so no Haiku 4.5 result here is n = 30.
 test_iid/test_iid-easy-9001-00007
 test_iid/test_iid-easy-9001-00008
 test_iid/test_iid-easy-9001-00009

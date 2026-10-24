@@ -25,4 +25,5 @@ Cost is the CLI's own `total_cost_usd`.
 
 All deltas against v1 and pd3g287 on match accuracy and for Haiku 5.5 on every metric have p < 0.0005; Haiku 4.5 against v1 on ITC has p = 0.043 and against pd3g287 on ITC p = 0.14 and composite p = 0.068.
 A Haiku 4.5 run with default thinking was stopped after 64 documents (about 60 s and $0.043 per document, 16k thinking tokens on the check document) and is not scored.
+The 30-case subset list `reports/hybrid-haiku45-subset.txt` (fixed in 001a4eb) was fixed for that abandoned thinking-on arm; the thinking-off Haiku 4.5 arm runs the full 120 test cases.
 The semireal documents are real client documents; the Haiku runs sent them to the Claude CLI only, and only aggregates are reported here.
