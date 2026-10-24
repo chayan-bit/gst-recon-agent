@@ -2,9 +2,10 @@
 # Per-document GRPO, hard variant (configs/grpo_perdoc_hard.yaml), on rs-epyc through configs/launch_grpo.sh:
 # 1168 hard documents, 16 generations, completion cap 640, from perdoc-v2 (its SHA256SUMS must verify).
 # Saves at 25-step intervals with bf16 snapshots; saves and stops by STOP_AT - 15 min, killed at STOP_AT - 2 min.
-#   PERDOC_ADAPTER=~/gst-recon/adapters/perdoc-v2 tmux new-session -d -s grpo 'bash ~/gst-recon/repo/configs/launch_grpo_perdoc_hard.sh'
+#   PERDOC_ADAPTER=~/gst-recon/adapters/perdoc-v2 tmux new-session -d -s grpo 'bash ~/gst-recon/repo-grpo/configs/launch_grpo_perdoc_hard.sh'
 # Data (data/train/curated/grpo-perdoc-hard) and adapter are built on / copied from kratos.
 set -u
+export REPO=${REPO:-$(cd "$(dirname "$0")/.." && pwd)}  # this checkout (~/gst-recon/repo-grpo), not gst-eval's ~/gst-recon/repo
 : "${PERDOC_ADAPTER:?set PERDOC_ADAPTER to the perdoc-v2 adapter dir}"
 CONFIG=configs/grpo_perdoc_hard.yaml DATA=data/train/curated/grpo-perdoc-hard INIT_ADAPTER=runs/grpo-perdoc-init \
   INIT_FROM="$PERDOC_ADAPTER" CONTEXT=2688 MEMFRAC=${MEMFRAC:-0.30} MAX_RUNNING=64 GPU_MIN_MIB=60000 TRAINER_MIN_MIB=26000 \

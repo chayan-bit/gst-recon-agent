@@ -11,7 +11,7 @@
 # Logs: ~/gst-recon/logs/grpo.log (`step N/M loss X reward Y`, and the s/step of the first 5 steps),
 #       ~/gst-recon/logs/sglang-rollout.log.
 set -u
-ROOT=$HOME/gst-recon; REPO=$ROOT/repo; LOG=$ROOT/logs/grpo.log
+ROOT=$HOME/gst-recon; REPO=${REPO:-$ROOT/repo}; LOG=$ROOT/logs/grpo.log  # REPO: a clean checkout beside gst-eval's tree
 BASE=$ROOT/hf/hub/models--Qwen--Qwen3-4B-Instruct-2507/snapshots/cdbee75f17c01a7cc42f958dc650907174af0554
 ALIGN_PY=$ROOT/venv-align/bin/python    # AlignTune fork at ALIGN_REF, installed with:
 # uv pip install --python $ALIGN_PY --no-deps "aligntune @ git+https://github.com/chayan-bit/aligntune@$ALIGN_REF"
@@ -27,7 +27,7 @@ INIT_ADAPTER=${INIT_ADAPTER:-runs/sft-curated}  # the config's gst_recon.init_ad
 INIT_FROM=${INIT_FROM:-}  # optional: link INIT_ADAPTER to this adapter dir after its SHA256SUMS verify
 MIN_AVAIL=${MIN_AVAIL:-12}  # GB of available host RAM to start (preflight and run_guarded)
 STOP_AT=${STOP_AT:-}  # optional HH:MM deadline: the trainer saves and stops 15 min before it, is killed 2 min before
-OUT=$(awk '/^  output_dir:/{print $2}' "$HOME/gst-recon/repo/$CONFIG")
+OUT=$(awk '/^  output_dir:/{print $2}' "$REPO/$CONFIG")
 cd "$REPO" || exit 1
 export HF_HOME=$ROOT/hf
 [ -e runs ] || ln -s "$ROOT/runs" runs
