@@ -23,18 +23,21 @@ def _key(field: str, value: str) -> str:
     return norm(value)
 
 
-def _vote(field: str, recs: list[DocRecord]) -> str:
+def _vote(field: str, recs: list[DocRecord], confirm: DocRecord | None) -> str:
     keys = [_key(field, getattr(r, field)) for r in recs]
     for r, k in zip(recs, keys):
         if keys.count(k) >= 2:
             return getattr(r, field) if k else ""
-    return ""
+    c = _key(field, getattr(confirm, field)) if confirm is not None else ""
+    return next((getattr(r, field) for r, k in zip(recs, keys) if c and k == c), "")
 
 
-def ensemble(v1: DocRecord | None, pd3a: DocRecord | None, pd3: DocRecord | None) -> DocRecord | None:
-    """None when no member parsed. Members are passed in tie-break order (v1, pd3a, pd3)."""
+def ensemble(v1: DocRecord | None, pd3a: DocRecord | None, pd3: DocRecord | None,
+             confirm: DocRecord | None = None) -> DocRecord | None:
+    """None when no member parsed. Members are passed in tie-break order (v1, pd3a, pd3). `confirm` (variant B,
+    pd3g287) breaks a no-majority identity field when its non-blank value equals one of the members' values."""
     recs = [r for r in (v1, pd3a, pd3) if r is not None]
     if not recs:
         return None
     base = recs[0]  # v1, else pd3a ("the value the other two agree on, else pd3a's" is always pd3a's), else pd3
-    return base.model_copy(update={f: _vote(f, recs) for f in IDENTITY})
+    return base.model_copy(update={f: _vote(f, recs, confirm) for f in IDENTITY})

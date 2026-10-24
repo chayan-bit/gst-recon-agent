@@ -1,11 +1,11 @@
 """Build ensemble replies (gst_recon.hybrid.ensemble) from three members' saved per-document replies, offline.
 
 usage:
-  python scripts/hybrid_ensemble.py runs OUT_RUN V1_RUN PD3A_RUN PD3_RUN
+  python scripts/hybrid_ensemble.py runs OUT_RUN V1_RUN PD3A_RUN PD3_RUN [CONFIRM_RUN]
       writes OUT_RUN/docs/<case>/<doc>.json; then re-run the eval on OUT_RUN with --no-resume (no model calls)
-  python scripts/hybrid_ensemble.py flat OUT_DIR V1_DIR PD3A_DIR PD3_DIR
+  python scripts/hybrid_ensemble.py flat OUT_DIR V1_DIR PD3A_DIR PD3_DIR [CONFIRM_DIR]
       <dir>/<doc_id>.json raw reply texts (the realinv scorer layout); files are written 0600
-A document no member parsed keeps v1's reply, so it fails exactly as v1 did.
+A document no member parsed keeps v1's reply, so it fails exactly as v1 did. CONFIRM (variant B) is pd3g287.
 """
 
 from __future__ import annotations
@@ -23,7 +23,7 @@ from gst_recon.rewards.doc import parse_doc  # noqa: E402
 
 def combine(texts: list[str | None]) -> str | None:
     """Ensemble reply text from the members' raw texts (None = missing), or None if no member parsed."""
-    e = ensemble(*[parse_doc(t) if t is not None else None for t in texts])
+    e = ensemble(*[parse_doc(t) if t is not None else None for t in texts])  # 3 members, then the optional confirm
     return e.model_dump_json() if e is not None else None
 
 

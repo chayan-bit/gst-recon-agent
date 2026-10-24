@@ -83,7 +83,7 @@ Per document and per field, over the three parsed DocRecords (an unparsed reply 
 
 It is scored on small and big dev (schema v2 replies), realinv (selection set), realinv2 (exploratory: that set had already been seen for the three members) and semireal, and checked against rules (a) and (b); the test set is not run for it unless decided separately.
 
-Ablation, variant B (pre-registered 2026-10-25 03:14 IST, after variant A's realinv and realinv2 numbers had been computed and before any variant B number): as A, but when no identity value has two votes and pd3g287 emitted a non-blank value equal (after the same normalisation) to one of the three members' values, that value is used instead of "".
+Ablation, variant B (pre-registered 2026-10-25 03:13 IST, commit 5c95f97, after variant A's realinv and realinv2 numbers had been computed and before any variant B number): as A, but when no identity value has two votes and pd3g287 emitted a non-blank value equal (after the same normalisation) to one of the three members' values, that value is used instead of "".
 Rationale: pd3g287 almost never invents an identity (0% on both real sets), so a non-blank value from it is a confirmation rather than a vote.
 Variant A stays the primary ensemble whichever scores higher; there are no other variants.
 

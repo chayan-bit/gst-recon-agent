@@ -42,6 +42,14 @@ def test_without_v1_the_rest_comes_from_pd3a_and_identity_needs_both_survivors_t
     assert ensemble(None, None, rec(invoice_no="B2")).invoice_no == ""
 
 
+def test_variant_b_confirm_breaks_a_three_way_split_only_with_a_members_value():
+    split = (rec(invoice_no="A1"), rec(invoice_no="B2"), rec(invoice_no="C3"))
+    assert ensemble(*split, confirm=rec(invoice_no="b-2")).invoice_no == "B2"
+    assert ensemble(*split, confirm=rec(invoice_no="Z9")).invoice_no == ""
+    assert ensemble(*split, confirm=rec(invoice_no="")).invoice_no == ""
+    assert ensemble(rec(invoice_no="A1"), rec(invoice_no="A1"), rec(invoice_no="C3"), confirm=rec(invoice_no="C3")).invoice_no == "A1"
+
+
 def test_no_parsed_member_gives_none():
     assert ensemble(None, None, None) is None
 
