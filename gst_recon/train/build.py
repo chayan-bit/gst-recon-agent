@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from dataclasses import dataclass, replace
 from pathlib import Path
 
@@ -52,6 +53,28 @@ def load_rendered(root: Path) -> list[Candidate]:
                              _read(d / "prompt.txt"), _read(d / "target.json").strip(),
                              meta["prompt_tokens"], meta["target_tokens"], lost, str(refuse_eval_path(d))))
     return out
+
+
+HSN_LOST = re.compile(r"^(D\d+):line(\d+)_hsn$")
+
+
+def mask_lost_hsn(c: Candidate) -> Candidate | None:
+    """Curated OCR rule: a line HSN code the OCR lost (the most common loss) is blanked in the
+    target, so training teaches "unreadable -> empty" rather than invention; any other lost
+    fact (amounts, ids, remarks) drops the case (None). target_tokens stays an upper bound."""
+    hits = [HSN_LOST.match(f) for f in c.unrecoverable]
+    if not all(hits):
+        return None
+    if not hits:
+        return c
+    t = json.loads(c.target)
+    docs = {e["doc_id"]: e for e in t["extractions"]}
+    for m in hits:
+        lines = docs.get(m.group(1), {}).get("line_items", [])
+        if int(m.group(2)) >= len(lines):
+            return None
+        lines[int(m.group(2))]["hsn"] = ""
+    return replace(c, target=json.dumps(t, ensure_ascii=False, separators=(",", ":")), unrecoverable=())
 
 
 def role(case_id: str) -> str:

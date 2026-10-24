@@ -17,7 +17,7 @@ model:
 datasets:
   - name: data/smoke/sft
     split: train
-    task_type: supervised_fine_tuning
+    task_type: sft  # TaskType.SFT: the unsloth backend rejects the supervised_fine_tuning alias
 
 train:
   max_steps: 20

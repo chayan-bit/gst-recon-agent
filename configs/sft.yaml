@@ -21,7 +21,7 @@ model:
 datasets:
   - name: data/train/curated/sft  # directory with train.jsonl (column: messages)
     split: train
-    task_type: supervised_fine_tuning
+    task_type: sft  # TaskType.SFT: the unsloth backend rejects the supervised_fine_tuning alias
 
 train:
   epochs: 2

@@ -15,7 +15,7 @@ from gst_recon.train import curate as cu
 
 class FakeLLM(BaseLLM):
     def __init__(self, reply):
-        super().__init__(model="fake", temperature=0.0, max_tokens=64)
+        super().__init__(model="fake", temperature=0.0, max_tokens=64, max_retries=0)
         self.reply = reply
 
     def _call(self, messages, **kwargs):
@@ -64,3 +64,10 @@ def test_secrets_gate_keeps_bank_refs_and_catches_keys(rendered):
     key = dataclasses.replace(c, case_id="key", prompt=c.prompt + f"aws_secret {fake}\n")
     kept, rej, _ = cu.gate_cases([utr, key])
     assert [k.case_id for k in kept] == ["utr"] and rej[0].rejection_reason.startswith("secret_detected:AWS")
+
+
+def test_paraphrase_stage_fails_loudly_when_teacher_is_down(rendered):
+    def down(_):
+        raise ConnectionError("refused")
+    with pytest.raises(RuntimeError, match="teacher failed on all"):
+        cu.paraphrase_stage(b.load_rendered(rendered), FakeLLM(down), FakeLLM(down), 4)

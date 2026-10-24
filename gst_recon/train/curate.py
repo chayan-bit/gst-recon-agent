@@ -1,7 +1,8 @@
 """CuratorKIT stage: teacher paraphrase with grounding gates, dedup, secret hygiene, provenance.
 
 raw     = every generated case, every teacher rewrite applied as returned, no gates.
-curated = OCR-unrecoverable cases dropped; a rewrite is kept only if every fact
+curated = cases whose OCR lost only line HSN codes get those blanked in the target,
+          other OCR-unrecoverable cases are dropped; a rewrite is kept only if every fact
           string survives (code check) and CuratorKIT's HallucinationGate judges it
           grounded, otherwise the block keeps its original text; then CuratorKIT
           exact + MinHash dedup and SecretsGate; manifest via ProvenanceManifest.
@@ -29,7 +30,7 @@ from curatorkit.pipeline import PipelineResult
 from curatorkit.schema import DataSample, RejectedSample
 
 from gst_recon.train import paraphrase as para
-from gst_recon.train.build import Candidate
+from gst_recon.train.build import Candidate, mask_lost_hsn
 
 GROUNDING_THRESHOLD = 0.8
 MINHASH_THRESHOLD = 0.9  # shortcut: tuned on nothing yet; report removals and revisit if > 1% of cases
@@ -85,12 +86,16 @@ def paraphrase_stage(cands: list[Candidate], gen, judge, workers: int = 32) -> t
         text = job[2]
         msgs = [{"role": "system", "content": para.INSTRUCTION}, {"role": "user", "content": text}]
         try:
-            return gen.generate(msgs).text.strip()
+            text = gen.generate(msgs).text.strip()
+            return "\n".join(line.rstrip() for line in text.splitlines())  # teacher pads lines with markdown breaks
         except Exception as e:  # noqa: BLE001 - one failed call must not stop the batch
             return e
 
     with ThreadPoolExecutor(workers) as pool:
         outs = list(pool.map(run, jobs))
+    errors = [o for o in outs if isinstance(o, Exception)]
+    if jobs and len(errors) == len(jobs):  # e.g. a dead tunnel: fail loudly instead of a silent no-op stage
+        raise RuntimeError(f"teacher failed on all {len(jobs)} blocks: {errors[0]}") from errors[0]
     raw: dict[str, dict] = {}
     samples, rejected = [], []
     extraction = {c.case_id: _extractions(c) for c in {j[0].case_id: j[0] for j in jobs}.values()}
@@ -120,7 +125,8 @@ def paraphrase_stage(cands: list[Candidate], gen, judge, workers: int = 32) -> t
 
 def gate_cases(cands: list[Candidate]) -> tuple[list[Candidate], list[RejectedSample], dict]:
     """Case-level curated gates on train candidates (rewrites already applied)."""
-    by_id = {c.case_id: c for c in cands}
+    masked = {c.case_id: mask_lost_hsn(c) for c in cands}
+    by_id = {c.case_id: masked[c.case_id] or c for c in cands}
     samples = [DataSample(id=c.case_id, source_uri=c.path, instruction=c.prompt, output=c.target,
                           metadata={"split": c.split, "difficulty": c.difficulty}) for c in cands]
     rejected, stage = [], {}
@@ -132,7 +138,8 @@ def gate_cases(cands: list[Candidate]) -> tuple[list[Candidate], list[RejectedSa
         return keep
 
     s0 = samples
-    s1 = step("OcrRecoverability", [s for s in s0 if not by_id[s.id].unrecoverable], s0, "ocr_unrecoverable")
+    s1 = step("OcrRecoverability", [s for s in s0 if masked[s.id]], s0, "ocr_unrecoverable")
+    stage["OcrRecoverability"]["hsn_masked"] = sum(bool(c.unrecoverable and masked[c.case_id]) for c in cands)
     s2 = step("ExactDeduplicator", ExactDeduplicator().run(s1), s1, "duplicate_exact")
     s3 = step("MinHashDeduplicator", _minhash(s2), s2, "duplicate_near")
     s4, sec_rej = SecretsGate(plugins=SECRET_PLUGINS).run(s3)

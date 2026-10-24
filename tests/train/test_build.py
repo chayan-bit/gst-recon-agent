@@ -1,3 +1,4 @@
+import dataclasses
 import json
 import shutil
 
@@ -63,3 +64,14 @@ def test_token_report_proposes_max_docs(rendered):
     rep = b.token_report(b.load_rendered(rendered), 300, LIMITS)
     assert rep["by_difficulty"]["easy"]["n"] == 14
     assert rep["proposed_max_docs"]["grpo"] >= 4 and rep["system_prompt_tokens"] == 300
+
+
+def test_lost_hsn_is_blanked_and_other_lost_facts_drop_the_case(rendered):
+    c = next(c for c in b.load_rendered(rendered) if c.split == "train" and not c.unrecoverable)
+    assert b.mask_lost_hsn(c) is c
+    m = b.mask_lost_hsn(dataclasses.replace(c, unrecoverable=("D01:line0_hsn",)))
+    d01 = next(e for e in json.loads(m.target)["extractions"] if e["doc_id"] == "D01")
+    assert d01["line_items"][0]["hsn"] == "" and m.unrecoverable == ()
+    assert json.loads(c.target)["extractions"][0]["line_items"][0]["hsn"]  # original untouched
+    assert b.mask_lost_hsn(dataclasses.replace(c, unrecoverable=("D01:line0_hsn", "D01:invoice_no"))) is None
+    assert b.mask_lost_hsn(dataclasses.replace(c, unrecoverable=("D01:line9_hsn",))) is None
