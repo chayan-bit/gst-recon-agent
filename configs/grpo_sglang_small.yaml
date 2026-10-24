@@ -1,0 +1,80 @@
+# Small GRPO variant for a shared H100 with ~30-40 GiB free (e.g. another user's ~63 GB ollama still loaded).
+# Same data, reward, policy init and hyperparameters as configs/grpo_sglang.yaml; only memory-bound knobs change.
+# Run it with configs/launch_grpo_small.sh, which sizes the SGLang server to the GPU memory free at launch.
+#
+# Budget (estimates, GiB; the full config's trainer is unmeasured too):
+#   server ~14: 7.5 weights + 5.6 KV (--max-total-tokens 40960 x 144 KiB) + 0.3 LoRA slots + ~1 graphs/buffers.
+#     KV 40960 tokens = one rollout's 4 shared prompts (<= 24.6k) + ~16k of completions in flight; SGLang queues
+#     the rest, so rollouts are slower than the full config's ~245k-token pool.
+#   trainer ~15: 7.5 policy + ~0.7 LoRA, grads and 8-bit Adam + ~2 checkpointed activations (1 x 10240 tokens)
+#     + ~1 recompute peak + ~4 completion logits (fp32, 4096 x 152k) and their gradient.
+# Total ~30 GiB. Still 32 completions per optimizer step (1 x 32 accumulation = 4 prompts x 8 generations).
+algo: grpo
+backend: trl  # unsloth + sglang is refused by the fork by design
+
+model:
+  name_or_path: Qwen/Qwen3-4B-Instruct-2507  # launch_grpo.sh substitutes the local snapshot (MODEL=...)
+  precision: bf16
+  # build keeps GRPO cases with prompt <= 6144 (incl. system prompt) and target <= 3072
+  max_seq_length: 10240
+  gradient_checkpointing: true
+  use_peft: true
+  # must match the SFT adapter exactly (the runner checks): r32, alpha 64, plain LoRA, all 7 projections
+  lora_r: 32
+  lora_alpha: 64
+  lora_dropout: 0.0
+  lora_target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+
+datasets:
+  - name: data/train/curated/grpo-merged  # 194 teacher-paraphrased + 474 rs-lab unparaphrased rows; directory with train.jsonl (columns: prompt messages, reference = truth JSON)
+    split: train
+
+rewards:
+  - type: gst_recon_grpo  # 0 unless schema-valid; trivial baselines ~0.27, truth 1.0
+    weight: 1.0
+
+train:
+  rollout_backend: sglang
+  sglang_server_url: http://127.0.0.1:30001  # port 30001, never the teacher's or eval server's 30000
+  sglang_sync_dir: runs/grpo-sync  # = ~/gst-recon/runs/grpo-sync via the repo's runs link; on disk, never /dev/shm
+  # the 3 h wall-clock cap (gst_recon.max_hours) binds, not this: 334 steps = 2 passes over grpo-merged
+  # (668 prompts / 4 per step); the LR is constant after warmup, so stopping at any step is fine
+  max_steps: 334
+  # 1 x 32 = 32 completions per optimizer step = 4 prompts x 8 generations.
+  per_device_batch_size: 1  # full config: 2 x 16
+  gradient_accumulation_steps: 32
+  num_generations: 8
+  learning_rate: 5.0e-6
+  warmup_ratio: 0.03
+  # no KL: with a PEFT policy TRL's reference is the adapter-disabled model, i.e. the base model,
+  # not the SFT policy, so a KL term would pull the policy back towards pre-SFT behaviour
+  beta: 0.0
+  loss_type: grpo
+  scale_rewards: group
+  temperature: 0.8
+  top_p: 0.95
+  max_prompt_length: 6144
+  max_completion_length: 4096  # ~1k tokens of slack over the longest target
+  logging_steps: 1
+  save_steps: 50
+  save_total_limit: 2  # LoRA + 8-bit optimizer state, well under 1 GB per checkpoint
+  seed: 42
+
+logging:
+  output_dir: runs/grpo-sglang-small
+  run_name: gst-recon-grpo-sglang-small
+  loggers: [tensorboard]
+
+chat_template: auto
+
+# Runner-only knobs (python -m gst_recon.train run). init_adapter and max_hours are handled by the runner.
+# The others are create_rl_trainer kwargs that AlignTune's YAML parser silently drops from the train
+# section (gradient_checkpointing true = standard checkpointing).
+gst_recon:
+  init_adapter: runs/sft-curated  # the e2e SFT LoRA, loaded as the trainable policy (not merged)
+  max_hours: 3  # wall-clock cap: save, then stop
+  mask_truncated_completions: true
+  gradient_checkpointing: true
+  optimizer: adamw_8bit
+  lr_scheduler: constant_with_warmup
+  dataloader_num_workers: 0
