@@ -5,7 +5,7 @@
 #   schtasks /Run /TN gst-sft-perdoc
 # v2 (finish the epoch from v1's adapter): append -Config configs\sft_perdoc_v2_trl.yaml -Name sft_perdoc_v2 -Data sft-perdoc-v2-rest
 # Log (ASCII, tail over ssh): D:\gst\gst-train\logs\<Name>.log
-param([string]$Config = "configs\sft_perdoc_trl.yaml", [string]$Name = "sft_perdoc", [string]$Data = "sft-perdoc-pc")
+param([string]$Config = "configs\sft_perdoc_trl.yaml", [string]$Name = "sft_perdoc", [string]$Data = "sft-perdoc-pc", [switch]$SharedGpu)  # -SharedGpu: run next to a foreign GPU job when >= 40 GB is free
 # Everything of ours lives on D: (C: is the shared system drive): code, envs, logs, runs and every cache.
 $T = "D:\gst\gst-train"; $Repo = "$T\repo"; $Log = "$T\logs\$Name.log"; $Cache = "D:\gst\cache"
 New-Item -ItemType Directory -Force "$T\logs" | Out-Null
@@ -18,8 +18,8 @@ Add-Type -AssemblyName Microsoft.VisualBasic
 $ram = (New-Object Microsoft.VisualBasic.Devices.ComputerInfo).AvailablePhysicalMemory / 1GB
 $disk = [System.IO.DriveInfo]::new("D").AvailableFreeSpace / 1GB
 Log ("preflight gpu_free={0}MiB gpu_used={1}MiB gpu_util={2}% ram_avail={3:N0}GB disk_free={4:N0}GB" -f $g[0], $g[1], $g[2], $ram, $disk)
-if ($g[0] -lt 30000) { Die "only $($g[0]) MiB GPU free" }
-if ($g[1] -gt 6000 -or $g[2] -gt 20) { Die "the GPU is in use by someone else ($($g[1]) MiB, $($g[2])%)" }
+if ($g[0] -lt $(if ($SharedGpu) { 40000 } else { 30000 })) { Die "only $($g[0]) MiB GPU free" }
+if (-not $SharedGpu -and ($g[1] -gt 6000 -or $g[2] -gt 20)) { Die "the GPU is in use by someone else ($($g[1]) MiB, $($g[2])%)" }
 if ($ram -lt 64) { Die "only $ram GB RAM available" }
 if ($disk -lt 20) { Die "only $disk GB disk free" }
 if (Get-Process python -ErrorAction SilentlyContinue | Where-Object { $_.Path -like "$T\env\*" }) { Die "a run of ours is already active" }
