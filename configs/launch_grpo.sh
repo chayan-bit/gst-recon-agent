@@ -65,12 +65,14 @@ fi
 [ "$disk" -ge 8 ] || die "only ${disk} GB disk (5 GB floor + 2 checkpoints + adapter sync)"
 
 # 1. rollout server in its own tmux session (outside the trainer's process group and time box)
+# CUDA_HOME + the venv bin on PATH as serve_sft_eval.sh: the LoRA kernels JIT-compile with nvcc and ninja
 tmux new-session -d -s sglang-rollout "cd $REPO && HF_HOME=$ROOT/hf HF_HUB_OFFLINE=1 TORCHINDUCTOR_COMPILE_THREADS=1 MALLOC_ARENA_MAX=2 \
+  CUDA_HOME=/usr/local/cuda-12.9 PATH=$ROOT/venv-sglang/bin:/usr/local/cuda-12.9/bin:\$PATH \
   exec $SGLANG_PY -m sglang.launch_server --model-path $BASE --host 127.0.0.1 --port $PORT --mem-fraction-static $MEMFRAC \
   --enable-lora --max-lora-rank 32 --lora-target-modules q_proj k_proj v_proj o_proj gate_proj up_proj down_proj \
   --context-length $CONTEXT --max-running-requests $MAX_RUNNING --cuda-graph-max-bs $MAX_RUNNING --sleep-on-idle $SERVER_EXTRA \
   >> $ROOT/logs/sglang-rollout.log 2>&1"
-for _ in $(seq 90); do curl -sf "127.0.0.1:$PORT/health" >/dev/null && break; sleep 10; done
+for _ in $(seq 90); do curl -sf "127.0.0.1:$PORT/health" >/dev/null && break; tmux has-session -t sglang-rollout 2>/dev/null || break; sleep 10; done
 curl -sf "127.0.0.1:$PORT/health" >/dev/null || { tmux kill-session -t sglang-rollout; die "rollout server not healthy after 15 min"; }
 log "rollout server up: $(nvidia-smi --query-gpu=memory.used --format=csv,noheader) used"
 left=$(nvidia-smi --query-gpu=memory.free --format=csv,noheader,nounits)
