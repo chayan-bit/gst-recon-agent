@@ -4,7 +4,7 @@ This plan uses only recorded runs, replayed through the demo app, so the video n
 Every run on screen is a real run saved in `recordings/`; the app labels it "REPLAY · RECORDED · 8x" in the middle panel, and that badge must stay visible in every replay shot.
 Voice-over is the user's own voice, no face cam: each `VO` block below is a prompt for what to say, not a script to read word for word.
 Numbers in the prompts come from the screen or from `reports/`; say them only as they appear.
-The sponsor-tool cards (AlignTune, AuditKIT, CuratorKIT) and the QR close from `pitch/DEMO_SCRIPT.md` shots 6 and 7 are not in this plan; if they are wanted, cut shot 2 to 10 s and shot 5 to 20 s to make room.
+The sponsor-tool material from `pitch/DEMO_SCRIPT.md` shot 6 is covered by the single static slide in shot 6 below; the QR close from its shot 7 is not in this plan.
 
 ## Setup before recording
 
@@ -27,15 +27,15 @@ Caption on screen: "Synthetic data" (the footer already says the company and inv
 
 VO prompt: every month a company works out how much GST credit it can claim; the inputs are invoices, bank statement and supplier list; that is data you do not want in a cloud API, so this runs on one GPU on the machine.
 
-### Shot 2 - Messy documents in (0:15 to 0:30)
+### Shot 2 - Messy documents in (0:15 to 0:23)
 
 Screen: left panel only.
-Click D05 (the skewed, stamped scan), pause 3 s, click `Document text (OCR)`, then click the Purchase register, GSTR-2B and Bank statement tabs, 2 s each.
+Click D05 (the skewed, stamped scan), pause 2 s, click `Document text (OCR)`, then click the Purchase register tab for 1 s.
 D01 shows "No scan for this document: it arrived as email or WhatsApp text"; click D01 and show its OCR text ("good morning sir. bill attached", Taj Mahal tea, Uttam sugar, "annual day celebration").
 
 VO prompt: scans, photos and a WhatsApp message; Tesseract turns them into text; the model reads that text, so a bad scan can lose a field.
 
-### Shot 3 - Per-document hybrid on the hard case (0:30 to 1:05)
+### Shot 3 - Per-document hybrid on the hard case (0:23 to 0:58)
 
 Screen: Pipeline = Hybrid, Model = Per-document (PERDOC), press Run (R).
 The 23 document chips tick off one by one (recorded run is 208 s; at 8x it takes about 30 s), then the line "Then: code reconciler, no model" appears (about 0.25 s), then the table fills.
@@ -44,7 +44,7 @@ Overlay text for this shot: "REPLAY, 8x speed. Recorded run: 208 s, 6,330 tokens
 
 VO prompt: a 4B model reads one document at a time, constrained to a JSON schema so it can only produce valid output; then ordinary code does the matching to the books, GSTR-2B and bank, and applies the tax rules; 19 of 23 invoices are exactly right on the hard case, and the headline totals are still off from the truth (eligible and deferred), which the comparison view shows rather than hides.
 
-### Shot 4 - Tea and sugar, blocked, with the reason (1:05 to 1:35)
+### Shot 4 - Tea and sugar, blocked, with the reason (0:58 to 1:28)
 
 Screen: scroll the table to the top (it opens the first two blocked or deferred rows automatically).
 Row D01, Shree Global: "Blocked: food and beverages, Sec 17(5)(b)(i)", blocked ₹5,713.44, "MATCHES TRUTH".
@@ -56,16 +56,16 @@ VO prompt: this is tea and sugar for an annual day celebration; the model reads 
 Do not show the "caterer buys the same sugar" re-run: the app has no recording for it.
 If the point is wanted, say it in words only: a caterer buying the same sugar could claim it, so the buyer matters.
 
-### Shot 5 - End-to-end versus hybrid: the 180-day rule (1:35 to 2:20)
+### Shot 5 - End-to-end versus hybrid: the 180-day rule (1:28 to 2:00)
 
-Part A, end-to-end (about 20 s).
+Part A, end-to-end (about 16 s).
 Switch Pipeline to End-to-end, Model to Fine-tuned (SFT), Run.
-The JSON streams token by token in the middle panel (recorded run: 142 s, 8,044 tokens, 57 tok/s; at 8x about 18 s).
+The JSON streams token by token in the middle panel (recorded run: 142 s, 8,044 tokens, 57 tok/s; at 8x about 18 s, so cut to the last 8 s of the stream with a "cut: 10 s of generation" label).
 Overlay text: "REPLAY, 8x speed. One call, whole case, model only."
 When it finishes, point at the headline: deferred ₹0.00 against truth ₹5,07,180.51, "ITC exact 15/23".
 Open D02, Chawla Networks (₹17,00,498.75): the model puts ₹2,59,398.12 under ITC eligible, while the truth is deferred ("Unpaid over 180 days, Sec 16(2), Rule 37").
 
-Part B, hybrid (about 20 s).
+Part B, hybrid (about 16 s).
 Switch back to Hybrid, Per-document (PERDOC), replay; jump to the finished table (re-run at 8x or cut to a saved clip).
 Open D02 and show the trace: "Payment: 204 days since the invoice, ₹17,00,498.75 of ₹17,00,498.75 unpaid; unpaid for over 180 days, credit must be reversed", deferred ₹2,59,398.14, "MATCHES TRUTH".
 The date arithmetic is code, not a model guess.
@@ -75,7 +75,16 @@ VO prompt: on the same case, the end-to-end model never defers an invoice that i
 Honest framing, say it or caption it: these are two different models (the whole-case SFT adapter versus the per-document adapter), so this contrast compares two pipelines, not one model in two modes.
 Do not use the medium case for this contrast: there the end-to-end SFT run (9/13 exact) beats the SFT hybrid run (3/13 exact).
 
-### Shot 6 - The results chart (2:20 to 2:50)
+### Shot 6 - How it is built (2:00 to 2:20)
+
+Screen: the static slide `http://localhost:8765/built` (screenshot: `screenshots/21-built.png`), no recording needed.
+Six tiles, in this order, about 3 s each: SGLang multi-LoRA serving (base, base:sft, base:perdoc on one server); XGrammar constrained decoding (schema as `response_format`); RadixAttention shared prefill (1216 of 1216 prompt tokens cached, against 0 as separate requests); the AlignTune SGLang rollout backend for GRPO; CuratorKIT gates (55% of teacher paraphrases kept); AuditKIT structured-extraction metrics.
+End on the badge for 3 s: "11 pull requests open upstream, none merged" (AlignTune 4, CuratorKIT 3, AuditKIT 3, SGLang 1).
+
+VO prompt: one SGLang server serves the base model and two LoRA adapters, switched per request; XGrammar makes the JSON always valid; RadixAttention shares the prompt prefill, which is what made GRPO rollouts cheap enough, and we built that as the AlignTune SGLang backend; CuratorKIT filtered the teacher's data and AuditKIT scored the extraction; eleven pull requests are open upstream and none is merged yet, and we say so.
+Say "open, none merged" exactly; do not say "merged" or "accepted".
+
+### Shot 7 - The results chart (2:20 to 2:50)
 
 Screen: open `http://localhost:8765/results` (the footer link "Results chart"); the bars animate in.
 Walk left to right: code alone 10.4, SFT end-to-end 10.9 (format mismatch footnote), base hybrid 55.2, SFT hybrid 46.8, per-doc v1 62.9, v2 73.1, v3 79.9, GRPO as a dashed TODO bar; then teacher 30B 59.8 and Claude Sonnet 96.3 on the right.
@@ -85,7 +94,7 @@ Footer text on the page: ITC invoice exact, 120 simulator test cases, every numb
 VO prompt: ITC invoice exact on 120 held-out simulator cases; code alone is 10; the per-document model with better reconciler versions climbs from 63 to 80 on the same model replies; the 30B teacher is 60 and Claude Sonnet is 96, so we are not claiming to beat a frontier model; the local model overclaims far less than the teacher.
 If GRPO numbers have landed by recording time, update `static/results.json` first and say the number; otherwise leave the dashed bar and say "GRPO is still training".
 
-### Shot 7 - Honest close (2:50 to 3:00)
+### Shot 8 - Honest close (2:50 to 3:00)
 
 Screen: back to the live app footer, or a plain card: "Trained and tested on a simulator", "Code and evals are open".
 
@@ -93,7 +102,7 @@ VO prompt: this is trained and tested on a simulator, so the limits are real; pr
 
 ## Honesty checklist
 
-- Every table, stream and trace is a replay of a real recorded run; the replay badge is visible in shots 3 and 5.
+- Every table, stream and trace is a replay of a real recorded run; the replay badge is visible in shots 3 and 5; the "how it is built" slide in shot 6 is a static slide, not a run, and says so in its source line.
 - Sped-up segments carry the "8x" label.
 - The hard-case hybrid run is 19/23 exact, not perfect; the headline totals differ from truth and the video says so.
 - The reconciler version is in the footer in hybrid mode (`reconciler 8286f1f`), and "end-to-end (model only)" in end-to-end mode.
@@ -105,11 +114,12 @@ VO prompt: this is trained and tested on a simulator, so the limits are real; pr
 | Shot | Start | Length |
 |---|---|---|
 | 1 Problem | 0:00 | 15 s |
-| 2 Messy documents | 0:15 | 15 s |
-| 3 Per-document hybrid, hard case | 0:30 | 35 s |
-| 4 Tea and sugar blocked, trace | 1:05 | 30 s |
-| 5 End-to-end versus hybrid | 1:35 | 45 s |
-| 6 Results chart | 2:20 | 30 s |
-| 7 Close | 2:50 | 10 s |
+| 2 Messy documents | 0:15 | 8 s |
+| 3 Per-document hybrid, hard case | 0:23 | 35 s |
+| 4 Tea and sugar blocked, trace | 0:58 | 30 s |
+| 5 End-to-end versus hybrid | 1:28 | 32 s |
+| 6 How it is built (static slide) | 2:00 | 20 s |
+| 7 Results chart | 2:20 | 30 s |
+| 8 Close | 2:50 | 10 s |
 
-If it runs over 3:00, cut in this order: shot 2's register, 2B and bank tab tour, then the second half of shot 5 part A (the JSON stream), then the overclaim panel in shot 6.
+If it runs over 3:00, cut in this order: shot 2's register tab, then the JSON stream in shot 5 part A (keep only the table), then the overclaim panel in shot 7.

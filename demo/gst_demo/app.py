@@ -198,6 +198,11 @@ def results() -> FileResponse:
     return FileResponse(STATIC / "results.html", headers={"Cache-Control": "no-store"})
 
 
+@app.get("/built")
+def built() -> FileResponse:
+    return FileResponse(STATIC / "built.html", headers={"Cache-Control": "no-store"})
+
+
 @app.get("/")
 def index() -> FileResponse:
     return FileResponse(STATIC / "index.html", headers={"Cache-Control": "no-store"})

@@ -95,6 +95,7 @@ def test_adapter_models_get_the_compact_grammar_and_base_the_strict_one():
 def test_results_page_and_its_numbers_are_served():
     c = TestClient(app_mod.app)
     assert c.get("/results").status_code == 200
+    assert c.get("/built").status_code == 200
     d = c.get("/static/results.json").json()
     for s in [*d["steps"], *d["references"]]:
         assert s["value"] is None or 0 <= s["value"] <= 100
