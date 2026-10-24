@@ -2,7 +2,7 @@
 
 Visual first: every shot has a picture doing the work, and the narration only names what the viewer is looking at.
 Voice-over only, no face cam, 1080p, terminal font at least 18 pt, dark theme.
-Numbers in `{{...}}` are read out loud only after they are filled from `NUMBERS.md`; do not record the final voice-over before then.
+Numbers in `{{...}}` are read out loud only after they are filled from the public reports (`reports/results.md`, `reports/hybrid.md`, `reports/pipeline.md`); do not record the final voice-over before then.
 
 ## Honesty rules for the recording
 

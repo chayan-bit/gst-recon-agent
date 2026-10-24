@@ -1,7 +1,7 @@
 # Judge Q&A: the hardest questions, with honest answers
 
 Rule for every answer: say what was measured, say what was not, and never reach past the evidence.
-Placeholders `{{...}}` are filled from `NUMBERS.md`; if one is still empty when you present, say "not measured yet" and move on.
+Every number is copied from `reports/results.md`, `reports/hybrid.md`, `reports/pipeline.md` or `reports/curation.md`; a `{{...}}` token is not measured yet, and if one is still empty when you present, say "not measured yet" and move on.
 
 ## 1. Isn't this sim-to-sim? You train and test on your own simulator.
 
@@ -138,7 +138,7 @@ v2's rules came from error analysis of one demo case (examples/test_iid-hard-23-
 v3 was developed only on train-split dev cases (120 small cases and 60 larger ones, seeds 7301 and 7302), where the per-document adapter went from 80.1% to 87.8% and from 76.7% to 81.1% ITC-exact, and was frozen before the test set was re-scored once from the cached replies, with no new model calls.
 That the reconciler was revised twice is why we show v1, v2 and v3 side by side and name the dev sets: the test set was touched once per version, and the rules were developed on train-split cases only (v2 was inspired by one demo case outside the evaluation set).
 Overclaim rises across versions: documents that used to stay deferred for lack of a link now link, so a wrong model judgment on them (a works contract or motor vehicle line read as normal) is counted instead of being masked.
-Against the 30B model run end to end (paired by case on the 120 simulator cases), the 4B per-document hybrid system under reconciler v3 is ahead on ITC-exact (+20.2 points [+16.4, +24.2]), context accuracy (+47.2 [+41.1, +53.7]) and the composite (+13.6 [+10.3, +17.6]), all p = 0.0005; it was level on ITC-exact under reconciler v1 (+3.1 [-1.6, +7.5], p = 0.175) and ahead on all three under v2 (ITC-exact +13.4).
+Against the 30B model run end to end (paired by case on the 120 simulator cases), the 4B per-document hybrid system under reconciler v3 is ahead on ITC-exact (+20.2 points [+16.4, +24.2]), context accuracy (+47.2 [+41.1, +53.7]) and the composite (+13.6 [+10.3, +17.6]), all p = 0.0005; it was level on ITC-exact under reconciler v1 (+3.1 [-1.6, +7.5], p = 0.18) and ahead on all three under v2 (ITC-exact +13.4).
 That is a comparison of systems, not of models: the 4B system has deterministic code doing the matching and the 30B model does not.
 On the 12 real-world sanity cases it scores 81.9% under v2 and v3 (76.4% under v1) against 97.2% for Claude Sonnet in the same mode, so we are still far behind the frontier.
 Against the same model fine-tuned and run end to end with the matching compact grammar, paired by case on the 42 shared cases (30 simulator, 12 realworld), the per-document hybrid under v3 ties on ITC-exact (+5.9 points [-1.8, +13.2], p = 0.11, not significant), is clearly ahead on context accuracy (+20.7 [+11.6, +30.5], p = 0.0005) and level on the composite (+2.5 [-1.1, +6.2]).

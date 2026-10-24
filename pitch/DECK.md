@@ -1,8 +1,8 @@
 # Deck outline: gst-recon (Syntax Error 2026, Local LLM track)
 
 Ten slides, about 4 minutes if presented live, and each slide also reads on its own as a static PDF.
-Every number is a placeholder written in double braces; the source of each is in `NUMBERS.md`.
-Nothing here is a measured result unless `NUMBERS.md` marks it as measured.
+Every number is copied from a public report: `reports/results.md`, `reports/hybrid.md`, `reports/pipeline.md` or `reports/curation.md`.
+A token in double braces is a number that has not been measured yet; nothing else on this page is an unmeasured claim.
 Visuals marked "committed" already exist in the repo (`examples/`, `reports/smoke/`); all others have to be made.
 All invoices, GSTINs and buyers are synthetic (simulator output), and the deck says so on the slides that show them.
 
@@ -66,12 +66,12 @@ Visual: a split bar showing train / test_iid / test_ood, with the held-out items
 - Student: Qwen3-4B-Instruct-2507 with LoRA, trained with AlignTune: SFT on curated cases, then GRPO against the verifiable reward.
 - Headline metric: ITC-exact, the share of invoices whose eligible, blocked and deferred amounts are all within Rs 1 of the truth, in-distribution then out-of-distribution: base {{BASE_ITCEXACT_IID}} / {{BASE_ITCEXACT_OOD}}, SFT 72.6 / 78.9 (compact-grammar decoding, a sample of 15 cases per split, CIs wide), SFT+GRPO {{GRPO_ITCEXACT_IID}} / {{GRPO_ITCEXACT_OOD}}.
 - The number that matters most for the pitch: context accuracy, the invoices where the buyer profile decides the answer ({{BASE_CTX_OOD}} -> 71.4 (SFT, compact grammar, 15 OOD cases) -> {{GRPO_CTX_OOD}}).
-- The weighted composite is shown in small print ({{BASE_COMPOSITE_OOD}} / 82.3 (SFT, compact grammar) / {{GRPO_COMPOSITE_OOD}}), because its floor is high: a model that copies the documents perfectly and calls everything clean already scores about 0.81.
+- The weighted composite is shown in small print ({{BASE_COMPOSITE_OOD}} / 82.3 (SFT, compact grammar) / {{GRPO_COMPOSITE_OOD}}), because its floor is high: a model that copies the documents perfectly and calls everything clean already scores about 80 out of 100 (`reports/results.md`, trivial baselines).
 <!-- Slide 6 SFT figures: reports/results.md, "SFT constrained (compact grammar)" rows (commit da4120a, 42-case stratified sample, 15 cases per split), test_iid 72.6, test_ood 78.9, context accuracy test_ood 71.4, composite test_ood 82.3. The earlier full-grammar run (10.9% overall) was a format mismatch and is not quoted. -->
 - Hybrid mode, the best measured student so far: the model reads one document at a time and deterministic code does the matching, rupee arithmetic and ITC rules.
   With the per-document LoRA and reconciler v3 on the 120 simulator cases the 4B student reaches ITC-exact 79.9% [77.5, 82.4] (in-distribution 82.5, out-of-distribution 77.3), context accuracy 82.7% and composite 82.7; the same replies scored 73.1% / 77.8 under reconciler v2 and 62.9% / 73.2 under v1.
   The same model without the adapter scores 55.2% / 67.9% / 71.3 under v3; the paired adapter gain under v3 is +25.9 ITC-exact points [+22.5, +29.2], p = 0.0005, n = 132.
-  Against the 30B model run end to end (paired by case on the 120 simulator cases), the 4B per-document hybrid system under reconciler v3 is ahead on ITC-exact (+20.2 points [+16.4, +24.2]), context accuracy (+47.2 [+41.1, +53.7]) and the composite (+13.6 [+10.3, +17.6]), all p = 0.0005; it was level on ITC-exact under reconciler v1 (+3.1 [-1.6, +7.5], p = 0.175) and ahead on all three under v2 (ITC-exact +13.4).
+  Against the 30B model run end to end (paired by case on the 120 simulator cases), the 4B per-document hybrid system under reconciler v3 is ahead on ITC-exact (+20.2 points [+16.4, +24.2]), context accuracy (+47.2 [+41.1, +53.7]) and the composite (+13.6 [+10.3, +17.6]), all p = 0.0005; it was level on ITC-exact under reconciler v1 (+3.1 [-1.6, +7.5], p = 0.18) and ahead on all three under v2 (ITC-exact +13.4).
   Against the same model fine-tuned and run end to end (compact grammar, paired by case on the 42 shared cases), the per-document hybrid under reconciler v3 ties on ITC-exact (+5.9 points [-1.8, +13.2], p = 0.11, not significant) and is clearly ahead on context accuracy (+20.7 [+11.6, +30.5], p = 0.0005); the composite is level (+2.5 [-1.1, +6.2]).
   It overclaims about 9 times less ITC (Rs 33,706 per case against Rs 317,078, p = 0.002) but is more conservative: it underclaims more (Rs 102,274 against Rs 13,922, p = 0.014).
   This is a 42-case sample, so the intervals are wide; we do not claim hybrid beats end-to-end SFT on ITC-exact.
