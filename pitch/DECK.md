@@ -90,6 +90,11 @@ Next to it, a two-bar chart of the constrained versus unconstrained student.
 - AlignTune bugs found the hard way: the datasets fingerprint pickles the whole trainer (a 42.7 GB host-RAM blowup), YAML values silently overridden by defaults (512-token truncation, wrong output directory), and dropped train keys (gradient checkpointing silently off).
 - CuratorKIT gates earn their keep: only 55% of teacher paraphrases were kept; 121 failed the code fact check and 28 failed the HallucinationGate.
 
+Upstream PRs, all open at the time of writing:
+- AuditKIT PRs: #9 https://github.com/Lexsi-Labs/AuditKIT/pull/9, #10 https://github.com/Lexsi-Labs/AuditKIT/pull/10, #11 https://github.com/Lexsi-Labs/AuditKIT/pull/11.
+- CuratorKIT PRs: #34 https://github.com/Lexsi-Labs/CuratorKIT/pull/34, #35 https://github.com/Lexsi-Labs/CuratorKIT/pull/35, #36 https://github.com/Lexsi-Labs/CuratorKIT/pull/36.
+- AlignTune PR: #32 https://github.com/Lexsi-Labs/AlignTune/pull/32.
+
 Visual: a four-tile grid, one tile per toolkit, each with a one-line before/after and a link to the branch or issue draft.
 The status of each (fork branch, draft, upstream PR) is shown honestly in a corner badge: `{{UPSTREAM_STATUS}}`.
 

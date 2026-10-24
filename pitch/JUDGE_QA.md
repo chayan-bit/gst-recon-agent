@@ -1,4 +1,4 @@
-# Judge Q&A: the ten hardest questions, with honest answers
+# Judge Q&A: the hardest questions, with honest answers
 
 Rule for every answer: say what was measured, say what was not, and never reach past the evidence.
 Placeholders `{{...}}` are filled from `NUMBERS.md`; if one is still empty when you present, say "not measured yet" and move on.
@@ -90,3 +90,17 @@ The evaluation keeps the full difficulty sizes on purpose, and the report breaks
 Results by length: ITC-exact {{ITCEXACT_LEN_LE16K}} up to 16k tokens, {{ITCEXACT_LEN_16_32K}} for 16 to 32k, {{ITCEXACT_LEN_GT32K}} above 32k.
 The student is served at a context of {{STUDENT_CONTEXT_LEN}} tokens, and {{N_CONTEXT_OVERFLOW_STUDENT}} cases overflowed it; those count as failures.
 If the numbers drop sharply with length, the honest summary is that the system works on small and medium month-ends today and that long ones need longer-case training.
+
+## 11. Why was your first SFT score 10.9%?
+
+Because of a mismatch between the grammar we decoded with and the format we trained on, not because the model could not do the task.
+The SFT targets use a compact form that drops fields that are zero, empty or false.
+The constrained-decoding grammar we first served it with was the full one, which requires the blocked and deferred buckets and all four tax heads in every ITC record.
+Those are slots the student never saw filled in training, and the grammar leaves it no way to omit them, so it filled them with junk.
+In the report, predicted blocked is nonzero in 78.5% of 2,246 ITC records where the truth is 21.9%, and predicted deferred is nonzero in 71.4% where the truth is 12.2%.
+The eligible bucket, the part the model did learn, is exactly right in 59.0% of ITC records.
+All three buckets are right together in only 12.3% of records, and that is what the headline 10.9% ITC-exact measures.
+The fix is a compact grammar that matches the training format: it makes the zero-droppable inner fields optional and keeps the top-level keys, types and reason enums.
+We label that row "compact grammar" in the report, and the full-grammar row stays in as evidence of the failure.
+The lesson is about structured output with small models: constrained decoding is only as good as the agreement between the grammar and what the model was trained to emit, and a grammar stricter than the training format does not catch errors, it manufactures them.
+What we do not claim: the compact-grammar numbers are not in the report yet, so we say "not measured yet" for them and do not quote the first row as the SFT model's capability.
