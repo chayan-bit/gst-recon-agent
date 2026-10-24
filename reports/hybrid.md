@@ -615,6 +615,27 @@ Pooled means are case means; paired bootstrap of run minus reference, 10,000 cas
 All deltas have p < 0.0005; v1 and pd3g287 are gst-hybrid's stored runs on the same 54 cases (58.5 / 64.1 / 68.6 and 61.1 / 71.5 / 72.9).
 The semireal documents are real client documents; the Haiku runs sent them to the Claude CLI only, and only aggregates are reported here.
 
+### GPT-6 luna (codex exec) as the per-document model (same harness, only the per-document call differs)
+
+Same per-document messages, doc schema v2, reconciler v3, fill, linker, scorer, case lists and statistics as the Haiku rows above; the per-document model is GPT-6 luna through `codex exec` (`scripts/eval_frontier.py --mode hybrid --backend codex`, codex-cli 0.164.0).
+The user approved sending the semireal real documents to OpenAI for this baseline; only aggregates are reported here.
+Each call is a clean `codex exec`: a scratch cwd, a `CODEX_HOME` holding only `auth.json`, `--ignore-user-config --ignore-rules --ephemeral -s read-only`, tools, skills, plugins, hooks and sub-agents disabled with `-c`, `DOC_SYSTEM_PROMPT` passed as `model_instructions_file`, the document as the prompt and doc schema v2 as `--output-schema`.
+About 6.0k tokens of harness-injected developer messages remain per call (a trivial prompt costs 16.3k with the default config), so a document call is about 8.2k input tokens; the full list of flags is `CODEX_CLEAN` in the script.
+The model sees no fine-tuning and the schema is the API's structured output, not XGrammar.
+Headline arm: reasoning effort `none` with reasoning summaries off (gpt-6-luna accepts none, low, medium, high, xhigh and max, and rejects minimal); the usage events show 0 reasoning tokens on all 234 documents, so there is no test-time compute, like the 4B model.
+Secondary arm: effort `medium` (400 to 800 reasoning tokens per document on three smoke documents).
+Codex reports no per-call cost.
+
+**semireal, 54 cases (clean 9, sim-s0 9, sim-s1to4 36), 234 documents.**
+
+| run | ITC invoice exact % | Match acc % | Composite | vs v1 (ITC / match / composite) | vs pd3g287 (ITC / match / composite) | docs parsed | invented identity | s per doc | tokens per doc (in / out) |
+|---|---|---|---|---|---|---|---|---|---|
+| GPT-6 luna, no reasoning | 70.6 | 82.5 | 77.9 | +12.2 [+8.1, +16.5] / +18.3 [+12.5, +24.8] / +9.3 [+7.4, +11.3] | +9.6 [+5.2, +13.9] / +10.9 [+7.5, +14.2] / +5.0 [+2.7, +7.2] | 100.0% | 15.4% (108 of 702) | 4.2 | 8,359 / 196 |
+| GPT-6 luna, medium effort (secondary) | 82.4 | 86.4 | 84.1 | +23.9 [+16.7, +32.1] / +22.3 [+15.1, +30.3] / +15.5 [+11.1, +20.7] | +21.3 [+13.9, +29.4] / +14.8 [+10.9, +19.0] / +11.3 [+7.5, +15.6] | 100.0% | 12.4% (87 of 702) | 6.4 | 8,204 / 457 |
+
+All deltas have p < 0.0001; the references are the same stored v1 and pd3g287 runs as above.
+Medium effort completion tokens include the reasoning tokens.
+
 ### Throughput
 
 | run | req/s | out tok/s | p50 latency (s) | GPU $/1k cases | API list $/1k cases |
