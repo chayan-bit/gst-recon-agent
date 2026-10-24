@@ -1,9 +1,8 @@
 # SFT: Qwen3-4B-Instruct-2507 + LoRA on the curated SFT pool (AlignTune 0.1.28, unsloth backend).
 # Run from the repo root:  python -m gst_recon.train run configs/sft.yaml
 # Raw-vs-curated ablation: copy this file and point datasets[0].name at data/train/raw/sft.
-# Known limit (0.1.28): the unsloth SFT backend flattens `messages` into one text column, so the
-# loss also covers the prompt (rendered documents). Response-only loss needs the trl backend with
-# train.assistant_only_loss: true and a chat template carrying generation markers; check before switching.
+# The unsloth SFT backend flattens `messages` into one text column; the runner then masks everything
+# but the assistant reply (gst_recon.train_on_responses_only below), so the loss covers the target only.
 algo: sft
 backend: unsloth
 
@@ -53,3 +52,7 @@ gst_recon:
   lr_scheduler: cosine
   dataloader_num_workers: 0
   dataset_num_proc: 1  # tokenization workers (unsloth would fork cpu_count + 4)
+  # loss on the assistant reply only (Qwen3 chat-template markers); see tests/train/test_responses_only.py
+  train_on_responses_only:
+    instruction_part: "<|im_start|>user\n"
+    response_part: "<|im_start|>assistant\n"

@@ -50,3 +50,7 @@ gst_recon:
   lr_scheduler: cosine
   dataloader_num_workers: 0
   dataset_num_proc: 1  # tokenization workers (unsloth would fork cpu_count + 4)
+  # loss on the assistant reply only (Qwen3 chat-template markers); see tests/train/test_responses_only.py
+  train_on_responses_only:
+    instruction_part: "<|im_start|>user\n"
+    response_part: "<|im_start|>assistant\n"

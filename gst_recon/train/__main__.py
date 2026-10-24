@@ -111,6 +111,21 @@ def step_line(step: int, max_steps: int, logs: dict) -> str | None:
     return f"step {step}/{max_steps} loss {float(logs['loss']):.4f}" + ("" if reward is None else f" reward {float(reward):.4f}")
 
 
+def _responses_only(trainer, parts: dict) -> None:
+    """Loss on the assistant reply only: unsloth's train_on_responses_only sets prompt labels to -100.
+    AlignTune 0.1.28's unsloth SFT flattens messages into one text, so without this ~75% of the
+    gradient goes to reproducing the rendered documents."""
+    setup = trainer.setup_trainer
+
+    def setup_then_mask():
+        setup()
+        from unsloth_zoo.dataset_utils import train_on_responses_only
+
+        trainer.trainer = train_on_responses_only(trainer.trainer, num_proc=1, **parts)
+
+    trainer.setup_trainer = setup_then_mask  # train() calls self.setup_trainer(), so the instance attribute wins
+
+
 def _add_step_log(trainer) -> None:
     from transformers import TrainerCallback
 
@@ -135,6 +150,7 @@ def cmd_run(a: argparse.Namespace) -> None:
 
     from aligntune.core.backend_factory import create_rl_trainer, create_sft_trainer
 
+    responses_only = extras.pop("train_on_responses_only", None)
     if "dataset_num_proc" in extras:
         _pin_dataset_num_proc(extras.pop("dataset_num_proc"))
 
@@ -148,6 +164,8 @@ def cmd_run(a: argparse.Namespace) -> None:
     # RAM (42 GB, rs-epyc OOM on 2026-10-24). Hash the trainer by identity instead.
     type(trainer).__getstate__ = lambda self: {"trainer_id": id(self)}
     _add_step_log(trainer)
+    if responses_only:
+        _responses_only(trainer, responses_only)
     print(json.dumps(trainer.train(), indent=1, default=str))
 
 
