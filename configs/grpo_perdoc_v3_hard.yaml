@@ -12,7 +12,7 @@ model:
   name_or_path: Qwen/Qwen3-4B-Instruct-2507  # the launcher substitutes the local snapshot (MODEL=...)
   precision: bf16
   max_seq_length: 2688  # prompts <= 2048 tokens + 640 completion
-  gradient_checkpointing: true
+  gradient_checkpointing: false  # rs-epyc H100 smoke 2026-10-24: off at 2x32 = 20.8 s/step vs 25.8 on at 4x16, peak 47.6 GB
   use_peft: true
   # must match the per-document adapter exactly (the runner checks): r32, alpha 64, plain LoRA, all 7 projections
   lora_r: 32
@@ -34,8 +34,8 @@ train:
   sglang_sync_dir: runs/grpo-sync  # on disk via the repo's runs link, never /dev/shm
   max_steps: 287  # one pass over the 1147 documents at 4 per step; the launcher's STOP_AT deadline may bind first
   # 4 x 16 = 64 completions per optimizer step = 4 documents x 16 generations
-  per_device_batch_size: 4
-  gradient_accumulation_steps: 16
+  per_device_batch_size: 2  # 2 x 32 = 64 completions = 4 documents x 16 (4 x 16 without checkpointing OOMs at ~58 GB)
+  gradient_accumulation_steps: 32
   num_generations: 16
   learning_rate: 5.0e-6
   warmup_ratio: 0.03
@@ -64,7 +64,7 @@ gst_recon:
   max_hours: 6  # the launcher's STOP_AT deadline (GST_MAX_HOURS) binds first
   bf16_snapshots: runs/grpo-perdoc-v3-hard/bf16  # bf16 adapter + SHA256SUMS per save
   mask_truncated_completions: true
-  gradient_checkpointing: true
+  gradient_checkpointing: false  # as model.gradient_checkpointing
   optimizer: adamw_8bit
   lr_scheduler: constant_with_warmup
   dataloader_num_workers: 0

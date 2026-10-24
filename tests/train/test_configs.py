@@ -21,7 +21,7 @@ def test_configs_restate_values_aligntune_would_shadow(path):
     assert args["max_seq_length"] >= (2048 if "perdoc" in path.name else 10240)
     train = cfg["train"]
     assert args["max_seq_length"] >= train.get("max_prompt_length", 0) + train.get("max_completion_length", 0)
-    assert extras["gradient_checkpointing"] is True
+    assert extras["gradient_checkpointing"] is (path.name != "grpo_perdoc_v3_hard.yaml")  # H100: off is faster and fits
     assert not set(args) & set(extras)
 
 
