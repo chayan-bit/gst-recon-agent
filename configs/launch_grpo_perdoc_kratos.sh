@@ -28,7 +28,7 @@ if [ "${1:-}" = setup ]; then  # torch cu128 for sm_120; the rest pinned to the 
   "$UV" pip install --python "$PY" torch==2.9.0 --index-url https://download.pytorch.org/whl/cu128 || exit 1
   "$UV" pip install --python "$PY" transformers==5.20.2 trl==1.7.1 peft==0.21.2 accelerate==1.15.0 datasets==5.1.0 \
     "bitsandbytes>=0.48" safetensors tensorboard evaluate pydantic pyyaml sentencepiece scikit-learn scipy pandas \
-    rich psutil jsonschema lxml sqlglot msgspec immutables numpy || exit 1
+    rich psutil jsonschema lxml sqlglot msgspec immutables numpy pypdf python-docx || exit 1
   "$UV" pip install --python "$PY" --no-deps "aligntune @ git+https://github.com/chayan-bit/aligntune@$ALIGN_REF" || exit 1
   PYTHONPATH=$ROOT "$PY" -c "import torch, bitsandbytes, peft, trl; from aligntune.core.backend_factory import create_rl_trainer; \
 import gst_recon.train.__main__; print('ok torch', torch.__version__, 'cuda', torch.version.cuda, 'bnb', bitsandbytes.__version__)"

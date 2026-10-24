@@ -266,6 +266,18 @@ def _add_bf16_snapshots(trainer, out: str) -> None:
     trainer.get_hf_callbacks = lambda: [*callbacks(), Bf16Snapshots()]
 
 
+def _resume_from(checkpoint: str) -> None:
+    """Continue an interrupted run from its checkpoint: optimizer, scheduler, RNG and data position (AlignTune calls
+    trainer.train() without arguments, so the checkpoint becomes that call's default)."""
+    import functools
+
+    import transformers
+
+    if not (Path(checkpoint) / "optimizer.pt").is_file():
+        raise SystemExit(f"resume_from_checkpoint: {checkpoint} is not a full checkpoint")
+    transformers.Trainer.train = functools.partialmethod(transformers.Trainer.train, resume_from_checkpoint=checkpoint)
+
+
 def _sequential_order() -> None:
     """Train on rows in file order instead of the seeded shuffle (rows pre-ordered to finish an interrupted epoch)."""
     import transformers
@@ -332,6 +344,7 @@ def cmd_run(a: argparse.Namespace) -> None:
     rows_as_is = extras.pop("rows_as_is", False)
     snapshots, sequential = extras.pop("bf16_snapshots", None), extras.pop("sequential_order", False)
     json_schema = extras.pop("rollout_json_schema", None)
+    resume = extras.pop("resume_from_checkpoint", None)
     if "dataset_num_proc" in extras:
         _pin_dataset_num_proc(extras.pop("dataset_num_proc"))
 
@@ -355,6 +368,8 @@ def cmd_run(a: argparse.Namespace) -> None:
         _add_bf16_snapshots(trainer, snapshots)
     if sequential:
         _sequential_order()
+    if resume:
+        _resume_from(resume)
     if rows_as_is:
         _use_rows_as_is(trainer, cfg["datasets"][0]["name"])
     if init_adapter:

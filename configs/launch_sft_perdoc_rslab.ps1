@@ -1,6 +1,8 @@
 # Per-document SFT on rs-lab (Windows, RTX A6000): preflight, then a per-doc config (default
-# configs/sft_perdoc_trl.yaml) under a Job Object memory cap. Runs as a scheduled task so it survives ssh:
-#   schtasks /Create /TN gst-sft-perdoc /SC ONCE /ST 23:59 /F /TR "powershell -NoProfile -ExecutionPolicy Bypass -File C:\Users\user\gst-train\repo\configs\launch_sft_perdoc_rslab.ps1"
+# configs/sft_perdoc_trl.yaml) under a Job Object memory cap. Runs as a scheduled task so it survives ssh. The task
+# is interactive-only (no stored password), so its console opens on the shared desktop: keep it hidden, a Ctrl-C
+# there killed v2 at step 148:
+#   schtasks /Create /TN gst-sft-perdoc /SC ONCE /ST 23:59 /F /TR "powershell -WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -File C:\Users\user\gst-train\repo\configs\launch_sft_perdoc_rslab.ps1"
 #   schtasks /Run /TN gst-sft-perdoc
 # v2 (finish the epoch from v1's adapter): append -Config configs\sft_perdoc_v2_trl.yaml -Name sft_perdoc_v2 -Data sft-perdoc-v2-rest
 # Log (ASCII, tail over ssh): C:\Users\user\gst-train\logs\<Name>.log
