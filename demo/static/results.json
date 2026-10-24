@@ -2,7 +2,7 @@
   "title": "The hybrid ladder: code, SFT, per-document, GRPO",
   "metric": "ITC invoice exact (%)",
   "metric_note": "Share of invoices whose eligible, blocked and deferred amounts are all within Rs 1 of the truth. Held-out test set, 120 simulator cases (60 in-distribution, 60 out-of-distribution), one number per bar.",
-  "source": "reports/hybrid.md (Overall, 120 simulator cases) and reports/results.md at commit 83599e7. A step with no value is TODO: not run yet, shown as an empty dashed bar. Commit under each bar = the reconciler version that produced the number (e2e rows: the report commit).",
+  "source": "reports/hybrid.md (Overall, 120 simulator cases) and reports/results.md at commit 83599e7; SFT compact row at da4120a. No value = TODO, not run yet. Commit under each bar = the reconciler (or report) commit behind the number.",
   "steps": [
     {
       "label": "Code alone",
@@ -12,11 +12,19 @@
       "commit": "ac03f32"
     },
     {
-      "label": "SFT e2e",
-      "sub": "full grammar *",
+      "label": "SFT e2e*",
+      "sub": "strict grammar",
       "value": 10.9,
       "kind": "e2e",
       "commit": "83599e7"
+    },
+    {
+      "label": "SFT e2e",
+      "sub": "compact grammar, n=30 sample",
+      "value": 75.7,
+      "kind": "e2e",
+      "commit": "da4120a",
+      "sample": true
     },
     {
       "label": "Base hybrid",
@@ -79,7 +87,7 @@
   ],
   "context": {
     "title": "Context accuracy and overclaim",
-    "sub": "Same 120 test cases. Context = did the model apply the business context right (blocked and deferred reasons). Overclaim = rupees of credit wrongly claimed, per case.",
+    "sub": "Same 120 test cases (SFT compact: a 30-case sample). Context = did the model apply the business context right (blocked and deferred reasons). Overclaim = rupees of credit wrongly claimed, per case.",
     "rows": [
       {
         "label": "Per-document, reconciler v3",
@@ -101,6 +109,13 @@
         "overclaim": 15306,
         "overclaim_ci": "7,532 to 24,334",
         "commit": "83599e7"
+      },
+      {
+        "label": "SFT e2e, compact (n=30 sample)",
+        "context": 63.9,
+        "overclaim": 435416,
+        "overclaim_ci": "215,198 to 701,045",
+        "commit": "da4120a"
       }
     ]
   },
@@ -122,8 +137,8 @@
     "todo": "Student (SFT, GRPO) unconstrained runs TODO"
   },
   "footnotes": [
-    "* SFT was trained on compact targets (zero fields omitted) but this run decoded with the strict full-schema grammar, which forces junk into blocked and deferred. Read it as a format mismatch, not as the student's accuracy.",
-    "Not measured (GPU host down): base Qwen3-4B end-to-end, and SFT end-to-end with the compact grammar. Both bars are left out rather than guessed.",
+    "* Strict-grammar SFT forced junk into blocked and deferred (it was trained on compact targets): a format mismatch, not the student's accuracy. The compact bar is its real end-to-end number.",
+    "Not measured (GPU host down): base Qwen3-4B end-to-end. The hatched SFT compact-grammar bar is a 30-case simulator sample (CI 70.0 to 81.5), not the 120 cases of the other bars, so read it as indicative only.",
     "Reconciler v1, v2 and v3 re-score the same cached per-document replies with no new model calls; the oracle check (true records through the same code) reproduces the truth on all cases under all three."
   ]
 }

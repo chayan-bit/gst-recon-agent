@@ -87,8 +87,8 @@ Say "open, none merged" exactly; do not say "merged" or "accepted".
 ### Shot 7 - The results chart (2:20 to 2:50)
 
 Screen: open `http://localhost:8765/results` (the footer link "Results chart"); the bars animate in.
-Walk left to right: code alone 10.4, SFT end-to-end 10.9 (format mismatch footnote), base hybrid 55.2, SFT hybrid 46.8, per-doc v1 62.9, v2 73.1, v3 79.9, GRPO as a dashed TODO bar; then teacher 30B 59.8 and Claude Sonnet 96.3 on the right.
-Then the side panel: per-document v3 context accuracy 82.7% and overclaim Rs 27,183 per case, against the teacher at 38.8% and Rs 3,83,144.
+Walk left to right: code alone 10.4, SFT end-to-end with the strict grammar 10.9 (format mismatch footnote), SFT end-to-end with the compact grammar 75.7 (hatched bar: a 30-case sample, CI 70.0 to 81.5), base hybrid 55.2, SFT hybrid 46.8, per-doc v1 62.9, v2 73.1, v3 79.9, GRPO as a dashed TODO bar; then teacher 30B 59.8 and Claude Sonnet 96.3 on the right.
+Then the side panel: per-document v3 context accuracy 82.7% and overclaim Rs 27,183 per case, against the teacher at 38.8% and Rs 3,83,144, SFT end-to-end compact (30-case sample) at 63.9% and Rs 4,35,416, and Sonnet at 92.7% and Rs 15,306.
 Footer text on the page: ITC invoice exact, 120 simulator test cases, every number cites its commit.
 
 VO prompt: ITC invoice exact on 120 held-out simulator cases; code alone is 10; the per-document model with better reconciler versions climbs from 63 to 80 on the same model replies; the 30B teacher is 60 and Claude Sonnet is 96, so we are not claiming to beat a frontier model; the local model overclaims far less than the teacher.
@@ -106,7 +106,8 @@ VO prompt: this is trained and tested on a simulator, so the limits are real; pr
 - Sped-up segments carry the "8x" label.
 - The hard-case hybrid run is 19/23 exact, not perfect; the headline totals differ from truth and the video says so.
 - The reconciler version is in the footer in hybrid mode (`reconciler 8286f1f`), and "end-to-end (model only)" in end-to-end mode.
-- The SFT end-to-end bar on the chart is a format mismatch (strict grammar), footnoted on the page; the compact-grammar number is the end-to-end SFT run in shot 5.
+- The strict-grammar SFT bar (10.9) is a format mismatch, footnoted on the page; the compact-grammar SFT bar (75.7) is the student's real end-to-end number, but it is a 30-case sample with a wide interval, so say "on a 30-case sample" and do not rank it against the 120-case bars.
+- Be ready for the obvious question: SFT end-to-end (compact) scores close to per-document v3 on ITC exact, but its overclaim is far higher (Rs 4,35,416 per case on the sample, against Rs 27,183), which is the second panel's point.
 - The "caterer buys the same sugar" re-run is not supported by the app and is not shown.
 
 ## Timing summary

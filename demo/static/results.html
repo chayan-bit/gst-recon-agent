@@ -8,17 +8,17 @@
 <link rel="stylesheet" href="/static/style.css">
 <style>
   body { display: block; height: auto; min-height: 100%; overflow: auto; }
-  .wrap { max-width: 1760px; margin: 0 auto; padding: 28px 20px 40px; display: grid; grid-template-columns: 1fr 520px; align-items: start; gap: 20px; }
+  .wrap { max-width: 1760px; margin: 0 auto; padding: 20px 20px 16px; display: grid; grid-template-columns: 1fr 520px; align-items: start; gap: 20px; }
   .wrap > header { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 20px; }
   h1 { margin: 0; font-size: 26px; letter-spacing: -.01em; }
   .sub { color: var(--muted); max-width: 900px; }
   .back { color: var(--accent); text-decoration: none; font-weight: 600; margin-left: auto; white-space: nowrap; }
-  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 22px 24px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px 24px; }
   .card h2 { margin: 0 0 4px; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
   .card .lead { color: var(--dim); margin: 0 0 18px; font-size: 13px; }
   .legend { display: flex; flex-wrap: wrap; gap: 18px; margin-bottom: 8px; font-size: 12.5px; color: var(--muted); }
   .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
-  .chart { padding-left: 30px !important; display: flex; align-items: flex-end; gap: 18px; height: 520px; padding: 24px 4px 0; border-bottom: 1px solid var(--line-2); position: relative; }
+  .chart { padding-left: 30px !important; display: flex; align-items: flex-end; gap: 18px; height: 580px; padding: 24px 4px 0; border-bottom: 1px solid var(--line-2); position: relative; }
   .grid { position: absolute; inset: 24px 0 0 0; padding-left: 0; pointer-events: none; }
   .grid span { position: absolute; left: 0; right: 0; border-top: 1px dashed var(--line); font-size: 10.5px; color: var(--dim); }
   .grid span b { position: absolute; left: 0; top: -15px; font-weight: 500; }
@@ -28,6 +28,7 @@
   .bar.code { background: #55627a; } .bar.e2e { background: var(--warn); opacity: .85; }
   .bar.hybrid { background: var(--accent); } .bar.ref { background: var(--ok); }
   .bar .v { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); padding-bottom: 5px; font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .bar.sample { background: repeating-linear-gradient(135deg, var(--warn) 0 6px, #7a5d12 6px 11px); }
   .bar.todo { background: transparent; border: 1.5px dashed var(--line-2); border-bottom: 0; height: 56px !important; }
   .bar.todo .v { color: var(--warn); font-size: 11px; letter-spacing: .08em; font-weight: 700; }
   .labels { display: flex; gap: 18px; padding: 12px 4px 0 34px; }
@@ -38,9 +39,9 @@
   .labels em { display: block; color: var(--dim); font: 10.5px ui-monospace, monospace; font-style: normal; margin-top: 3px; }
   .labels .cm { color: var(--dim); font: 10.5px ui-monospace, monospace; margin-top: 2px; }
   .side { display: flex; flex-direction: column; gap: 20px; }
-  .pair { margin: 22px 0 6px; }
+  .pair { margin: 12px 0 2px; }
   .pair .nm { font-weight: 600; margin-bottom: 8px; }
-  .row { display: grid; grid-template-columns: 112px 1fr 84px; align-items: center; gap: 10px; margin: 6px 0; font-size: 13px; color: var(--muted); }
+  .row { display: grid; grid-template-columns: 112px 1fr 84px; align-items: center; gap: 10px; margin: 4px 0; font-size: 13px; color: var(--muted); }
   .track { height: 22px; background: var(--panel-2); border-radius: 6px; overflow: hidden; }
   .track i { display: block; height: 100%; border-radius: 6px; transition: width .6s cubic-bezier(.2, .8, .2, 1); }
   .row .n { color: var(--text); font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
@@ -72,7 +73,7 @@ const fmt = (v) => `${v.toFixed(1)}%`;
 
 function bar(c) {
   const todo = c.value == null;
-  return `<div class="bar ${c.kind}${todo ? " todo" : ""}" data-h="${todo ? 0 : c.value}"><span class="v">${todo ? "TODO" : fmt(c.value)}</span></div>`;
+  return `<div class="bar ${c.kind}${c.sample ? " sample" : ""}${todo ? " todo" : ""}" data-h="${todo ? 0 : c.value}"><span class="v">${todo ? "TODO" : fmt(c.value)}</span></div>`;
 }
 
 fetch("/static/results.json").then((r) => r.json()).then((d) => {
