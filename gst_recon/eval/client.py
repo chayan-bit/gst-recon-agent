@@ -52,7 +52,7 @@ def chat(endpoint: str, model: str, messages: list[dict], *, response_format: di
     headers = {"Content-Type": "application/json", "Authorization": f"Bearer {api_key}"}
     req = urllib.request.Request(chat_url(endpoint), data=json.dumps(body).encode(), method="POST", headers=headers)
     err = ""
-    clipped, attempt = False, -1
+    clips, attempt = 0, -1
     while attempt < retries:
         attempt += 1
         t0 = time.perf_counter()
@@ -66,9 +66,9 @@ def chat(endpoint: str, model: str, messages: list[dict], *, response_format: di
                     "latency_s": time.perf_counter() - t0, "error": None}
         except urllib.error.HTTPError as e:
             err = f"HTTP {e.code}: {e.read().decode(errors='replace')[:300]}"
-            room = None if clipped else clip_max_tokens(err)
+            room = clip_max_tokens(err) if clips < 2 else None
             if room and room < body["max_tokens"]:  # prompt fits but prompt + max_tokens does not: ask for what fits
-                body["max_tokens"], clipped, attempt = room, True, attempt - 1  # a clip is not a retry
+                body["max_tokens"], clips, attempt = room, clips + 1, attempt - 1  # a clip is not a retry
                 req = urllib.request.Request(req.full_url, data=json.dumps(body).encode(), method="POST", headers=headers)
                 continue
             if e.code < 500 and e.code != 429:
