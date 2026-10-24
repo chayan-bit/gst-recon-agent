@@ -154,7 +154,7 @@ function renderDocs(statusById = lastStatuses()) {
   if (!d) return;
   $("docTabs").innerHTML = d.docs.map((x) => {
     const st = statusById[x.id];
-    return `<button role="tab" data-doc="${esc(x.id)}" aria-selected="${x.id === S.doc}">${esc(x.id)}<span class="kind ${x.image ? "scan" : ""}" title="${x.image ? "scanned image" : "email or WhatsApp text"}"></span>${st ? `<i class="${st}"></i>` : ""}</button>`;
+    return `<button role="tab" data-doc="${esc(x.id)}" aria-selected="${x.id === S.doc}">${esc(x.id)}<span class="kind ${x.image ? "img" : ""}" title="${x.image ? "scanned image" : "email or WhatsApp text"}"></span>${st ? `<i class="${st}"></i>` : ""}</button>`;
   }).join("");
   for (const b of $("docTabs").children) b.onclick = () => { pickDoc(b.dataset.doc); };
   const doc = d.docs.find((x) => x.id === S.doc) || d.docs[0];
@@ -432,13 +432,13 @@ function renderStats(run) {
     } else {
       val.className = "validity " + (ok === ds.length ? "ok" : "bad");
       val.innerHTML = ok === ds.length
-        ? `<b>\u2713 ${ok} of ${ds.length} documents match the schema</b><small>${run.constrained ? "guaranteed by the grammar" : "no grammar: valid this time"}</small>`
+        ? `<b>\u2713 ${ok} of ${ds.length} match the schema</b><small>${run.constrained ? "enforced by XGrammar" : "no grammar: valid this time"}</small>`
         : `<b>\u2717 ${ds.length - ok} of ${ds.length} documents failed the schema</b><small>the reconciler reads them leniently</small>`;
     }
   } else if (v) {
     val.className = "validity " + (v.schema ? "ok" : "bad");
     val.innerHTML = v.schema
-      ? `<b>\u2713 Valid JSON, matches the schema</b><small>${run.constrained ? "guaranteed by the grammar" : "no grammar: valid this time"}</small>`
+      ? `<b>\u2713 Valid JSON, matches the schema</b><small>${run.constrained ? "enforced by XGrammar" : "no grammar: valid this time"}</small>`
       : `<b>\u2717 ${v.json ? "Valid JSON, wrong shape" : "Not valid JSON"}</b><small title="${esc(v.error)}">${esc(v.error)}</small>`;
     if (st?.finish_reason === "length") val.innerHTML += `<small>hit the token limit</small>`;
   } else {
@@ -573,7 +573,7 @@ function traceHtml(r) {
   const reg = t.register || [];
   li.push(`<li>Purchase register: ${reg.length ? reg.map((v, i) => `${yes(esc(v.voucher))} <small>taxable ${rupee(v.taxable)}${ev(t.link?.register?.[i])}</small>`).join(", ") : no("no voucher matched")}</li>`);
   const p = t.payment;
-  if (p) li.push(`<li>Payment: ${p.days_since_invoice} days since the invoice, ${p.outstanding <= 0.5 ? yes("fully paid") : `${rupee(p.outstanding)} of ${rupee(p.total)} unpaid`}; ${p.unpaid_180d ? no("unpaid for over 180 days, credit must be reversed") : yes("not over the 180-day limit")}</li>`);
+  if (p) li.push(`<li>Payment: invoice is ${p.days_since_invoice} days old at the return date, ${p.outstanding <= 0.5 ? yes("fully paid") : `${rupee(p.outstanding)} of ${rupee(p.total)} unpaid`}; ${p.unpaid_180d ? no("unpaid for over 180 days, credit must be reversed") : yes(p.days_since_invoice > 180 ? "paid, so the 180-day reversal rule does not apply" : "within the 180-day limit")}</li>`);
   return `<div class="trace-h">Why: decision trace from the code reconciler</div><ul class="trace">${li.join("")}</ul>`;
 }
 

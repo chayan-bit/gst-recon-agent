@@ -48,7 +48,7 @@ VO prompt: a 4B model reads one document at a time, constrained to a JSON schema
 
 Screen: scroll the table to the top (it opens the first two blocked or deferred rows automatically).
 Row D01, Shree Global: "Blocked: food and beverages, Sec 17(5)(b)(i)", blocked ₹5,713.44, "MATCHES TRUTH".
-Slowly pan the open trace: "Taj Mahal tea was read as food and beverages, for staff welfare: blocked", "Uttam sugar (Lot 2)" the same, GSTR-2B entry matched, purchase register voucher matched, "215 days since the invoice, fully paid".
+Slowly pan the open trace: "Taj Mahal tea was read as food and beverages, for staff welfare: blocked", "Uttam sugar (Lot 2)" the same, GSTR-2B entry matched, purchase register voucher matched, "invoice is 215 days old at the return date, fully paid; paid, so the 180-day reversal rule does not apply".
 Flip to the left panel and show the D01 OCR text with the remark "annual day celebration" for 3 s, then back to the table.
 
 VO prompt: this is tea and sugar for an annual day celebration; the model reads the line items and the purpose; the code blocks ₹5,713.44 and cites section 17(5)(b)(i); the trace says why in plain words, so an accountant can check it.
@@ -67,7 +67,7 @@ Open D02, Chawla Networks (₹17,00,498.75): the model puts ₹2,59,398.12 under
 
 Part B, hybrid (about 16 s).
 Switch back to Hybrid, Per-document SFT + GRPO (shipped), replay; jump to the finished table (re-run at 8x or cut to a saved clip).
-Open D02 and show the trace: "Payment: 204 days since the invoice, ₹17,00,498.75 of ₹17,00,498.75 unpaid; unpaid for over 180 days, credit must be reversed", deferred ₹2,59,398.18, "MATCHES TRUTH".
+Open D02 and show the trace: "Payment: invoice is N days old at the return date, ₹17,00,498.75 of ₹17,00,498.75 unpaid; unpaid for over 180 days, credit must be reversed" (read N off the screen), deferred ₹2,59,398.18, "MATCHES TRUTH".
 The date arithmetic is code, not a model guess.
 
 VO prompt: on the same case, the end-to-end model never defers an invoice that is unpaid for more than 180 days, so it claims credit the law says must be reversed; in hybrid the model only reads, and the code counts the days against the bank statement.

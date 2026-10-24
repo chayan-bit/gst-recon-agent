@@ -83,7 +83,8 @@ select:hover { border-color: #3b485b; }
 .badge.replay { color: var(--warn); background: var(--warn-bg); border-color: var(--warn-line); }
 
 /* ---------- left: documents ---------- */
-.doctabs { display: flex; gap: 6px; padding: 0 18px 12px; overflow-x: auto; flex: none; }
+.doctabs { display: flex; gap: 6px; padding: 0 18px 12px; overflow-x: auto; flex: none; mask-image: linear-gradient(to right, transparent, #000 18px, #000 calc(100% - 18px), transparent); }
+.doctabs button { flex: none; }
 .doctabs button {
   flex: none; height: 30px; padding: 0 10px; display: inline-flex; align-items: center; gap: 7px; border-radius: 8px;
   background: var(--panel-2); border: 1px solid var(--line); color: var(--muted); font: 600 12.5px var(--mono);
@@ -91,7 +92,7 @@ select:hover { border-color: #3b485b; }
 .doctabs button:hover { color: var(--text); border-color: var(--line-2); }
 .doctabs button[aria-selected="true"] { color: var(--text); background: var(--raise); border-color: #3b485b; }
 .doctabs .kind { width: 9px; height: 9px; border-radius: 3px; border: 1.5px solid var(--dim); }
-.doctabs .kind.scan { background: var(--accent); border-color: var(--accent); }
+.doctabs .kind.img { background: var(--accent); border-color: var(--accent); }
 .doctabs i { width: 7px; height: 7px; border-radius: 50%; }
 .doctabs i.ok { background: var(--ok); } .doctabs i.bad { background: var(--bad); }
 .scan { flex: 1 1 52%; min-height: 0; margin: 0 18px; border-radius: 10px; border: 1px solid var(--line); background: #070a0e; overflow: auto; position: relative; cursor: zoom-in; }
@@ -116,7 +117,7 @@ select:hover { border-color: #3b485b; }
 .validity.ok { color: var(--ok); background: var(--ok-bg); border-color: var(--ok-line); }
 .validity.bad { color: var(--bad); background: var(--bad-bg); border-color: var(--bad-line); }
 .validity b { font-weight: 650; }
-.validity small { color: inherit; opacity: .8; font-size: 12px; margin-left: auto; font-family: var(--mono); max-width: 52%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.validity small { color: inherit; opacity: .8; font-size: 12px; margin-left: auto; font-family: var(--mono); flex: none; white-space: nowrap; }
 .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; margin: 12px 18px 18px; border-radius: 10px; overflow: hidden; background: var(--line); border: 1px solid var(--line); }
 .stat { background: var(--panel-2); padding: 9px 12px; min-width: 0; }
 .stat span { display: block; font-size: 10.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--dim); font-weight: 600; }
