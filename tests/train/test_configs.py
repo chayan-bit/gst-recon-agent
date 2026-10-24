@@ -25,3 +25,27 @@ def test_step_line_format():
     assert step_line(3, 40, {"loss": 0.81234, "learning_rate": 1e-4}) == "step 3/40 loss 0.8123"
     assert step_line(5, 300, {"loss": 0.1, "reward": 0.4567}) == "step 5/300 loss 0.1000 reward 0.4567"
     assert step_line(7, 40, {"train_runtime": 10.0}) is None
+
+
+def test_grpo_refuses_anything_but_sglang_rollouts(monkeypatch, tmp_path):
+    import importlib.util
+
+    from gst_recon.train.__main__ import require_sglang_rollout
+
+    ok = {"rollout_backend": "sglang", "sglang_sync_dir": "runs/sync"}
+    for bad in ({}, {**ok, "rollout_backend": "hf"}, {**ok, "sglang_sync_dir": "/dev/shm/x"}, {**ok, "sglang_sync_dir": ""}):
+        monkeypatch.setattr(importlib.util, "find_spec", lambda name: object())
+        with pytest.raises(SystemExit):
+            require_sglang_rollout(bad)
+    monkeypatch.setattr(importlib.util, "find_spec", lambda name: None)  # stock AlignTune: silent HF fallback
+    with pytest.raises(SystemExit, match="no SGLang rollout"):
+        require_sglang_rollout(ok)
+    monkeypatch.setattr(importlib.util, "find_spec", lambda name: object())
+    monkeypatch.chdir(tmp_path)
+    assert require_sglang_rollout(ok)["sglang_sync_dir"] == str(tmp_path.resolve() / "runs/sync")
+
+
+def test_every_grpo_config_uses_sglang_rollouts():
+    pytest.importorskip("yaml")
+    grpo = [p for p in CONFIGS if load_config(str(p))[0]["algo"] == "grpo"]
+    assert grpo and all(load_config(str(p))[1]["rollout_backend"] == "sglang" for p in grpo)

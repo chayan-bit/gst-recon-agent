@@ -111,6 +111,29 @@ def step_line(step: int, max_steps: int, logs: dict) -> str | None:
     return f"step {step}/{max_steps} loss {float(logs['loss']):.4f}" + ("" if reward is None else f" reward {float(reward):.4f}")
 
 
+SGLANG_ROLLOUT = "aligntune.backends.trl.rl.rollout.sglang_rollout"  # AlignTune fork, feat/sglang-rollout
+
+
+def require_sglang_rollout(extras: dict) -> dict:
+    """GRPO runs only on SGLang rollouts (user decision, no HF fallback). Stock AlignTune 0.1.28 takes
+    rollout_backend and silently generates with HF, so refuse unless the fork's rollout is installed.
+    Returns the kwargs with the weight-sync dir made absolute (the server resolves it from its own cwd)."""
+    import importlib.util
+
+    if extras.get("rollout_backend") != "sglang":
+        raise SystemExit("GRPO must set gst_recon.rollout_backend: sglang (see configs/grpo_sglang.yaml)")
+    try:
+        found = importlib.util.find_spec(SGLANG_ROLLOUT) is not None
+    except ModuleNotFoundError:  # a parent package (aligntune itself, or its rollout package) is missing
+        found = False
+    if not found:
+        raise SystemExit(f"installed AlignTune has no SGLang rollout ({SGLANG_ROLLOUT}); install the fork ref")
+    sync = Path(extras.get("sglang_sync_dir") or "").resolve()
+    if not extras.get("sglang_sync_dir") or str(sync).startswith("/dev/shm"):
+        raise SystemExit("set gst_recon.sglang_sync_dir to a disk path (never /dev/shm on shared hosts)")
+    return {**extras, "sglang_sync_dir": str(sync)}
+
+
 def _responses_only(trainer, parts: dict) -> None:
     """Loss on the assistant reply only: unsloth's train_on_responses_only sets prompt labels to -100.
     AlignTune 0.1.28's unsloth SFT flattens messages into one text, so without this ~75% of the
@@ -157,7 +180,9 @@ def cmd_run(a: argparse.Namespace) -> None:
     from gst_recon.train.reward import register
 
     register()
-    make = create_sft_trainer if cfg.get("algo", "sft").lower() == "sft" else create_rl_trainer
+    is_sft = cfg.get("algo", "sft").lower() == "sft"
+    make = create_sft_trainer if is_sft else create_rl_trainer
+    extras = extras if is_sft else require_sglang_rollout(extras)
     trainer = make(config=cfg, **shadowed_args(cfg), **extras)
     # datasets fingerprints every .map() function by dill-pickling its closure. AlignTune 0.1.28's
     # unsloth SFT formatter closes over the trainer, so hashing it copied the whole model into host
