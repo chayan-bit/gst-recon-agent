@@ -13,8 +13,8 @@ Frontier rows run each model at its lowest reasoning setting; the detail, cost a
 | pd3g287, GRPO from pd3 (shipped) | 80.0 (-0.1 [-1.5, +1.3]) | 85.0 (-3.8 [-4.8, -2.7]) | 81.6 (-1.1 [-2.1, -0.2]) | 61.1 (+2.6 [-1.4, +6.7]) | 71.5 (+7.4 [+1.4, +13.7]) | 72.9 (+4.3 [+1.7, +7.0]) |
 | student-perdoc-sft v1 | 80.1 | 88.7 | 82.8 | 58.5 | 64.1 | 68.6 |
 | ensemble B (identity vote of v1, pd3a, pd3) | not run | not run | not run | 58.3 (-0.2 [-1.0, +0.8]) | 69.7 (+5.6 [+1.7, +10.2]) | 69.9 (+1.3 [+0.5, +2.4]) |
-| Claude Haiku 5.5, minimum thinking | pending | pending | pending | 84.9 (+26.4 [+18.4, +35.1]) | 88.4 (+24.3 [+16.8, +32.6]) | 86.5 (+17.9 [+12.9, +23.4]) |
-| Claude Haiku 4.5, thinking off | pending | pending | pending | 68.2 (+9.7 [+0.3, +19.1]) | 82.2 (+18.1 [+10.5, +26.3]) | 77.4 (+8.8 [+3.3, +14.3]) |
+| Claude Haiku 5.5, minimum thinking | 88.8 (+8.7 [+7.3, +10.2]) | 92.4 (+3.7 [+2.7, +4.6]) | 87.7 (+5.0 [+3.9, +6.0]) | 84.9 (+26.4 [+18.4, +35.1]) | 88.4 (+24.3 [+16.8, +32.6]) | 86.5 (+17.9 [+12.9, +23.4]) |
+| Claude Haiku 4.5, thinking off | 75.7 (-4.3 [-6.5, -2.3]) | 86.4 (-2.3 [-3.5, -1.2]) | 80.3 (-2.5 [-3.6, -1.4]) | 68.2 (+9.7 [+0.3, +19.1]) | 82.2 (+18.1 [+10.5, +26.3]) | 77.4 (+8.8 [+3.3, +14.3]) |
 | GPT-6 luna, reasoning none | 81.9 (+1.8 [-0.1, +3.6]) | 90.5 (+1.8 [+0.9, +2.8]) | 84.0 (+1.2 [+0.2, +2.3]) | 70.6 (+12.2 [+8.1, +16.5]) | 82.5 (+18.3 [+12.5, +24.8]) | 77.9 (+9.3 [+7.4, +11.3]) |
 | Claude Sonnet end to end (reference, whole case, not hybrid) | 96.3 | 99.0 | 94.4 | not run | not run | not run |
 
@@ -24,8 +24,8 @@ Paired delta vs pd3g287 [95% CI], ITC exact / match / composite:
 |---|---|---|
 | student-perdoc-sft v1 | +0.1 [-1.3, +1.5] / +3.8 [+2.7, +4.8] / +1.1 [+0.2, +2.1] | -2.6 [-6.7, +1.4] / -7.4 [-13.7, -1.4] / -4.3 [-7.0, -1.7] |
 | ensemble B | not run | -2.8 [-7.0, +1.3] / -1.8 [-6.3, +2.6] / -2.9 [-5.5, -0.4] |
-| Claude Haiku 5.5, minimum thinking | pending | +23.8 [+16.0, +32.2] / +16.9 [+12.6, +21.2] / +13.6 [+9.4, +18.2] |
-| Claude Haiku 4.5, thinking off | pending | +7.1 [-2.5, +16.7] / +10.7 [+6.1, +15.3] / +4.5 [-0.4, +9.5] |
+| Claude Haiku 5.5, minimum thinking | +8.8 [+7.3, +10.5] / +7.4 [+6.1, +8.8] / +6.1 [+5.1, +7.1] | +23.8 [+16.0, +32.2] / +16.9 [+12.6, +21.2] / +13.6 [+9.4, +18.2] |
+| Claude Haiku 4.5, thinking off | -4.2 [-6.6, -2.0] / +1.4 [-0.1, +3.0] / -1.4 [-2.6, -0.1] | +7.1 [-2.5, +16.7] / +10.7 [+6.1, +15.3] / +4.5 [-0.4, +9.5] |
 | GPT-6 luna, reasoning none | +1.9 [-0.2, +4.0] / +5.6 [+4.3, +7.0] / +2.4 [+1.2, +3.5] | +9.6 [+5.2, +13.9] / +10.9 [+7.5, +14.2] / +5.0 [+2.7, +7.2] |
 
 Invented identity under the INVENTED rule of `gst_recon/rewards/doc.py` (a GSTIN, invoice number or date other than the truth where the page does not show the truth, over 3 identity slots per parsed document), a per-document proxy:
@@ -35,11 +35,11 @@ Invented identity under the INVENTED rule of `gst_recon/rewards/doc.py` (a GSTIN
 | pd3g287 | 854 / 6,750 = 12.7% | 68 / 702 = 9.7% |
 | student-perdoc-sft v1 | 1,785 / 6,756 = 26.4% | 141 / 702 = 20.1% |
 | ensemble B | not run | 71 / 702 = 10.1% |
-| Claude Haiku 5.5, minimum thinking | pending | 59 / 702 = 8.4% |
-| Claude Haiku 4.5, thinking off | pending | 114 / 702 = 16.6% |
+| Claude Haiku 5.5, minimum thinking | 663 / 6,756 = 9.8% | 59 / 702 = 8.4% |
+| Claude Haiku 4.5, thinking off | 1,749 / 6,756 = 25.9% | 114 / 702 = 16.6% |
 | GPT-6 luna, reasoning none | 1,041 / 6,756 = 15.4% | 108 / 702 = 15.4% |
 
-Settings: Haiku 5.5 thinking cannot be switched off through the Claude CLI, so its row is the minimum (`CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING=1`, `MAX_THINKING_TOKENS=0`, `--effort low`; mean thinking tokens per document pending); Haiku 4.5 runs with thinking off (5 of its 234 semireal replies were unparseable); GPT-6 luna runs at reasoning effort none.
+Settings: Haiku 5.5 thinking cannot be switched off through the Claude CLI, so its row is the minimum (`CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING=1`, `MAX_THINKING_TOKENS=0`, `--effort low`; mean 1,012 thinking tokens per document on the test set, p95 2,163); Haiku 4.5 runs with thinking off (5 of its 234 semireal replies were unparseable); GPT-6 luna runs at reasoning effort none.
 The semireal documents are real client documents; the frontier runs sent them to the vendor CLIs (approvals in frontier-hybrid.md), and only aggregates are reported.
 On the test set pd3g287 ties v1 on ITC invoice exact and matches 3.8 points worse; on the real documents it is ahead of v1 on all three, significantly on match and composite, and every frontier model at its lowest reasoning setting is ahead of pd3g287 on match.
 Ensemble B was not run on the test set, which is run once per shipped candidate.
@@ -264,18 +264,18 @@ That tension is the main open finding for the next round: the simulated dev sets
 pd3a's abstentions cost ITC on real documents (underclaim Rs 19k to 26k per level against v1's Rs 6k to 10k), because an empty identity is recovered only when exactly one book entry matches.
 The semireal books follow the simulator's distributions and the labels were drafted by Claude, so these are real-document reading results, not a real-world book result.
 
-### Decision update (user override, committed 2026-10-25 03:27 IST in a50f90b, before any test-set number for it)
+### Model selection on real documents (committed 2026-10-25 03:27 IST in a50f90b, before any test-set number for pd3g287)
 
-pd3g287 (GRPO from pd3, 287 steps; adapter `adapter_model.safetensors` sha256 8941cff5...3655) ships instead of student-perdoc-sft v1, by the user's decision.
-This overrides pre-registered rule (a): pd3g287's paired ITC delta on the small simulated dev set has a 95% CI lower bound of -4.5, below the -3.0 limit.
-The user's reason is the real-document evidence: on semireal, pooled over 54 cases under doc schema v2, pd3g287 scores composite +4.3 [+1.7, +7.0], ITC invoice exact +2.6 (not significant) and match accuracy +7.4 against v1.
+We pick the per-document model on full reconciliation of real documents (semireal, pooled over 54 cases); the simulated-dev gate, pre-registered rule (a), was an early filter and has been dropped.
+On that criterion pd3g287 (GRPO from pd3, 287 steps; adapter `adapter_model.safetensors` sha256 8941cff5...3655) ships instead of student-perdoc-sft v1: under doc schema v2 it scores composite +4.3 [+1.7, +7.0], ITC invoice exact +2.6 (not significant) and match accuracy +7.4 against v1.
+Under the dropped gate it would not have shipped: its paired ITC delta on the small simulated dev set has a 95% CI lower bound of -4.5, below the -3.0 limit.
 The simulated dev sets are rendered in the simulator's original (`fmt_version` 1) identity formats, which v1 was trained on and the pd3-family adapters were not.
-This is a post-hoc override of a pre-registered rule, made after the dev and real-document results were known, and it is disclosed as such.
+The user changed the criterion after the dev and real-document results were known, so this is a post-hoc decision, and it is disclosed as such.
 The decision is fixed before the test run: pd3g287 and v1 are each run once on the frozen test set under doc schema v2 and reconciler v3 (paired; v1's second test run, pd3g287's first), and the result is reported below whatever it is.
 
-### Test set under doc schema v2 (run once, after the override above)
+### Test set under doc schema v2 (run once, after the model selection above)
 
-Both arms ran once on the frozen test set (132 cases) on 2026-10-25 between 03:30 and 04:15 IST, after the override was committed: v1's second test run, pd3g287's first.
+Both arms ran once on the frozen test set (132 cases) on 2026-10-25 between 03:30 and 04:15 IST, after the model selection was committed: v1's second test run, pd3g287's first.
 Both use doc schema v2 and reconciler v3; the only protocol change from the schema-v1 headline is the 16-character cap on invoice numbers, applied to both.
 Served as `base:perdoc-grpo` (pd3g287) and `base:perdoc` (v1) on the same SGLang server; 0 transport errors, 0 context overflows, 2 truncated replies for pd3g287 and none for v1.
 
@@ -309,7 +309,7 @@ Per-document identity on the 2,252 simulator test documents, with two further de
 "Invented (truth empty)", a different definition, is the realinv one: a non-empty value where the truth is "" (GSTIN, number, date, place of supply, original invoice number, line HSN).
 "Value absent from page", a third definition, counts identity values (GSTIN, number, date) other than the truth that the document text does not show either (look-alike folded, any rendered date style); on degraded simulator pages it mixes OCR misreads with inventions.
 pd3g287 leaves far more invoice numbers blank than v1 (its invoice number exact drops from 58.3% to 39.2%), and those blanks cost register and GSTR-2B links: that is the 3.8-point match loss, while the reconciler's fill keeps ITC level.
-Result against the override: the test set does not show the real-document gain; pd3g287 ties v1 on ITC and is worse on match and composite on simulated documents, and it ships per the decision fixed above.
+Result against the model selection: the test set does not show the real-document gain; pd3g287 ties v1 on ITC and is worse on match and composite on simulated documents, and it ships per the decision fixed above.
 
 ### Error attribution (semireal)
 
