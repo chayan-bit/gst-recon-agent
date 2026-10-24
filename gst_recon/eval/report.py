@@ -9,12 +9,13 @@ from typing import Any
 
 from gst_recon.eval.stats import paired_delta
 
-COLS = (("schema_valid", "Schema valid %", 100), ("extraction_f1", "Field F1 %", 100), ("match_accuracy", "Match acc %", 100),
-        ("itc_invoice", "ITC invoice exact %", 100), ("context_acc", "Context acc %", 100),
-        ("itc_abs_err_rs", "ITC abs err (Rs)", 1), ("composite", "Composite (0-100)", 100))
+COLS = (("itc_invoice", "ITC invoice exact %", 100), ("context_acc", "Context acc %", 100),
+        ("itc_overclaim_rs", "ITC overclaim (Rs)", 1), ("itc_underclaim_rs", "ITC underclaim (Rs)", 1),
+        ("itc_abs_err_rs", "ITC net abs err (Rs)", 1), ("match_accuracy", "Match acc %", 100),
+        ("extraction_f1", "Field F1 %", 100), ("schema_valid", "Schema valid %", 100), ("composite", "Composite (0-100)", 100))
 BASELINE_KEYS = {"field_f1": "extraction_f1", "context_doc_acc": "context_acc"}
-CHART_METRICS = (("composite", "Composite"), ("itc_invoice", "ITC invoice exact"), ("match_accuracy", "Match accuracy"),
-                 ("extraction_f1", "Field F1"))
+CHART_METRICS = (("itc_invoice", "ITC invoice exact"), ("context_acc", "Context accuracy"), ("match_accuracy", "Match accuracy"),
+                 ("composite", "Composite (secondary)"))
 
 
 def _fmt(v: float | None, scale: float, nd: int = 1) -> str:
@@ -128,7 +129,10 @@ def report_md(runs: list[dict], baselines: dict[str, dict[str, dict]] | None = N
     pending = lambda ncols, extra=0: [[f"{n} (not run yet)", *["-"] * (ncols - 1 + extra)] for n in placeholders or []]  # noqa: E731
     head = ["run", "n"] + [c[1] for c in COLS]
     parts = ["# gst-recon evaluation results", "",
-             "Component metrics are primary; composite is the weighted reward. Cells are percentages unless stated; "
+             "Headline metrics are ITC invoice exact and context accuracy; the composite (the weighted reward) is secondary because "
+             "its floor is high (trivial baselines score about 80). ITC overclaim is the rupees of credit the model would have wrongly "
+             "claimed (per invoice, sum of max(0, predicted eligible - true eligible)); underclaim is the mirror; net abs err is the "
+             "absolute error of the claimed eligible total, where invoices can cancel. Cells are percentages unless stated; "
              "[lo, hi] is a bootstrap 95% CI over cases. Trivial baselines are handed the true extraction and links "
              "(they isolate the decisions): their field F1 and match accuracy are oracle values and their composite already "
              "includes full credit for extraction, schema and arithmetic, so compare them on ITC invoice exact, context accuracy and ITC error only.", "",
@@ -162,7 +166,7 @@ def _vs_ref(ref: dict, others: list[dict]) -> str:
     rows = []
     ra = _records(ref)
     for r in others:
-        for name in ("composite", "itc_invoice"):
+        for name in ("itc_invoice", "context_acc", "composite"):
             d = paired_delta(ra, _records(r), name)
             if "delta" in d:
                 rows.append([r["label"], name, f"{int(d['n'])}", f"{d['delta'] * 100:+.1f} [{d['ci_lo'] * 100:+.1f}, {d['ci_hi'] * 100:+.1f}]", f"{d['p_value']:.4f}"])

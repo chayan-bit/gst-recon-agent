@@ -7,8 +7,11 @@ from typing import Any
 
 import numpy as np
 
-PRIMARY = ("schema_valid", "extraction_f1", "match_accuracy", "itc_invoice", "context_acc", "itc_abs_err_rs", "composite")
-SECONDARY = ("grpo", "parse_ok", "arithmetic", "itc_reasons", "itc_total_exact", "itc_all_abs_err_rs")
+# Headline first: ITC invoice-exact and context accuracy separate systems; the composite has a high floor (trivial
+# baselines score ~80), so it is secondary.
+PRIMARY = ("itc_invoice", "context_acc", "itc_overclaim_rs", "itc_underclaim_rs", "itc_abs_err_rs", "match_accuracy",
+           "extraction_f1", "schema_valid")
+SECONDARY = ("composite", "grpo", "parse_ok", "arithmetic", "itc_reasons", "itc_total_exact", "itc_all_abs_err_rs")
 ALL_METRICS = PRIMARY + SECONDARY
 N_BOOT = 2000
 LENGTH_ORDER = ["<=16k", "16-32k", ">32k"]

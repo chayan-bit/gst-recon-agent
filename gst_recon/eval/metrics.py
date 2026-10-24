@@ -1,7 +1,7 @@
 """Per-case component metrics. Primary metrics are the components; `composite` is secondary.
 
 Scoring is delegated to `gst_recon.rewards.score` (shared with GRPO); this module adds what the
-reward does not report: rupee error of the claimed ITC and accuracy on context-dependent documents.
+reward does not report: rupee error of the claimed ITC (net, over- and under-claim) and accuracy on context-dependent documents.
 """
 
 from __future__ import annotations
@@ -63,6 +63,18 @@ def _total_buckets(pred: dict | None, rows: dict[str, dict]) -> dict[str, dict[s
     return {b: {h: sum(_f(_bucket(r, b).get(h)) for r in rows.values()) for h in HEADS} for b in BUCKETS}
 
 
+def _eligible_rs(row: dict | None) -> float:
+    return sum(_f(_bucket(row, "eligible").get(h)) for h in HEADS)
+
+
+def itc_claim_gaps(p_itc: dict[str, dict], t_itc: dict[str, dict]) -> tuple[float, float]:
+    """(overclaim, underclaim) in rupees, per invoice, never netted across invoices: the credit the model would
+    wrongly claim, and the credit it would wrongly leave unclaimed. Eligible ITC summed over the four heads; an
+    invoice the model invented counts fully as overclaim, one it dropped fully as underclaim."""
+    gaps = [_eligible_rs(p_itc.get(d)) - _eligible_rs(t_itc.get(d)) for d in p_itc.keys() | t_itc.keys()]
+    return round(sum(max(0.0, g) for g in gaps), 2), round(sum(max(0.0, -g) for g in gaps), 2)
+
+
 def case_metrics(raw: str, case: EvalCase) -> dict[str, Any]:
     """All metrics for one raw model output. Unparseable output scores 0 and claims zero ITC."""
     pred = parse_output(raw)
@@ -70,6 +82,7 @@ def case_metrics(raw: str, case: EvalCase) -> dict[str, Any]:
     p_itc, t_itc = _rows(pred, "itc"), _rows(case.target, "itc")
     p_tot, t_tot = _total_buckets(pred, p_itc), _total_buckets(case.target, t_itc)
     ctx, source = context_docs(case)
+    over, under = itc_claim_gaps(p_itc, t_itc)
     return {
         "parse_ok": float(pred is not None),
         "schema_valid": s["schema_valid"], "extraction_f1": s["extraction_f1"], "arithmetic": s["arithmetic"],
@@ -79,6 +92,7 @@ def case_metrics(raw: str, case: EvalCase) -> dict[str, Any]:
         "context_ok": sum(_context_ok(p_itc.get(d), t_itc[d]) for d in ctx if d in t_itc),
         "context_source": source,
         # rupees: eligible claim error over 4 heads; and all 12 total fields
+        "itc_overclaim_rs": over, "itc_underclaim_rs": under,
         "itc_abs_err_rs": round(sum(abs(p_tot["eligible"][h] - t_tot["eligible"][h]) for h in HEADS), 2),
         "itc_all_abs_err_rs": round(sum(abs(p_tot[b][h] - t_tot[b][h]) for b in BUCKETS for h in HEADS), 2),
     }

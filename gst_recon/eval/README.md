@@ -47,11 +47,13 @@ Per run directory:
 
 ### Metrics
 
-Primary (components): `schema_valid` (pydantic `ReconOutput`), `extraction_f1`, `match_accuracy`, `itc_invoice` (all 12 ITC amounts within Rs 1), `context_acc`, `itc_abs_err_rs`, and `composite` (the weighted reward).
-Secondary: `grpo`, `parse_ok`, `arithmetic`, `itc_reasons`, `itc_total_exact`, `itc_all_abs_err_rs`.
+Headline: `itc_invoice` (all 12 ITC amounts within Rs 1) and `context_acc`; the composite has a high floor (trivial baselines score about 80), so it is secondary.
+Primary (components, in table order): `itc_invoice`, `context_acc`, `itc_overclaim_rs`, `itc_underclaim_rs`, `itc_abs_err_rs`, `match_accuracy`, `extraction_f1`, `schema_valid` (pydantic `ReconOutput`).
+Secondary: `composite` (the weighted reward), `grpo`, `parse_ok`, `arithmetic`, `itc_reasons`, `itc_total_exact`, `itc_all_abs_err_rs`.
 
 - `context_acc`: accuracy on invoices with a line whose s.17(5) outcome depends on the buyer profile or remarks (truth category not normal, or purpose not business). Correct when the 4 blocked amounts are within Rs 1 and the BLOCKED_* reasons match. Pooled over documents.
 - `itc_abs_err_rs`: absolute error in rupees of the eligible ITC the model claims, summed over IGST, CGST, SGST and cess, using its `itc_totals` (or the sum of its per-document rows if `itc_totals` is missing). Unparseable output claims zero.
+- `itc_overclaim_rs`: the rupees of credit the model would have wrongly claimed, summed over invoices of max(0, predicted eligible ITC - true eligible ITC), eligible ITC summed over the four heads per invoice. An invoice the model invented counts fully. `itc_underclaim_rs` is the mirror, max(0, true - predicted). Unlike `itc_abs_err_rs` they are per invoice, so errors on different invoices never cancel. Unparseable output claims nothing, so it is all underclaim.
 - A transport error or unparseable output scores 0 on everything and is counted (`n_errors`, `n_context_overflow`, `n_truncated`).
 - CIs: 2,000-resample bootstrap over cases (percentile). Breakdown tables show means only.
 - OCR buckets: `full` means `meta.ocr_recall >= 0.9999` (every field is present in the prompt), `partial` otherwise.
@@ -116,6 +118,53 @@ Two things to know about AuditKIT 1.1.3:
 The contributed metrics (`JsonSchemaValid`, `FieldF1`) live on `https://github.com/chayan-bit/AuditKIT/tree/feat/structured-extraction-metrics`; to use them in the AuditKIT venv:
 
     uv pip install --python .venv-auditkit/bin/python "auditkit[requests,jsonschema] @ git+https://github.com/chayan-bit/AuditKIT@feat/structured-extraction-metrics"
+
+## Eval sets (frozen)
+
+Two splits of 60 cases each, 20 easy, 20 medium and 20 hard, at full size (no truncation).
+The data lives outside git under `data/eval/` and is pinned by `gst_recon/eval/eval_sets_manifest.json`.
+
+| split | seed | truth | rendered |
+|-------|------|-------|----------|
+| test_iid | 9001 | `data/eval/truth/test_iid` | `data/eval/rendered/test_iid` |
+| test_ood | 9002 | `data/eval/truth/test_ood` | `data/eval/rendered/test_ood` |
+
+Seeds 9001 and 9002 are disjoint from every training seed.
+Both splits were rendered once, on kratos, with one OCR engine: Tesseract 5.5.0 (`GST_TESSERACT=$HOME/gst-tess/tesseract`).
+The manifest records the engine, the render version, per-case hashes and the per-split difficulty and length-bucket counts.
+
+Command per split (kratos, `~/gst-recon-eval/render_split.sh <split> <seed>`, run under tmux, one worker per split):
+
+```
+python -m gst_recon.sim generate --n-cases 20 --seed <seed> --difficulty {easy,medium,hard} --split <split> --out data/eval/truth/<split>
+python -m gst_recon.render --truth data/eval/truth/<split> --out data/eval/rendered/<split> --workers 1 --max-mem-gb 3
+```
+
+The kratos user cgroup is capped at 2 CPUs, so the two splits render in parallel with one worker each.
+More workers only add contention.
+
+Check a copy of the data against the manifest (exit 1 on missing, extra or changed content):
+
+```
+python -m gst_recon.eval.manifest verify --rendered data/eval/rendered --manifest gst_recon/eval/eval_sets_manifest.json
+```
+
+Regenerate the manifest with `python -m gst_recon.eval.manifest write --rendered data/eval/rendered --out gst_recon/eval/eval_sets_manifest.json --seed test_iid=9001 --seed test_ood=9002 --command "<render command>"`.
+
+### How the baselines were run
+
+- Keyword and context-blind baselines: `python scripts/eval_baselines.py --cases data/eval/rendered/test_iid data/eval/rendered/test_ood --truth-dir data/eval/truth --out-root runs/eval`, on kratos.
+  They are handed the true extraction, so only the decision components are comparable.
+- Teacher (Qwen3-30B-A3B, SGLang at rs-epyc:30000, served as `teacher`): `python -m gst_recon.eval run --endpoint http://127.0.0.1:30000/v1 --model teacher --cases <both splits> --truth-dir data/eval/truth --out runs/eval/teacher-constrained --constrained --concurrency 4-6 --max-tokens 24000`.
+  The runs are resumable and were done in passes as cases finished rendering.
+  The first passes used a 24000-token cap, later passes added `--max-tokens-factor 2` (cap = 2 x reference length + 1000, never above 24000) because unconstrained and some constrained generations degenerate into repetition.
+  A reply that hits the cap is scored as it stands, so a capped runaway counts as a failure; `n_truncated` is in each `aggregate.json`.
+- The teacher passes used the task prompt from before the compact-form sentence was added (`Fields that are 0, empty or false may be omitted.`).
+  The prompt hash of each run is in its `config.json`.
+- Teacher unconstrained was stopped early at the coordinator's request (the teacher GPU was needed for training), so it is reported as a subset with `n` stated, next to the same subset of the constrained run.
+- Sonnet: `scripts/eval_frontier.py` over both splits, concurrency 2 on the Mac, output only under `runs/eval/frontier`.
+- The `--gpu-hour-usd` and `--api-*-per-mtok` flags are illustrative inputs for the cost column, not measured prices.
+  The Sonnet cost is the `total_cost_usd` reported by the CLI.
 
 ## SGLang tunnel
 
