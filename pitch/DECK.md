@@ -56,17 +56,18 @@ A small table of the reward components and weights (composite and GRPO reward in
 - The buyer's profile changes the right answer: the same tea and sugar is blocked for a construction contractor's "annual day celebration" and can be eligible for a caterer, so the model has to read the context, not the item name.
 - 84 item concepts, each with 8 hand-written core phrases expanded into at least 32 distinct forms (so at least 2,688 phrasings; exact count {{N_PHRASINGS}}): typos, abbreviations, Hinglish, vendor jargon. No phrase states the use.
 - Held-out out-of-distribution test set: 20 of the 84 concepts never seen in training, two unseen invoice layouts (SaaS two-column, handwritten bill), unseen buyer profiles (driving school, caterer, auto workshop), unseen states and number formats, held-out date formats.
-- A shortcut audit scores trivial baselines (majority, no-anomaly, keyword lookup, context-blind rules engine) so you can see how much of the task a shortcut solves: best baseline ITC-exact {{SHORTCUT_BEST_BASELINE_ITC_EXACT}}.
-- A small real-world sanity set from public sample invoice formats ({{REAL_N_DOCS}} documents) is a separate, clearly labelled check.
+- A shortcut audit scores trivial baselines (majority, no-anomaly, keyword lookup, context-blind rules engine) so you can see how much of the task a shortcut solves: best baseline ITC-exact 82.3% on out-of-distribution cases (the context-blind rules engine, handed the true extraction and links; 82.7% overall), but only 46.8% context accuracy. <!-- reports/results.md, "context-blind rules (oracle extraction and links)", test_ood and Overall rows -->
+- A small real-world sanity set from public sample invoice formats (36 documents, 12 cases) is a separate, clearly labelled check.
 
 Visual: a split bar showing train / test_iid / test_ood, with the held-out items listed under test_ood, and a two-row "same item, two buyers, two answers" card.
 
 ## Slide 6 - The climb: base, then SFT, then SFT plus GRPO
 
 - Student: Qwen3-4B-Instruct-2507 with LoRA, trained with AlignTune: SFT on curated cases, then GRPO against the verifiable reward.
-- Headline metric: ITC-exact, the share of invoices whose eligible, blocked and deferred amounts are all within Rs 1 of the truth, in-distribution then out-of-distribution: base {{BASE_ITCEXACT_IID}} / {{BASE_ITCEXACT_OOD}}, SFT {{SFT_ITCEXACT_IID}} / {{SFT_ITCEXACT_OOD}}, SFT+GRPO {{GRPO_ITCEXACT_IID}} / {{GRPO_ITCEXACT_OOD}}.
-- The number that matters most for the pitch: context accuracy, the invoices where the buyer profile decides the answer ({{BASE_CTX_OOD}} -> {{SFT_CTX_OOD}} -> {{GRPO_CTX_OOD}}).
-- The weighted composite is shown in small print ({{BASE_COMPOSITE_OOD}} / {{SFT_COMPOSITE_OOD}} / {{GRPO_COMPOSITE_OOD}}), because its floor is high: a model that copies the documents perfectly and calls everything clean already scores about 0.81.
+- Headline metric: ITC-exact, the share of invoices whose eligible, blocked and deferred amounts are all within Rs 1 of the truth, in-distribution then out-of-distribution: base {{BASE_ITCEXACT_IID}} / {{BASE_ITCEXACT_OOD}}, SFT 8.1 / 13.7 (the full-grammar run, a format mismatch; the compact-grammar rerun is pending), SFT+GRPO {{GRPO_ITCEXACT_IID}} / {{GRPO_ITCEXACT_OOD}}.
+- The number that matters most for the pitch: context accuracy, the invoices where the buyer profile decides the answer ({{BASE_CTX_OOD}} -> 33.2 (full-grammar SFT) -> {{GRPO_CTX_OOD}}).
+- The weighted composite is shown in small print ({{BASE_COMPOSITE_OOD}} / 58.9 (full-grammar SFT) / {{GRPO_COMPOSITE_OOD}}), because its floor is high: a model that copies the documents perfectly and calls everything clean already scores about 0.81.
+<!-- Slide 6 SFT figures: reports/results.md, "SFT constrained (full grammar)" rows, test_iid 8.1, test_ood 13.7, context accuracy test_ood 33.2, composite test_ood 58.9. -->
 - What GRPO adds over SFT on ITC-exact, with a paired bootstrap interval and a corrected p-value: {{GRPO_DELTA_VS_SFT_ITCEXACT_OOD}} points, p = {{GRPO_VS_SFT_P}}.
 
 Visual: a three-step staircase bar chart (base, SFT, SFT+GRPO), two bars per step (iid and ood), with 95% bootstrap CIs.
@@ -77,7 +78,7 @@ If GRPO shows no significant gain on some metric, the slide says so and shows th
 
 - Claim: the 4B student reaches {{Y_PCT_OF_SONNET_ACCURACY}}% of Claude Sonnet's ITC-exact accuracy at {{Z_COST_PCT}}% of the cost per 1,000 cases, fully local.
 - Latency: p50 {{STUDENT_P50_LATENCY_S}} s on SGLang versus {{SONNET_P50_LATENCY_S}} s for Sonnet, with the caveat on the slide that the Sonnet number is measured through a CLI and is not a clean API latency.
-- Open-model reference: Qwen3-30B-A3B (the teacher, served on SGLang with a 64k context) scores {{TEACHER_ITCEXACT_IID}} / {{TEACHER_ITCEXACT_OOD}} ITC-exact.
+- Open-model reference: Qwen3-30B-A3B (the teacher, served on SGLang with a 64k context) scores 55.7 / 63.8 ITC-exact (in-distribution / out-of-distribution; Claude Sonnet 94.9 / 97.8). <!-- reports/results.md, teacher-30B constrained and Claude Sonnet rows, test_iid and test_ood -->
 - Constrained versus unconstrained decoding on the student (XGrammar): schema-valid {{GRPO_SCHEMA_VALID_UNCON}}% -> {{GRPO_SCHEMA_VALID_CON}}%, ITC-exact {{GRPO_ITCEXACT_UNCON}} -> {{GRPO_ITCEXACT_CON}}.
 
 Visual: a scatter of accuracy (y, ITC-exact) against cost per 1,000 cases (x, log scale) with five points: base 4B, SFT, SFT+GRPO, 30B teacher, Claude Sonnet.
@@ -96,7 +97,7 @@ Upstream PRs, all open at the time of writing:
 - AlignTune PR: #32 https://github.com/Lexsi-Labs/AlignTune/pull/32.
 
 Visual: a four-tile grid, one tile per toolkit, each with a one-line before/after and a link to the branch or issue draft.
-The status of each (fork branch, draft, upstream PR) is shown honestly in a corner badge: `{{UPSTREAM_STATUS}}`.
+The status of each (fork branch, draft, upstream PR) is shown honestly in a corner badge: "7 pull requests open upstream, none merged; AlignTune bug write-ups are drafts, not filed".
 
 ## Slide 9 - How SGLang is used, feature by feature
 
@@ -112,7 +113,7 @@ Only rows with evidence stay on the slide.
 ## Slide 10 - What is solid, what is not yet, and what is next
 
 - Solid: ground-truth-first data, checkable rewards, a held-out OOD set, an honest baseline ladder, and four contributions to the sponsor toolkits.
-- Not yet: real scans at scale (the real-world sanity set is small: {{REAL_N_DOCS}} documents, field F1 {{REAL_FIELD_F1}}), tax law beyond the modelled sections, and a vision front end that replaces OCR.
+- Not yet: real scans at scale (the real-world sanity set is small: 36 documents, field F1 {{REAL_FIELD_F1}}), tax law beyond the modelled sections, and a vision front end that replaces OCR.
 - Next: a vision-language student that reads the page directly, more of the GST rules (and a lawyer-reviewed rule table), and upstreaming the AlignTune and AuditKIT work.
 
 Visual: a three-column "solid / not yet / next" board; under it, a QR code to the repo and the demo video.

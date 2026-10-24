@@ -10,19 +10,19 @@ What the simulator buys is a checkable truth: every answer is verified by code, 
 Three things keep it from being a closed loop.
 First, the documents are rendered, degraded (rotation, blur, JPEG, folds, photocopy and fax effects, stamps) and read by real Tesseract, so the text the model sees carries real OCR noise, not generated noise.
 Second, the out-of-distribution split holds out 20 of the 84 item concepts, two invoice layouts, three buyer profiles, a quarter of the states, and number and date formats, so the test measures generalisation within the simulator's world.
-Third, a small real-world sanity set built from public sample invoice formats ({{REAL_N_DOCS}} documents) is reported separately: schema-valid {{REAL_SCHEMA_VALID}}, field F1 {{REAL_FIELD_F1}}.
+Third, a small real-world sanity set built from public sample invoice formats (36 documents) is reported separately: schema-valid {{REAL_SCHEMA_VALID}}, field F1 {{REAL_FIELD_F1}}.
 What we do not claim: that the ITC decisions are right on real books, only that the pipeline, the metrics and the generalisation tests are sound.
 
 ## 2. Why not just call GPT or Claude?
 
 For this data, privacy decides: purchase invoices, bank statements and supplier GSTINs are the data a business cannot send to a third-party API, and an on-premises model removes that question.
 Cost and latency at month-end volume are the second reason: {{Z_COST_PCT}}% of Sonnet's cost per 1,000 cases and a p50 of {{STUDENT_P50_LATENCY_S}} s (see question 6 for how fair that comparison is).
-We are not claiming the small model is better: Claude Sonnet scores {{SONNET_ITCEXACT_OOD}} ITC-exact on the same held-out cases against our {{GRPO_ITCEXACT_OOD}}, so the student reaches {{Y_PCT_OF_SONNET_ACCURACY}}% of it.
+We are not claiming the small model is better: Claude Sonnet scores 97.8% ITC-exact on the same held-out cases against our {{GRPO_ITCEXACT_OOD}}, so the student reaches {{Y_PCT_OF_SONNET_ACCURACY}}% of it.
 A private deployment of a hosted model is another way to meet a privacy requirement; we did not test that, and a team that can use one should compare it.
 
 ## 3. How do you know your GST law is right?
 
-We do not know it is complete, and we do not claim legal review we have not had (review status: {{CA_REVIEW_STATUS}}).
+We do not know it is complete, and we do not claim legal review we have not had (review status: rules encoded by the author from CGST Act sections 16(2), 17(5) and 34 and rules 36(4) and 37, with Circular 172/04/2022; not yet reviewed by a practising CA).
 What exists is a written, cited model of the law in `gst_recon/sim/RULES.md`: sections 16(2), 17(5), 34, rule 36(4), rule 37, the reverse-charge treatment and the 17(5) exceptions, with the circular that supports each exception.
 The rules engine is a deliberate model, and every simplification is listed there (for example, no Section 17(2) apportionment, canteen credit assumes the employer bears the full cost).
 Rates are date-effective across the 22 September 2025 GST 2.0 change, and any rate we could not verify is never generated after the cutover.
@@ -34,7 +34,7 @@ If the model of the law is wrong, the student faithfully learns the error, but t
 SFT teaches the model to imitate a reference answer token by token, which is how it learns the format and the common patterns.
 GRPO samples several answers to the same case and rewards the outcome we care about, which code can check exactly: schema validity, flag and reason-code sets, and exact ITC on the invoices that are not fully eligible, with a dense term so partial progress still counts.
 The hypothesis is that this helps most where imitation is weak: context-dependent blocked credits and exact amounts.
-The measured effect on ITC-exact out-of-distribution is {{GRPO_DELTA_VS_SFT_ITCEXACT_OOD}} points (95% CI {{GRPO_VS_SFT_CI}}, p = {{GRPO_VS_SFT_P}} from a paired bootstrap), and on context accuracy it is {{SFT_CTX_OOD}} -> {{GRPO_CTX_OOD}}.
+The measured effect on ITC-exact out-of-distribution is {{GRPO_DELTA_VS_SFT_ITCEXACT_OOD}} points (95% CI {{GRPO_VS_SFT_CI}}, p = {{GRPO_VS_SFT_P}} from a paired bootstrap), and on context accuracy it is 33.2% (the full-grammar SFT run, a format mismatch) -> {{GRPO_CTX_OOD}}.
 If that interval includes zero we say GRPO did not help on that metric, and we show where it did.
 Two limits we know about: our GRPO cases are short (2 to 4 invoices, prompts up to 6,144 tokens), and AlignTune's unsloth SFT path computes the loss over the prompt as well as the answer.
 
@@ -60,7 +60,8 @@ The claim we stand behind is the ratio of accuracy on the same held-out cases, p
 For the in-distribution split, partly, and that is fine: a bookkeeping model should know that a steel coil is a normal input.
 The question is whether it memorises the answer instead of reading the context, and the data is built against that.
 The same item gets a different answer depending on the buyer's profile and the purpose remark, and the item alone never states the use, so a model that keys on the item name is wrong on the context-dependent invoices by construction.
-Our `context_blind` baseline (the real rules engine, given perfect document comparison, but no buyer profile and no remarks) shows how much a shortcut gets: ITC-exact {{CONTEXT_BLIND_ITC_EXACT}} and context accuracy {{CONTEXT_BLIND_CTX}}.
+Our `context_blind` baseline (the real rules engine, given perfect document comparison, but no buyer profile and no remarks) shows how much a shortcut gets: ITC-exact 82.7% (82.3% out of distribution) and context accuracy 50.1% (46.8% out of distribution).
+Its ITC-exact is high because most invoices do not depend on the buyer profile; context accuracy is the number that exposes the shortcut, 50.1% against 92.7% for Claude Sonnet on the same cases.
 Twenty concepts and a quarter of the phrasings of the rest are held out entirely.
 `tests/test_splits.py` asserts that no description, concept, remark, header, profile, state or name token of a test split appears in train, the eval sets are frozen by hash manifest, and training builders refuse any path under the evaluation output.
 Not yet shown: that it generalises to concepts far outside the 84; the held-out 20 are in the same families.
@@ -68,7 +69,9 @@ Not yet shown: that it generalises to concepts far outside the 84; the held-out 
 ## 8. Doesn't constrained decoding just hide errors behind valid JSON?
 
 It guarantees the syntax and the schema, not the content, and a grammar can force a well-formed but wrong value.
-That is why validity is reported separately from correctness, and why the table shows both: schema-valid {{GRPO_SCHEMA_VALID_UNCON}}% -> {{GRPO_SCHEMA_VALID_CON}}% and ITC-exact {{GRPO_ITCEXACT_UNCON}} -> {{GRPO_ITCEXACT_CON}} between unconstrained and constrained decoding on the student.
+That is why validity is reported separately from correctness, and why the table shows both.
+Measured on the 30B teacher, on the same 19 cases: schema-valid 15.8% unconstrained against 94.7% constrained, and ITC-exact 14.9% against 68.0%; 15 of the 19 unconstrained replies hit the 24,000-token cap in repetition loops.
+On the student, between unconstrained and constrained decoding: schema-valid {{GRPO_SCHEMA_VALID_UNCON}}% -> {{GRPO_SCHEMA_VALID_CON}}% and ITC-exact {{GRPO_ITCEXACT_UNCON}} -> {{GRPO_ITCEXACT_CON}}.
 Constrained output can also be cut off by the token budget, which leaves it unfinished; the harness counts truncations and context overflows as failures instead of discarding them, and the overhead of constraining on throughput is {{XGRAMMAR_OVERHEAD_PCT}}%.
 The point of the grammar is operational: downstream code can parse every answer and the reward function always has something to score.
 
@@ -76,10 +79,11 @@ The point of the grammar is operational: downstream code can parse every answer 
 
 Be precise here, because the answer has three parts.
 SGLang is the engine for teacher generation, serving and evaluation, and that is measured and logged.
-The SGLang rollout backend for GRPO exists on our AlignTune fork branch with CPU tests and a GPU integration test, but it is wired into AlignTune's TRL GRPO trainer, while the unsloth backend ignores `rollout_backend`.
-Our GRPO config starts on the unsloth backend with Hugging Face rollouts, so the statement "our GRPO run generated rollouts on SGLang" is true only if `{{GRPO_ROLLOUT_BACKEND_ACTUALLY_USED}}` says so; if it says hf, we present the backend as a contribution and its measured benchmark, not as how this model was trained.
+The SGLang rollout backend for GRPO exists as AlignTune pull request #32 (open) with CPU tests and a GPU integration test, but it is wired into AlignTune's TRL GRPO trainer, while the unsloth backend ignores `rollout_backend`.
+Our only GRPO config (`configs/grpo_sglang.yaml`) uses the TRL backend with `rollout_backend: sglang`, and the GRPO runner refuses to start without it, so a GRPO run cannot silently fall back to Hugging Face generation.
+That the final run did generate its rollouts on SGLang is confirmed by `{{GRPO_ROLLOUT_BACKEND_ACTUALLY_USED}}` in its training log; until that run exists we present the backend as a contribution with its measured benchmark, not as how this model was trained.
 The backend was developed against SGLang 0.5.22, and the training host runs SGLang 0.5.10.post1 because of its CUDA driver, so compatibility on that version is a separate check (result: {{SGLANG_0510_COMPAT}}).
-On merging: these are fork branches and issue drafts, not merged upstream, and the status line says exactly that ({{UPSTREAM_STATUS}}).
+On merging: they are open pull requests (AuditKIT #9, #10, #11, CuratorKIT #34, #35, #36, AlignTune #32), none merged at the time of writing, and the AlignTune bug write-ups are drafts, not filed.
 
 ## 10. Your test cases are much longer than your training cases. Why should it work?
 

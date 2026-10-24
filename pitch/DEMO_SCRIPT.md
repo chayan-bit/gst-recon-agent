@@ -79,14 +79,16 @@ A caterer buying the same sugar could claim it, so the model has to read the buy
 On screen: the staircase chart, one step revealed at a time: base, SFT, SFT plus GRPO, each with ITC-exact on unseen items and layouts and a bootstrap interval.
 Then Claude Sonnet and the 30B teacher appear as two extra markers.
 Then a small bar pair: constrained versus unconstrained decoding.
-A footer on the chart reads "held-out out-of-distribution cases, n = {{N_EVAL_OOD}}".
+A footer on the chart reads "held-out out-of-distribution cases, n = 60".
 
 Narration:
 "We do not claim to beat frontier models.
 We measured the climb.
-On unseen items and layouts, invoices exactly right go from {{BASE_ITCEXACT_OOD}} percent for the base model, to {{SFT_ITCEXACT_OOD}} with SFT, to {{GRPO_ITCEXACT_OOD}} with GRPO on a rule-checked reward.
-Claude Sonnet gets {{SONNET_ITCEXACT_OOD}}: the local model reaches {{Y_PCT_OF_SONNET_ACCURACY}} percent of that, at {{Z_COST_PCT}} percent of the cost.
+On unseen items and layouts, invoices exactly right go from {{BASE_ITCEXACT_OOD}} percent for the base model, to 13.7 with SFT, to {{GRPO_ITCEXACT_OOD}} with GRPO on a rule-checked reward.
+Claude Sonnet gets 97.8: the local model reaches {{Y_PCT_OF_SONNET_ACCURACY}} percent of that, at {{Z_COST_PCT}} percent of the cost.
 Constrained decoding lifts valid output from {{GRPO_SCHEMA_VALID_UNCON}} to {{GRPO_SCHEMA_VALID_CON}} percent."
+
+<!-- Sources: n = 60 and Sonnet 97.8 are reports/results.md, test_ood rows. SFT 13.7 is the "SFT constrained (full grammar)" test_ood row, a format mismatch: replace it with the compact-grammar run before recording the voice-over. -->
 
 ### Shot 6 - What we built for the sponsor stack (2:03 to 2:33)
 
@@ -106,7 +108,7 @@ And CuratorKIT's gates caught the teacher's hallucinations: only fifty-five perc
 ### Shot 7 - Honest close (2:33 to 2:47)
 
 On screen: a plain card with three lines and the repo QR code.
-Lines: "Trained and tested on a simulator"; "Real-world sanity set: {{REAL_N_DOCS}} public-format documents, field F1 {{REAL_FIELD_F1}}"; "Code, generator and evals are open".
+Lines: "Trained and tested on a simulator"; "Real-world sanity set: 36 public-format documents, field F1 {{REAL_FIELD_F1}}"; "Code, generator and evals are open".
 
 Narration:
 "This is trained and tested on a simulator, so we also check a small set of real sample formats, and we report what breaks.
