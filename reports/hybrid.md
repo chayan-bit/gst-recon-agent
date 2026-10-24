@@ -48,6 +48,32 @@ Five replies per document sampled at temperature 0.7 and voted field by field (t
 A single temperature-0.7 sample scores 79.3% to 80.7% under v2, so greedy is already near the vote; the vote costs 5x the completion tokens and about 3.3x the wall time on one 16 GB card, so the test set was not run with it.
 `python scripts/hybrid_vote.py OUT_RUN SAMPLE_RUN...` builds the voted run from cached replies.
 
+### GRPO from the per-document SFT (dev only, measured, not shipped)
+
+A GRPO snapshot (step 75) trained from student-perdoc-sft v2 with the per-document reward was measured on both dev sets under reconciler v3; it is not the shipped adapter and was never run on test.
+
+| dev set | run | ITC invoice exact % | Context acc % | ITC overclaim (Rs) | ITC underclaim (Rs) | Match acc % | Composite |
+|---|---|---|---|---|---|---|---|
+| small (120) | student-perdoc-sft v1 | 87.8 | 90.7 | 12,044 | 31,103 | 92.4 | 91.2 |
+| small (120) | student-perdoc-sft v2 | 88.9 | 90.0 | 14,000 | 21,813 | 93.7 | 92.0 |
+| small (120) | GRPO step 75 | 89.8 | 91.4 | 4,884 | 20,985 | 93.9 | 92.6 |
+| big (60) | student-perdoc-sft v1 | 81.1 | 80.4 | 39,752 | 173,209 | 89.2 | 82.6 |
+| big (60) | student-perdoc-sft v2 | 82.2 | 83.4 | 36,405 | 179,894 | 90.0 | 83.5 |
+| big (60) | GRPO step 75 | 81.8 | 83.0 | 36,394 | 179,464 | 89.8 | 83.4 |
+
+Paired (GRPO step 75 minus reference, bootstrap 95% CI over cases):
+
+| dev set | reference | ITC invoice exact | Context acc | Composite |
+|---|---|---|---|---|
+| small | student-perdoc-sft v1 | +2.0 [-0.6, +4.6], p = 0.13 | -0.7 [-5.8, +4.7], p = 0.81 | +1.3 [-0.2, +2.9], p = 0.09 |
+| small | student-perdoc-sft v2 | +0.9 [-0.5, +2.5], p = 0.23 | +0.8 [-2.2, +4.2], p = 0.62 | +0.5 [-0.3, +1.5], p = 0.20 |
+| big | student-perdoc-sft v1 | +0.8 [-0.6, +2.1], p = 0.27 | +2.1 [-0.2, +4.8], p = 0.10 | +0.8 [-0.2, +1.8], p = 0.13 |
+| big | student-perdoc-sft v2 | -0.4 [-1.0, +0.2], p = 0.19 | +0.3 [-1.3, +2.2], p = 0.68 | -0.1 [-0.3, +0.1], p = 0.20 |
+
+No difference is significant; against its own starting point (v2) the snapshot is neutral on both dev sets, with lower ITC overclaim on small dev only.
+False links stayed at 0 register, 0 GSTR-2B and 0 payment on small dev, and 0 / 0 / 8 on big dev (student-perdoc-sft v1: 9 payment).
+On the real documents below it reads invoice numbers and dates worse than either SFT adapter, so it was not carried further.
+
 ### Real purchase documents (eval only)
 
 Two eval-only sets are built from 42 real purchase documents of one buyer (a caterer), labelled by Claude (Opus) from the page images in two passes with automatic arithmetic and GSTIN checks, not verified by a human.
