@@ -1,0 +1,80 @@
+# Plan B: per-document GRPO on kratos' RTX 5070 Ti (16 GB, sm_120) while rs-epyc is down
+# (configs/launch_grpo_perdoc_kratos.sh). Same data, reward, grammar and init as configs/grpo_perdoc.yaml.
+# QLoRA trainer (4-bit NF4 base, bf16 compute; the LoRA itself stays full precision, so the synced adapter is the
+# same r32 LoRA the SGLang server applies to its own base) and a 1 x 32 batch (4 documents x 8 generations).
+#
+# Fit on 15.6 GiB free (estimates, GiB; nothing of this has run on kratos):
+#   trainer ~5.8: CUDA context 0.5 + 4-bit base 2.5 (3.6B linear params at 0.5 B + tied 0.78 GB embedding)
+#     + LoRA/grads/8-bit Adam 0.65 (66M params) + checkpointed activations 0.5 (1 x ~2.6k tokens)
+#     + recompute peak 0.3 + completion logits 1.6 (1024 x 152k: bf16, fp32 log-softmax, gradient).
+#   SGLang bf16 server at mem fraction 0.55: static 0.55 x 15.6 = 8.6 (7.5 weights, 0.25 LoRA slots, ~0.8 KV =
+#     ~5.8k tokens, about two sequences) + ~1.5 outside the fraction (CUDA graphs, workspace) = ~10.1.
+#   Total ~15.9 of 15.6: does NOT fit at 0.55. The launcher therefore serves FP8 weights (--quantization fp8,
+#   Blackwell-native): static 0.45 x 15.6 = 7.0 (4.0 weights, 0.25 LoRA, KV capped at 12288 tokens = 1.7)
+#   + ~1.5 = ~8.5, leaving ~7 for the ~5.8 trainer. Rollouts then come from FP8-base + LoRA while the trainer
+#   scores them under NF4-base + LoRA; with beta 0 and one iteration per batch this is a small off-policy bias.
+algo: grpo
+backend: trl  # unsloth + sglang is refused by the fork by design
+
+model:
+  name_or_path: Qwen/Qwen3-4B-Instruct-2507  # the launcher substitutes the local snapshot (MODEL=...)
+  precision: bf16
+  max_seq_length: 6144  # longest prompt 4634 + 1024 completion
+  gradient_checkpointing: true
+  use_peft: true
+  # must match the per-document adapter exactly (the runner checks): r32, alpha 64, plain LoRA, all 7 projections
+  lora_r: 32
+  lora_alpha: 64
+  lora_dropout: 0.0
+  lora_target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+  quantization: {load_in_4bit: true, bnb_4bit_compute_dtype: bfloat16, bnb_4bit_quant_type: nf4}  # also passed as a kwarg below
+
+datasets:
+  - name: data/train/curated/grpo-perdoc  # columns: prompt (system + user messages), reference (truth + doc_text)
+    split: train
+
+rewards:
+  - type: gst_recon_doc_grpo  # 0 if schema-invalid, else 0.1..1; truth = 1.0
+    weight: 1.0
+
+train:
+  rollout_backend: sglang
+  sglang_server_url: http://127.0.0.1:30001  # port 30001, never the teacher's or eval server's 30000
+  sglang_sync_dir: runs/grpo-sync  # on disk via the repo's runs link, never /dev/shm
+  max_steps: 649  # one pass at 4 documents per step; the 3 h cap binds (~1 min/step expected: ~180 steps)
+  # 1 x 32 = 32 completions per optimizer step = 4 documents x 8 generations
+  per_device_batch_size: 1
+  gradient_accumulation_steps: 32
+  num_generations: 8
+  learning_rate: 5.0e-6
+  warmup_ratio: 0.03
+  beta: 0.0  # with a PEFT policy TRL's reference is the base model, not the SFT policy
+  loss_type: grpo
+  scale_rewards: group
+  temperature: 1.0  # sample the policy itself: the SFT adapter is confident (token accuracy ~0.99), so 8 samples
+  top_p: 1.0        # at a lower temperature are often identical and carry no advantage
+  max_prompt_length: 4736  # > the longest prompt (4634), so no prompt is truncated
+  max_completion_length: 1024  # longest truth record is 480 tokens
+  logging_steps: 1
+  save_steps: 50
+  save_total_limit: 2
+  seed: 42
+
+logging:
+  output_dir: runs/grpo-perdoc-kratos
+  run_name: gst-recon-grpo-perdoc-kratos
+  loggers: [tensorboard]
+
+chat_template: auto
+
+gst_recon:
+  init_adapter: runs/grpo-perdoc-init  # the per-document SFT LoRA, loaded as the trainable policy (not merged)
+  rollout_json_schema: doc  # SGLang json_schema = doc_json_schema() on every rollout request
+  # create_rl_trainer builds the model config from kwargs, so the 4-bit load is restated here as one
+  quantization: {load_in_4bit: true, bnb_4bit_compute_dtype: bfloat16, bnb_4bit_quant_type: nf4}
+  max_hours: 3  # wall-clock cap: save, then stop
+  mask_truncated_completions: true
+  gradient_checkpointing: true
+  optimizer: adamw_8bit
+  lr_scheduler: constant_with_warmup
+  dataloader_num_workers: 0

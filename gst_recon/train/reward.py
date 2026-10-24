@@ -1,4 +1,5 @@
-"""AlignTune plugin: registers our schema-gated `grpo` reward as `gst_recon_grpo`.
+"""AlignTune plugin: registers our schema-gated `grpo` reward as `gst_recon_grpo`, and the per-document
+reward (gst_recon.rewards.doc) as `gst_recon_doc_grpo`.
 
 AlignTune resolves a config entry `rewards: [{type: gst_recon_grpo}]` through
 RewardRegistry, instantiates the class with a RewardConfig, and calls
@@ -12,8 +13,10 @@ import json
 from functools import lru_cache
 
 from gst_recon.rewards import score
+from gst_recon.rewards.doc import doc_reward
 
 NAME = "gst_recon_grpo"
+DOC_NAME = "gst_recon_doc_grpo"
 
 
 @lru_cache(maxsize=1024)
@@ -32,8 +35,17 @@ def grpo_reward(text: str, reference: str | dict | None = None, **_: object) -> 
     return score(text, truth)["grpo"]
 
 
+def doc_grpo_reward(text: str, reference: str | dict | None = None, **_: object) -> float:
+    """`reference` = JSON {"truth": DocRecord, "doc_text": the document block}; missing or malformed scores 0."""
+    try:
+        ref = _truth(reference) if isinstance(reference, str) else reference
+        return doc_reward(text, ref["truth"], ref["doc_text"])
+    except (ValueError, KeyError, TypeError):
+        return 0.0
+
+
 def register() -> str:
-    """Register with AlignTune's reward registry (idempotent); returns the reward name."""
+    """Register both rewards with AlignTune's reward registry (idempotent); returns the case-level name."""
     from aligntune.rewards.core import RewardConfig, RewardFunction, RewardType
     from aligntune.rewards.registry import RewardRegistry
 
@@ -41,7 +53,11 @@ def register() -> str:
         def compute(self, text: str, reference: str | None = None, **kwargs) -> float:
             return grpo_reward(text, reference)
 
+    class GstReconDocGrpoReward(RewardFunction):
+        def compute(self, text: str, reference: str | None = None, **kwargs) -> float:
+            return doc_grpo_reward(text, reference)
+
     # RewardType has no CUSTOM member; the type is only metadata for a custom reward
-    RewardRegistry.register_custom_reward(NAME, GstReconGrpoReward,
-                                          RewardConfig(reward_type=RewardType.INSTRUCTION_FOLLOWING, weight=1.0))
+    for name, cls in ((NAME, GstReconGrpoReward), (DOC_NAME, GstReconDocGrpoReward)):
+        RewardRegistry.register_custom_reward(name, cls, RewardConfig(reward_type=RewardType.INSTRUCTION_FOLLOWING, weight=1.0))
     return NAME

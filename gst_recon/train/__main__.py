@@ -117,7 +117,7 @@ def step_line(step: int, max_steps: int, logs: dict) -> str | None:
     """One greppable progress line per logged step: `step N/M loss X [reward R]`."""
     if "loss" not in logs:
         return None
-    keys = ("reward", "rewards/gst_recon_grpo/mean", "rewards/registry_gst_recon_grpo/mean")
+    keys = ("reward", *(f"rewards/{p}{n}/mean" for n in ("gst_recon_grpo", "gst_recon_doc_grpo") for p in ("", "registry_")))
     reward = next((logs[k] for k in keys if k in logs), None)
     return f"step {step}/{max_steps} loss {float(logs['loss']):.4f}" + ("" if reward is None else f" reward {float(reward):.4f}")
 
@@ -147,6 +147,21 @@ def require_sglang_rollout(train: dict) -> dict:
     if not train.get("sglang_server_url"):
         raise SystemExit("set train.sglang_server_url")
     return {"rollout_backend": "sglang", "sglang_server_url": train["sglang_server_url"], "sglang_sync_dir": str(sync)}
+
+
+def constrain_rollouts(kind: str) -> None:
+    """Grammar-constrained SGLang rollouts: add doc_json_schema to the fork's sampling params (the fork itself
+    sends none). Per-document targets are the full DocRecord form, so the grammar admits every correct answer."""
+    if kind != "doc":
+        raise SystemExit(f"gst_recon.rollout_json_schema: only 'doc' is supported, got {kind!r}")
+    import importlib
+
+    from gst_recon.hybrid.docschema import doc_json_schema
+
+    rollout = importlib.import_module(SGLANG_ROLLOUT).SGLangRollout
+    schema = json.dumps(doc_json_schema(), separators=(",", ":"))
+    base = rollout.sampling_params
+    rollout.sampling_params = staticmethod(lambda trainer: {**base(trainer), "json_schema": schema})
 
 
 def _init_from_adapter(trainer, path: str) -> None:
@@ -316,6 +331,7 @@ def cmd_run(a: argparse.Namespace) -> None:
     check_mask = extras.pop("check_completion_mask", False)
     rows_as_is = extras.pop("rows_as_is", False)
     snapshots, sequential = extras.pop("bf16_snapshots", None), extras.pop("sequential_order", False)
+    json_schema = extras.pop("rollout_json_schema", None)
     if "dataset_num_proc" in extras:
         _pin_dataset_num_proc(extras.pop("dataset_num_proc"))
 
@@ -325,6 +341,8 @@ def cmd_run(a: argparse.Namespace) -> None:
     is_sft = cfg.get("algo", "sft").lower() == "sft"
     make = create_sft_trainer if is_sft else create_rl_trainer
     extras = extras if is_sft else {**extras, **require_sglang_rollout(cfg.get("train", {}))}
+    if json_schema:
+        constrain_rollouts(json_schema)
     trainer = make(config=cfg, **shadowed_args(cfg), **extras)
     # datasets fingerprints every .map() function by dill-pickling its closure. AlignTune 0.1.28's
     # unsloth SFT formatter closes over the trainer, so hashing it copied the whole model into host
@@ -351,6 +369,14 @@ def cmd_perdoc(a: argparse.Namespace) -> None:
     from gst_recon.train.perdoc import build_perdoc
 
     stats = build_perdoc(Path(a.rendered), [Path(t) for t in a.truth], Path(a.out), count_tokens)
+    print(json.dumps(stats, indent=1))
+
+
+def cmd_perdoc_grpo(a: argparse.Namespace) -> None:
+    from gst_recon.render.tokens import count_tokens
+    from gst_recon.train.perdoc import build_perdoc_grpo
+
+    stats = build_perdoc_grpo(Path(a.rendered), [Path(t) for t in a.truth], Path(a.out), count_tokens, a.max_completion)
     print(json.dumps(stats, indent=1))
 
 
@@ -381,6 +407,14 @@ def main(argv: list[str] | None = None) -> None:
     d.add_argument("--truth", nargs="+", required=True, help="directories of truth Case JSON (<case_id>.json)")
     d.add_argument("--out", required=True)
     d.set_defaults(fn=cmd_perdoc)
+    g = sub.add_parser("perdoc-grpo", help="rendered GRPO-role train cases (minus the hybrid dev set) + truth -> "
+                       "per-document GRPO rows")
+    g.add_argument("--rendered", required=True)
+    g.add_argument("--truth", nargs="+", required=True, help="directories of truth Case JSON (<case_id>.json)")
+    g.add_argument("--out", required=True)
+    g.add_argument("--max-completion", type=int, default=1000, help="drop documents whose truth record is longer "
+                   "(tokens; the GRPO cap is 1024)")
+    g.set_defaults(fn=cmd_perdoc_grpo)
     a = ap.parse_args(argv)
     a.fn(a)
 

@@ -1,0 +1,67 @@
+# Small per-document GRPO for a shared H100 with ~28-40 GB free (configs/launch_grpo_perdoc_small.sh).
+# Same data, reward, grammar, init and hyperparameters as configs/grpo_perdoc.yaml; only memory-bound knobs change.
+# Budget (estimates, GiB): server ~12 (7.5 weights + 3.4 KV capped at 24576 tokens + 0.3 LoRA slots + ~1 graphs);
+# trainer ~12-13 (7.5 policy + 0.7 LoRA/optimizer + ~1 activations for 2 x ~2.6k tokens + ~3 logits and gradient).
+# Total ~25. Still 64 completions per step (2 x 32); rollouts queue behind the capped KV, so steps are slower.
+algo: grpo
+backend: trl  # unsloth + sglang is refused by the fork by design
+
+model:
+  name_or_path: Qwen/Qwen3-4B-Instruct-2507  # the launcher substitutes the local snapshot (MODEL=...)
+  precision: bf16
+  max_seq_length: 6144  # longest prompt 4634 + 1024 completion
+  gradient_checkpointing: true
+  use_peft: true
+  # must match the per-document adapter exactly (the runner checks): r32, alpha 64, plain LoRA, all 7 projections
+  lora_r: 32
+  lora_alpha: 64
+  lora_dropout: 0.0
+  lora_target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+
+datasets:
+  - name: data/train/curated/grpo-perdoc  # columns: prompt (system + user messages), reference (truth + doc_text)
+    split: train
+
+rewards:
+  - type: gst_recon_doc_grpo  # 0 if schema-invalid, else 0.1..1; truth = 1.0
+    weight: 1.0
+
+train:
+  rollout_backend: sglang
+  sglang_server_url: http://127.0.0.1:30001  # port 30001, never the teacher's or eval server's 30000
+  sglang_sync_dir: runs/grpo-sync  # on disk via the repo's runs link, never /dev/shm
+  max_steps: 325  # one pass over the 2596 documents at 8 per step; the 3 h cap may bind first
+  # 2 x 32 = 64 completions per optimizer step = 8 documents x 8 generations (full config: 4 x 16)
+  per_device_batch_size: 2
+  gradient_accumulation_steps: 32
+  num_generations: 8
+  learning_rate: 5.0e-6
+  warmup_ratio: 0.03
+  beta: 0.0  # with a PEFT policy TRL's reference is the base model, not the SFT policy
+  loss_type: grpo
+  scale_rewards: group
+  temperature: 1.0  # sample the policy itself: the SFT adapter is confident (token accuracy ~0.99), so 8 samples
+  top_p: 1.0        # at a lower temperature are often identical and carry no advantage
+  max_prompt_length: 4736  # > the longest prompt (4634), so no prompt is truncated
+  max_completion_length: 1024  # longest truth record is 480 tokens
+  logging_steps: 1
+  save_steps: 50
+  save_total_limit: 2
+  seed: 42
+
+logging:
+  output_dir: runs/grpo-perdoc-small
+  run_name: gst-recon-grpo-perdoc-small
+  loggers: [tensorboard]
+
+chat_template: auto
+
+gst_recon:
+  init_adapter: runs/grpo-perdoc-init  # the per-document SFT LoRA, loaded as the trainable policy (not merged)
+  rollout_json_schema: doc  # SGLang json_schema = doc_json_schema() on every rollout request
+  max_hours: 3  # wall-clock cap: save, then stop
+  mask_truncated_completions: true
+  gradient_checkpointing: true
+  optimizer: adamw_8bit
+  lr_scheduler: constant_with_warmup
+  dataloader_num_workers: 0

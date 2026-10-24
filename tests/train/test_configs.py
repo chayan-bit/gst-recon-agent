@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 import pytest
@@ -62,3 +63,36 @@ def test_mask_report_accepts_only_a_masked_prompt_prefix():
     for bad in ([7, 8, 9], [-100, -100], [-100, 7, -100, 8]):
         with pytest.raises(SystemExit):
             mask_report(bad)
+
+
+def test_constrained_rollouts_add_the_doc_schema_to_the_fork_sampling_params(monkeypatch):
+    import sys
+    import types
+
+    from gst_recon.hybrid.docschema import doc_json_schema
+    from gst_recon.train.__main__ import SGLANG_ROLLOUT, constrain_rollouts
+
+    class SGLangRollout:  # stands in for the fork's class: a staticmethod over the trainer
+        @staticmethod
+        def sampling_params(trainer):
+            return {"max_new_tokens": trainer.max_completion_length, "temperature": 1.0}
+
+    monkeypatch.setitem(sys.modules, SGLANG_ROLLOUT, types.SimpleNamespace(SGLangRollout=SGLangRollout))
+    with pytest.raises(SystemExit):
+        constrain_rollouts("recon")
+    constrain_rollouts("doc")
+    params = SGLangRollout.sampling_params(types.SimpleNamespace(max_completion_length=1024))
+    assert params["max_new_tokens"] == 1024 and params["temperature"] == 1.0
+    assert json.loads(params["json_schema"]) == doc_json_schema()
+
+
+def test_perdoc_grpo_configs_use_the_doc_reward_grammar_and_a_1024_cap():
+    pytest.importorskip("yaml")
+    cfgs = [(p.name, *load_config(str(p))) for p in CONFIGS if p.name.startswith("grpo_perdoc")]
+    assert {n for n, *_ in cfgs} >= {"grpo_perdoc.yaml", "grpo_perdoc_small.yaml", "grpo_perdoc_kratos.yaml"}
+    for name, cfg, extras in cfgs:
+        assert cfg["rewards"] == [{"type": "gst_recon_doc_grpo", "weight": 1.0}], name
+        assert cfg["train"]["max_completion_length"] == 1024 and cfg["train"]["num_generations"] == 8, name
+        assert cfg["train"]["beta"] == 0.0 and extras["rollout_json_schema"] == "doc", name
+        assert cfg["datasets"][0]["name"] == "data/train/curated/grpo-perdoc", name
+        assert extras["init_adapter"] == "runs/grpo-perdoc-init", name
