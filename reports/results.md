@@ -253,7 +253,7 @@ In hybrid mode the model reads one document at a time (`DOC_SYSTEM_PROMPT` plus 
 Deterministic code (`gst_recon/hybrid/`) then does all the matching to register, GSTR-2B and bank, the rupee arithmetic and the ITC rules, and emits the same ReconOutput, scored by the same scorer as the end-to-end rows above.
 The oracle check (true per-document records through the same code) reproduces target.json exactly on all 132 cases (composite 1.0) under all three reconciler versions, so every point lost below is a reading or judgment error or a linking miss, not a rules error.
 Runs: `python -m gst_recon.eval run --mode hybrid --constrained` (per-document json_schema decoding, Qwen3-4B-Instruct-2507 on one RTX 5070 Ti 16 GB, SGLang 0.5.22, 16k context, 4,096-token reply cap per document); the code-alone floor is `--extractor heuristic` (regex extraction, every line normal and business, no model); Sonnet is `scripts/eval_frontier.py --mode hybrid` on realworld only.
-The end-to-end row "SFT constrained (full grammar)" is repeated in the tables for side-by-side comparison (see the caveat under its paired table).
+The end-to-end row "SFT constrained (full grammar)" is repeated in the tables for side-by-side comparison; it understates the SFT model (see the caveat below), and the paired comparison against the compact-grammar end-to-end SFT run, the reference row of this report, is the like-for-like one.
 student-sft hybrid is the end-to-end SFT adapter (trained on whole-case prompts) applied to per-document prompts, so it is off its training distribution.
 student-perdoc-sft hybrid is the matched model: a LoRA (r 32, alpha 64, all 7 projections, served in bf16) trained on rs-lab for 124 steps (0.42 epoch, 1,984 curated per-document rows built with `build_doc_messages` and `DOC_SYSTEM_PROMPT`, full DocRecord targets, completion-only loss).
 student-perdoc-sft-v2 hybrid continues that LoRA for 174 more steps on the 2,775 curated rows v1 never saw (one full epoch of 4,759 rows, same prompt and LoRA shape, adapter sha256 c0c287de...); it was compared with v1 on both dev sets before the test set was run once.
@@ -532,6 +532,29 @@ Against teacher-30B constrained end-to-end, student-perdoc-sft-v2 hybrid (reconc
 Paired by case_id over the 120 simulator cases (the teacher did not run realworld); the teacher is the end-to-end teacher-30B constrained row above in this report.
 With reconciler v1 the per-document 4B hybrid is level with the 30B teacher on ITC invoice exact (+3.1 [-1.6, +7.5], p = 0.18); with v2 it is ahead on all three (ITC +13.4 [+9.3, +17.5], composite +8.8 [+5.5, +12.5]), and with v3 by the margins above.
 
+### Paired difference vs SFT constrained (compact grammar), end-to-end (reconciler v3)
+
+| run | metric | paired n | delta pts [95% CI] | bootstrap p |
+|---|---|---|---|---|
+| student-base hybrid (reconciler v3) | itc_invoice | 42 | -22.9 [-29.5, -16.6] | 0.0005 |
+| student-base hybrid (reconciler v3) | context_acc | 41 | -11.8 [-23.6, -1.1] | 0.0405 |
+| student-base hybrid (reconciler v3) | composite | 42 | -10.9 [-13.8, -8.1] | 0.0005 |
+| student-sft hybrid (reconciler v3) | itc_invoice | 42 | -32.8 [-41.8, -23.7] | 0.0005 |
+| student-sft hybrid (reconciler v3) | context_acc | 41 | -22.8 [-36.1, -9.2] | 0.0030 |
+| student-sft hybrid (reconciler v3) | composite | 42 | -13.2 [-16.8, -9.7] | 0.0005 |
+| student-perdoc-sft hybrid (reconciler v3) | itc_invoice | 42 | +5.9 [-1.8, +13.2] | 0.1144 |
+| student-perdoc-sft hybrid (reconciler v3) | context_acc | 41 | +20.7 [+11.6, +30.5] | 0.0005 |
+| student-perdoc-sft hybrid (reconciler v3) | composite | 42 | +2.5 [-1.1, +6.2] | 0.1639 |
+| student-perdoc-sft-v2 hybrid (reconciler v3) | itc_invoice | 42 | +8.0 [+2.2, +13.8] | 0.0045 |
+| student-perdoc-sft-v2 hybrid (reconciler v3) | context_acc | 41 | +23.1 [+13.6, +32.5] | 0.0005 |
+| student-perdoc-sft-v2 hybrid (reconciler v3) | composite | 42 | +1.5 [-2.0, +4.7] | 0.3718 |
+| heuristic hybrid (code alone) (reconciler v3) | itc_invoice | 42 | -60.5 [-67.5, -53.2] | 0.0005 |
+| heuristic hybrid (code alone) (reconciler v3) | context_acc | 41 | -39.2 [-50.7, -29.0] | 0.0005 |
+| heuristic hybrid (code alone) (reconciler v3) | composite | 42 | -34.8 [-38.0, -31.6] | 0.0005 |
+
+Paired by case_id over the 42 cases the compact-grammar end-to-end run covers (15 test_iid, 15 test_ood, 12 realworld); p-value from a centred paired bootstrap (null: zero mean difference).
+On these cases the per-document hybrid (student-perdoc-sft, reconciler v3) is level with the end-to-end SFT model on ITC invoice exact (the CI includes zero) and ahead on context accuracy; student-sft hybrid, the same SFT adapter fed one document at a time, is far below its own end-to-end run, since that adapter was trained on whole cases.
+
 ### Paired difference vs SFT constrained (full grammar), end-to-end
 
 | run | metric | paired n | delta pts [95% CI] | bootstrap p |
@@ -579,10 +602,8 @@ With reconciler v1 the per-document 4B hybrid is level with the 30B teacher on I
 | Claude Sonnet (via Claude Code CLI) hybrid | context_acc | 11 | +36.4 [+13.6, +63.6] | 0.0035 |
 | Claude Sonnet (via Claude Code CLI) hybrid | composite | 12 | +31.5 [+24.6, +36.7] | 0.0005 |
 
-Paired by case_id over all 132 cases (realworld included); p-value from a centred paired bootstrap (null: zero mean difference).
-Caveat: that end-to-end SFT run used the full constrained grammar, which does not match the compact-form SFT targets (blocked and deferred fill with junk; see Notes above), so it understates the SFT model.
-A compact-grammar end-to-end SFT rerun is pending, and paired numbers against it will replace these.
-student-sft hybrid vs this row is the like-for-like pairing (same adapter, same cases).
+Paired by case_id over all 132 cases (realworld included).
+Caveat: that end-to-end SFT run used the full constrained grammar, which does not match the compact-form SFT targets (blocked and deferred fill with junk; see Notes above), so it understates the SFT model; it is kept as evidence of that grammar mismatch, and the compact-grammar pairing above replaces it for comparisons.
 
 ### Throughput
 
