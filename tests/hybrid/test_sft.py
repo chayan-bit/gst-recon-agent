@@ -35,3 +35,10 @@ def test_doc_schema_is_flat_and_fully_required():
     line = s["properties"]["line_items"]["items"]
     assert set(line["required"]) == set(line["properties"])
     assert "gift" not in line["properties"]["itc_category"]["enum"]
+
+
+def test_doc_schema_caps_invoice_numbers_at_the_rule_46_length():
+    s = doc_json_schema()
+    assert s["properties"]["invoice_no"]["maxLength"] == 16
+    assert s["properties"]["original_invoice_no"]["maxLength"] == 16
+    assert "maxLength" not in s["properties"]["supplier_name"]

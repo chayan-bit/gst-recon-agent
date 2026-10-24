@@ -65,13 +65,19 @@ class DocRecord(_Strict):
     total: float
 
 
+INVOICE_NO_MAX = 16  # CGST Rule 46(b): an invoice number has at most 16 characters
+
+
 def doc_json_schema() -> dict:
     """Flattened JSON Schema for grammar-constrained decoding (same treatment as schema.output_json_schema).
-    Every field is required and the category enum drops the two legacy values."""
+    Every field is required, the category enum drops the two legacy values, and the invoice numbers are capped at
+    INVOICE_NO_MAX characters (doc schema v2)."""
     raw = DocRecord.model_json_schema()
     out = _inline(raw, raw.get("$defs", {}))
     line = out["properties"]["line_items"]["items"]
     line["properties"]["itc_category"]["enum"] = MODEL_CATEGORIES
+    for f in ("invoice_no", "original_invoice_no"):  # doc schema v2: stops greedy digit loops, see INVOICE_NO_MAX
+        out["properties"][f]["maxLength"] = INVOICE_NO_MAX
     for node in (out, line):
         node["required"] = list(node["properties"])
     return out
