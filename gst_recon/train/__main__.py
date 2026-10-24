@@ -103,6 +103,27 @@ def _pin_dataset_num_proc(n: int) -> None:
     tab.build_sft_config = pinned  # sft.py imports it at call time, so the module attribute is enough
 
 
+def step_line(step: int, max_steps: int, logs: dict) -> str | None:
+    """One greppable progress line per logged step: `step N/M loss X [reward R]`."""
+    if "loss" not in logs:
+        return None
+    reward = next((logs[k] for k in ("reward", "rewards/gst_recon_grpo/mean") if k in logs), None)
+    return f"step {step}/{max_steps} loss {float(logs['loss']):.4f}" + ("" if reward is None else f" reward {float(reward):.4f}")
+
+
+def _add_step_log(trainer) -> None:
+    from transformers import TrainerCallback
+
+    class StepLog(TrainerCallback):
+        def on_log(self, args, state, control, logs=None, **kwargs):
+            line = step_line(state.global_step, state.max_steps, logs or {})
+            if line:
+                print(line, flush=True)
+
+    callbacks = trainer.get_hf_callbacks  # both SFT and GRPO trainers build their HF callbacks from this
+    trainer.get_hf_callbacks = lambda: [*callbacks(), StepLog()]
+
+
 def cmd_run(a: argparse.Namespace) -> None:
     import faulthandler
     import signal
@@ -126,6 +147,7 @@ def cmd_run(a: argparse.Namespace) -> None:
     # unsloth SFT formatter closes over the trainer, so hashing it copied the whole model into host
     # RAM (42 GB, rs-epyc OOM on 2026-10-24). Hash the trainer by identity instead.
     type(trainer).__getstate__ = lambda self: {"trainer_id": id(self)}
+    _add_step_log(trainer)
     print(json.dumps(trainer.train(), indent=1, default=str))
 
 

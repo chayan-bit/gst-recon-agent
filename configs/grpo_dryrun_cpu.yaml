@@ -1,0 +1,57 @@
+# GRPO plumbing dry-run on CPU (kratos): Qwen2.5-0.5B-Instruct, trl backend, HF generate rollouts,
+# the gst_recon_grpo reward plugin on real curated GRPO rows. Proves dataset -> rollout -> reward ->
+# update end to end; the numbers mean nothing (64-token completions cannot hold a valid output).
+#   python -m gst_recon.train run configs/grpo_dryrun_cpu.yaml
+algo: grpo
+backend: trl
+
+model:
+  name_or_path: Qwen/Qwen2.5-0.5B-Instruct
+  precision: fp32
+  max_seq_length: 8192
+  use_peft: true
+  lora_r: 8
+  lora_alpha: 16
+  lora_dropout: 0.0
+  lora_target_modules: [q_proj, v_proj]
+
+datasets:
+  - name: data/dryrun/grpo  # first rows of data/train/curated/grpo/train.jsonl
+    split: train
+
+rewards:
+  - type: gst_recon_grpo
+    weight: 1.0
+
+train:
+  max_steps: 2
+  epochs: 1
+  per_device_batch_size: 2
+  gradient_accumulation_steps: 1
+  num_generations: 2
+  learning_rate: 1.0e-5
+  beta: 0.01
+  loss_type: grpo
+  scale_rewards: group
+  temperature: 0.8
+  top_p: 0.95
+  max_prompt_length: 6144
+  max_completion_length: 64
+  logging_steps: 1
+  save_steps: 1000
+  save_total_limit: 1
+  seed: 42
+
+logging:
+  output_dir: runs/grpo-dryrun
+  run_name: gst-recon-grpo-dryrun
+  loggers: []
+
+chat_template: auto
+
+gst_recon:
+  rollout_backend: hf
+  gradient_checkpointing: false
+  optimizer: adamw_torch
+  lr_scheduler: constant
+  dataloader_num_workers: 0
