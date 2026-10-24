@@ -97,6 +97,9 @@ def degrade(img: Image.Image, level: str, rng: random.Random) -> tuple[Image.Ima
                           NoiseTexturize, ShadowCast, SubtleNoise)
 
     cv2.setNumThreads(1)
+    # opencv's CPU-dispatched kernels (AVX512 vs AVX2, per build) round HSV2BGR/warpAffine differently; the baseline path
+    # is bit-identical across hosts, which keeps renders byte-identical between machines
+    cv2.setUseOptimized(False)
     plan = _plan(level, rng)
     random.seed(plan["seed"])
     np.random.seed(plan["seed"] % (2**32))
