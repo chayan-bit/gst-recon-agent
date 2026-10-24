@@ -48,6 +48,53 @@ Five replies per document sampled at temperature 0.7 and voted field by field (t
 A single temperature-0.7 sample scores 79.3% to 80.7% under v2, so greedy is already near the vote; the vote costs 5x the completion tokens and about 3.3x the wall time on one 16 GB card, so the test set was not run with it.
 `python scripts/hybrid_vote.py OUT_RUN SAMPLE_RUN...` builds the voted run from cached replies.
 
+### Real purchase documents (eval only)
+
+Two eval-only sets are built from 42 real purchase documents of one buyer (a caterer), labelled by Claude (Opus) from the page images in two passes with automatic arithmetic and GSTIN checks, not verified by a human.
+The documents, their text and the labels are client data: they are never used for training and stay out of this repository; only the aggregate numbers below are published.
+The model sees the OCR or text-layer output, not the image: only 26 of 39 printed supplier GSTINs, 33 of 42 invoice numbers and 28 of 42 invoice dates survive into that text, so part of every error below is OCR loss.
+No line in the set is blocked under s.17(5), so ITC accuracy on it measures amount reading and the absence of false blocks, not blocking judgment.
+
+**Per-document reading (42 documents, no books).**
+Each document is sent alone, exactly as in hybrid mode (`build_doc_messages`, constrained to `doc_json_schema`), and scored field by field against the label (a label's listed alternates also count); "invented identity" is the share of fields whose true value is empty (not printed) where the model returned a value.
+
+| run | GSTIN | Invoice no | Date | Taxable | Total | Line count | Line amounts | Category | Purpose | ITC doc exact | Invented identity | Doc reward |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| student-base | 59.5 | 52.4 | 73.8 | 57.1 | 61.9 | 76.2 | 57.8 | 42.6 | 42.6 | 42.9 | 9.6 | 0.689 |
+| student-perdoc-sft | 66.7 | 30.9 | 47.6 | 52.4 | 64.3 | 81.0 | 51.0 | 50.0 | 49.0 | 57.1 | 8.8 | 0.689 |
+| student-perdoc-grpo (step 75) | 71.4 | 21.4 | 40.5 | 59.5 | 64.3 | 81.0 | 53.4 | 52.5 | 54.5 | 54.8 | 12.3 | 0.692 |
+| student-base, blank-if-not-printed filter | 59.5 | 52.4 | 61.9 | 57.1 | 61.9 | 76.2 | 57.8 | 42.6 | 42.6 | 42.9 | 9.6 | 0.747 |
+| student-perdoc-sft, blank-if-not-printed filter | 66.7 | 30.9 | 35.7 | 52.4 | 64.3 | 81.0 | 51.0 | 50.0 | 49.0 | 57.1 | 8.8 | 0.762 |
+
+The per-document adapters read amounts, categories and purposes better than the base model but invoice numbers and dates much worse, and the cause is invention, not abstention: none of the three runs ever left these fields empty.
+Of the 29 invoice numbers student-perdoc-sft got wrong, 23 are not in the document text at all and 18 have the simulator's own number formats (for example TAX/0123/26-27 or 26-27-INV-00412); of base's 20 wrong numbers, 15 are other numbers that are in the text and none has a simulator format.
+GRPO from the per-document SFT (step 75) amplifies this (29 wrong numbers not in the text, 20 in simulator formats) even though its reward credits abstention.
+The per-document SFT learned the simulator's identity formats, which the simulated test set cannot reveal; the simulator's number and date formats are being widened for the next training round.
+The two filter rows blank an invoice number or date that the document text does not support, with reconciler v3's own check (`fill.py`); this is not what v3 does on its own (v3 replaces such a value only when exactly one book entry of the same GSTIN matches, and otherwise passes it on).
+The number check rejected only wrong numbers (6 for base, 17 for student-perdoc-sft), but the date check also rejected 5 right dates per model (printed forms it does not recognise, or OCR-damaged dates the model reconstructed).
+
+**semireal: the same documents with simulated books.**
+The 39 documents with a known identity (3 with an illegible or invalid GSTIN are left out, which flatters reading) become 9 buyer-month cases whose purchase register, GSTR-2B and bank statement come from the simulator's own functions; `clean` plants no book discrepancies, `sim` plants discrepancies at the simulator's medium rate (7 to 16 per seed over 39 documents), with five seeds (s0 is the twin of `clean`).
+Everything is reconciler v3; the oracle (true records through v3) is exact except one travel agent's invoice whose printed total includes a pass-through airfare, which `repair` resets to taxable value plus tax so its payment no longer links (Rs 420.71 deferred in two seeds).
+The books follow the simulator's distributions, which the reconciler was developed on, so this set measures real document reading feeding the full reconciliation, not real book messiness; report each level on its own, never as a real-world book result.
+
+| level | run | ITC invoice exact % | Context acc % | ITC overclaim (Rs) | ITC underclaim (Rs) | Match acc % | Composite | fills (right) | register / GSTR-2B / payment missed | false links |
+|---|---|---|---|---|---|---|---|---|---|---|
+| clean (9 cases) | student-base | 42.5 | 92.9 | 0 | 26,215 | 70.8 | 64.3 | 3 (3) | 13 / 13 / 7 of 39 / 38 / 21 | 0 |
+| clean (9 cases) | student-perdoc-sft | 59.6 | 100.0 | 0 | 10,065 | 64.6 | 69.1 | 8 (8) | 13 / 13 / 7 of 39 / 38 / 21 | 0 |
+| clean (9 cases) | student-perdoc-grpo (step 75) | 61.8 | 100.0 | 0 | 12,106 | 60.9 | 70.1 | 8 (8) | 18 / 18 / 8 of 39 / 38 / 21 | 0 |
+| sim, seed 0 (9) | student-base | 43.9 | 100.0 | 0 | 24,476 | 70.4 | 65.2 | 3 (3) | 14 / 13 / 10 of 42 / 34 / 27 | 0 |
+| sim, seed 0 (9) | student-perdoc-sft | 59.6 | 100.0 | 0 | 9,495 | 66.1 | 69.3 | 7 (7) | 13 / 12 / 8 of 42 / 34 / 27 | 0 |
+| sim, seed 0 (9) | student-perdoc-grpo (step 75) | 61.8 | 100.0 | 0 | 11,536 | 59.6 | 69.8 | 8 (8) | 18 / 18 / 9 of 42 / 34 / 27 | 0 |
+| sim, seeds 1-4 (36) | student-base | 46.0 | 100.0 | 0 | 22,093 | 71.1 | 66.6 | 14 (14) | 56 / 52 / 34 of 160 / 143 / 103 | 0 |
+| sim, seeds 1-4 (36) | student-perdoc-sft | 58.6 | 100.0 | 0 | 6,118 | 63.5 | 68.6 | 28 (28) | 57 / 53 / 29 of 160 / 143 / 103 | 0 |
+| sim, seeds 1-4 (36) | student-perdoc-grpo (step 75) | 59.6 | 98.2 | 0 | 11,618 | 59.5 | 69.2 | 34 (34) | 75 / 72 / 34 of 160 / 143 / 103 | 0 |
+
+Reconciler v3's identity fill worked on real documents: every fill was correct (student-base 20 of 20, student-perdoc-sft 43 of 43, GRPO step 75 50 of 50 over the three levels), and no run made a false register, GSTR-2B or payment link.
+student-perdoc-sft leads student-base by 13 to 17 points of ITC invoice exact but trails it by 5 to 8 points of match accuracy, the matching cost of its invented identities, and it needed about twice as many fills.
+GRPO step 75 adds 1 to 2 points of ITC over student-perdoc-sft but loses another 4 to 7 points of match accuracy and misses more register links (18 vs 13 of 39 on `clean`), in line with its worse invoice numbers on the per-document set.
+Parser limitation found while building the set (not fixed, the reconciler is frozen): the fixed-width register reader shifts a row whose GSTIN cell is empty, so the builder renders such registers in CSV layout.
+
 ### Overall (120 simulator cases)
 
 | run | n | ITC invoice exact % | Context acc % | ITC overclaim (Rs) | ITC underclaim (Rs) | ITC net abs err (Rs) | Match acc % | Field F1 % | Schema valid % | Composite (0-100) |
