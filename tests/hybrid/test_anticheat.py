@@ -14,7 +14,7 @@ from gst_recon.hybrid.reconcile import reconcile_prompt
 from gst_recon.hybrid.sft import truth_records
 
 PKG = Path(__file__).resolve().parents[2] / "gst_recon" / "hybrid"
-RECONCILER = ("reconcile.py", "linker.py", "inputs.py", "docschema.py", "repair.py", "fill.py")
+RECONCILER = ("reconcile.py", "linker.py", "inputs.py", "docschema.py", "repair.py", "fill.py", "ensemble.py")
 FORBIDDEN_IMPORTS = ("gst_recon.hybrid.sft", "gst_recon.eval.cases", "gst_recon.sim.world")
 FORBIDDEN_TEXT = ("target.json", "meta.json", "truth")
 
