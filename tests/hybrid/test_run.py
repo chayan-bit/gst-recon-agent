@@ -68,3 +68,27 @@ def test_parse_doc_is_lenient():
     rec, why = parse_doc('```json\n{"invoice_no": "A1", "line_items": [{"itc_category": "spaceship", "taxable_value": 5}]}\n```')
     assert why == "" and rec.invoice_no == "A1" and rec.line_items[0].itc_category.value == "normal"
     assert parse_doc("no json here") == (None, "unparseable")
+
+
+def test_msgs_runner_writes_private_replies_beside_each_messages_file_and_resumes(tmp_path):
+    import importlib.util
+    import stat
+    from pathlib import Path
+
+    spec = importlib.util.spec_from_file_location("msgs_run", Path(__file__).parents[2] / "scripts" / "hybrid_msgs_run.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    for doc in ("inv-01", "inv-02"):
+        (tmp_path / "in" / doc).mkdir(parents=True)
+        (tmp_path / "in" / doc / "messages.json").write_text('[{"role": "user", "content": "doc"}]')
+    calls = []
+
+    def fake(messages):
+        calls.append(messages)
+        return {"text": '{"invoice_no": "A1", "line_items": []}', "error": None}
+
+    assert mod.run(tmp_path / "in", tmp_path / "out", fake) == {"called": 2, "parse_ok": 2}
+    reply = tmp_path / "out" / "inv-01" / "reply.json"
+    assert json.loads(reply.read_text())["parse_ok"] is True
+    assert stat.S_IMODE(reply.stat().st_mode) == 0o600 and stat.S_IMODE(reply.parent.stat().st_mode) == 0o700
+    assert mod.run(tmp_path / "in", tmp_path / "out", fake) == {"called": 0, "parse_ok": 0} and len(calls) == 2
