@@ -1,11 +1,20 @@
-# AlignTune 0.1.28 upstream issue drafts
+# AlignTune 0.1.28 findings and their upstream pull requests
 
-Drafts only, not filed.
+Status of each item (all pull requests are open, none merged, at the time of writing):
+
+| Item | Status |
+|---|---|
+| 1. Unsloth SFT dataset fingerprint pickles the trainer | AlignTune PR #33 https://github.com/Lexsi-Labs/aligntune/pull/33 |
+| 2. Config values replaced by factory defaults | AlignTune PR #34 https://github.com/Lexsi-Labs/aligntune/pull/34 |
+| 3. Train keys dropped by the YAML parser | AlignTune PR #35 https://github.com/Lexsi-Labs/aligntune/pull/35 |
+| 4. `gradient_checkpointing="unsloth"` offloads activations to host RAM | not a bug, a documented default; no PR |
+
+AlignTune PR #32 https://github.com/Lexsi-Labs/AlignTune/pull/32 is the SGLang rollout backend for GRPO, a feature rather than one of the items below.
 Found while training Qwen3-4B-Instruct-2507 with LoRA through `create_sft_trainer(config=...)` with `backend: unsloth` on an H100.
 The environment was transformers 5.20.2, trl 1.7.1, datasets 5.1.0, unsloth 2026.7.2, peft 0.21.2 and torch 2.9.1+cu128.
 Every reproduction below uses a public model and a 4-row dataset.
 The symptoms (the 42.7 GB RSS, the stack trace, 39 tokenizer processes, 512-token truncation, the adapter in ./output) were observed in our runs.
-The reproduction scripts were reconstructed from the 0.1.28 source and have not been run verbatim; run them before filing, because attribute paths such as `t.config.train` may need adjusting.
+The scripts below were reconstructed from the 0.1.28 source and may need adjusting (attribute paths such as `t.config.train`); the reproductions that were actually run are in the pull requests, for example #33, which reproduces the host-RAM growth as +6.96 GB on a 0.5B model.
 
 Shared setup for the reproductions:
 
@@ -31,6 +40,8 @@ BASE = {
 ---
 
 ## 1. Unsloth SFT: dataset fingerprinting pickles the whole trainer (and model) into host RAM
+
+Status: AlignTune PR #33.
 
 **Summary.**
 `UnslothSFTTrainer.setup_trainer()` formats `messages` with `dataset.map(formatting_prompts_func, batched=True)`.
@@ -68,6 +79,8 @@ Our workaround makes the trainer hash by identity: `type(trainer).__getstate__ =
 
 ## 2. Config values silently replaced by factory defaults (max_seq_length 512, batch size 4, output_dir ./output)
 
+Status: AlignTune PR #34.
+
 **Summary.**
 `create_sft_trainer(config=...)` and `create_rl_trainer(config=...)` parse the YAML or dict into `kwargs`.
 Several values are then taken from the factory's own keyword parameters, which keep their defaults: `max_seq_length=512`, `batch_size=4`, `num_epochs=3`, `learning_rate=2e-4`, `output_dir="./output"` and, for RL, `max_steps=-1`.
@@ -97,6 +110,8 @@ Pass them again explicitly: `create_sft_trainer(config=cfg, max_seq_length=..., 
 ---
 
 ## 3. Train keys dropped by the YAML parser: gradient_checkpointing, optimizer, lr_scheduler, dataloader_num_workers, dataset_num_proc
+
+Status: AlignTune PR #35.
 
 **Summary.**
 `aligntune.utils.config_utils.parse_config_to_unified` copies a fixed list of `train:` keys.
@@ -136,6 +151,8 @@ For `dataset_num_proc`, wrap `build_sft_config` and set `cfg.dataset_num_proc` o
 ---
 
 ## 4. Note: unsloth gradient_checkpointing="unsloth" offloads activations to host RAM
+
+Status: not a bug, a documented default; no PR.
 
 This is less a bug than a missing warning.
 When `train.gradient_checkpointing` is absent from the train config object, `peft/lora.py` defaults to `"unsloth"`.
