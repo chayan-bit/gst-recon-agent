@@ -95,9 +95,11 @@ Upstream PRs, all open at the time of writing:
 - AuditKIT PRs: #9 https://github.com/Lexsi-Labs/AuditKIT/pull/9, #10 https://github.com/Lexsi-Labs/AuditKIT/pull/10, #11 https://github.com/Lexsi-Labs/AuditKIT/pull/11.
 - CuratorKIT PRs: #34 https://github.com/Lexsi-Labs/CuratorKIT/pull/34, #35 https://github.com/Lexsi-Labs/CuratorKIT/pull/35, #36 https://github.com/Lexsi-Labs/CuratorKIT/pull/36.
 - AlignTune PRs: #32 https://github.com/Lexsi-Labs/AlignTune/pull/32 (SGLang rollout backend for GRPO), #33 https://github.com/Lexsi-Labs/aligntune/pull/33 (unsloth SFT fingerprint pickles the model into host RAM), #34 https://github.com/Lexsi-Labs/aligntune/pull/34 (config values replaced by factory defaults), #35 https://github.com/Lexsi-Labs/aligntune/pull/35 (train keys dropped by the parser).
+- SGLang PR: #46287 https://github.com/sgl-project/sglang/pull/46287 (LoRA requests rejected before adapter reservation no longer try to release a null adapter id and log TypeError tracebacks).
+- Two SGLang 0.5.10 issues we hit (a LoRA `n>1` refcount hang on unload, and a SIGTERM drain hang from leaked rejected requests) are fixed on SGLang main (#31808 in v0.5.22 and #28694 in v0.5.14), so we filed no PRs for them; our rollout backend works around both on 0.5.10.
 
 Visual: a four-tile grid, one tile per toolkit, each with a one-line before/after and a link to the upstream pull request.
-The status of each (upstream PR, open or merged) is shown honestly in a corner badge: "10 pull requests open upstream, none merged".
+The status of each (upstream PR, open or merged) is shown honestly in a corner badge: "11 pull requests open upstream, none merged".
 
 ## Slide 9 - How SGLang is used, feature by feature
 
