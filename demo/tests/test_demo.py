@@ -97,4 +97,6 @@ def test_results_page_and_its_numbers_are_served():
     assert c.get("/results").status_code == 200
     d = c.get("/static/results.json").json()
     for s in [*d["steps"], *d["references"]]:
-        assert all(s[k] is None or 0 <= s[k] <= 100 for k in ("iid", "ood"))
+        assert s["value"] is None or 0 <= s["value"] <= 100
+        assert s["value"] is None or s["commit"]  # every number cites where it came from
+    assert all(0 <= r["context"] <= 100 and r["overclaim"] >= 0 and r["commit"] for r in d["context"]["rows"])

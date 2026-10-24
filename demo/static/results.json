@@ -1,56 +1,112 @@
 {
+  "title": "The hybrid ladder: code, SFT, per-document, GRPO",
   "metric": "ITC invoice exact (%)",
-  "metric_note": "Share of invoices whose eligible, blocked and deferred amounts are all within Rs 1 of the truth. Held-out cases: n = 60 in-distribution, n = 60 out-of-distribution.",
-  "source": "reports/results.md (python -m gst_recon.eval report). value null = TODO: not measured yet, shown as an empty dashed bar.",
+  "metric_note": "Share of invoices whose eligible, blocked and deferred amounts are all within Rs 1 of the truth. Held-out test set, 120 simulator cases (60 in-distribution, 60 out-of-distribution), one number per bar.",
+  "source": "reports/hybrid.md (Overall, 120 simulator cases) and reports/results.md at commit 83599e7. A step with no value is TODO: not run yet, shown as an empty dashed bar. Commit under each bar = the reconciler version that produced the number (e2e rows: the report commit).",
   "steps": [
     {
-      "label": "Base Qwen3-4B",
-      "sub": "no training",
-      "iid": null,
-      "ood": null
+      "label": "Code alone",
+      "sub": "regex, no model",
+      "value": 10.4,
+      "kind": "code",
+      "commit": "ac03f32"
     },
     {
-      "label": "SFT, full grammar (format mismatch)",
-      "sub": "*see footnote",
-      "iid": 8.1,
-      "ood": 13.7
+      "label": "SFT e2e",
+      "sub": "full grammar *",
+      "value": 10.9,
+      "kind": "e2e",
+      "commit": "83599e7"
     },
     {
-      "label": "SFT, compact grammar",
-      "sub": "the student's real SFT number",
-      "iid": null,
-      "ood": null
+      "label": "Base hybrid",
+      "sub": "reconciler v3",
+      "value": 55.2,
+      "kind": "hybrid",
+      "commit": "8286f1f"
     },
     {
-      "label": "+ SFT hybrid",
-      "sub": "model reads, code reconciles",
-      "iid": null,
-      "ood": null
+      "label": "SFT hybrid",
+      "sub": "reconciler v3",
+      "value": 46.8,
+      "kind": "hybrid",
+      "commit": "8286f1f"
+    },
+    {
+      "label": "Per-doc v1",
+      "sub": "reconciler v1",
+      "value": 62.9,
+      "kind": "hybrid",
+      "commit": "ac03f32"
+    },
+    {
+      "label": "Per-doc v2",
+      "sub": "reconciler v2, same replies",
+      "value": 73.1,
+      "kind": "hybrid",
+      "commit": "b5c3c0b"
+    },
+    {
+      "label": "Per-doc v3",
+      "sub": "reconciler v3, same replies",
+      "value": 79.9,
+      "kind": "hybrid",
+      "commit": "8286f1f"
     },
     {
       "label": "+ GRPO",
       "sub": "rule-checked reward",
-      "iid": null,
-      "ood": null
+      "value": null,
+      "kind": "hybrid",
+      "commit": ""
     }
   ],
   "references": [
     {
-      "label": "Qwen3-30B teacher",
-      "sub": "open model, constrained",
-      "iid": 55.7,
-      "ood": 63.8
+      "label": "Teacher 30B",
+      "sub": "end-to-end, constrained",
+      "value": 59.8,
+      "kind": "ref",
+      "commit": "83599e7"
     },
     {
       "label": "Claude Sonnet",
-      "sub": "via Claude Code CLI",
-      "iid": 94.9,
-      "ood": 97.8
+      "sub": "end-to-end, via CLI",
+      "value": 96.3,
+      "kind": "ref",
+      "commit": "83599e7"
     }
   ],
+  "context": {
+    "title": "Context accuracy and overclaim",
+    "sub": "Same 120 test cases. Context = did the model apply the business context right (blocked and deferred reasons). Overclaim = rupees of credit wrongly claimed, per case.",
+    "rows": [
+      {
+        "label": "Per-document, reconciler v3",
+        "context": 82.7,
+        "overclaim": 27183,
+        "overclaim_ci": "12,495 to 45,815",
+        "commit": "8286f1f"
+      },
+      {
+        "label": "Teacher 30B, end-to-end",
+        "context": 38.8,
+        "overclaim": 383144,
+        "overclaim_ci": "295,619 to 487,652",
+        "commit": "83599e7"
+      },
+      {
+        "label": "Claude Sonnet, end-to-end",
+        "context": 92.7,
+        "overclaim": 15306,
+        "overclaim_ci": "7,532 to 24,334",
+        "commit": "83599e7"
+      }
+    ]
+  },
   "decoding": {
     "title": "Constrained vs unconstrained decoding",
-    "sub": "Qwen3-30B teacher, same 19 cases",
+    "sub": "Qwen3-30B teacher, same 19 cases (reports/results.md)",
     "rows": [
       {
         "label": "Schema-valid output (%)",
@@ -66,6 +122,8 @@
     "todo": "Student (SFT, GRPO) unconstrained runs TODO"
   },
   "footnotes": [
-    "* SFT was trained on compact targets (zero fields omitted) but this run decoded with the strict full-schema grammar, which forces junk into blocked and deferred. Read it as a format mismatch, not as the student's accuracy. The compact-grammar run is TODO."
+    "* SFT was trained on compact targets (zero fields omitted) but this run decoded with the strict full-schema grammar, which forces junk into blocked and deferred. Read it as a format mismatch, not as the student's accuracy.",
+    "Not measured (GPU host down): base Qwen3-4B end-to-end, and SFT end-to-end with the compact grammar. Both bars are left out rather than guessed.",
+    "Reconciler v1, v2 and v3 re-score the same cached per-document replies with no new model calls; the oracle check (true records through the same code) reproduces the truth on all cases under all three."
   ]
 }
