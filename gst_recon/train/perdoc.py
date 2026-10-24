@@ -39,6 +39,12 @@ def curate_doc_rows(rows: list[dict], unrecoverable: tuple[str, ...]) -> tuple[l
     return kept, dropped, masked
 
 
+def prompt_completion(row: dict) -> dict:
+    """TRL prompt/completion form of a chat row; TRL's SFTTrainer then puts the loss on the completion only."""
+    m = row["messages"]
+    return {**{k: v for k, v in row.items() if k != "messages"}, "prompt": m[:-1], "completion": m[-1:]}
+
+
 def _tokens(rows: list[dict], count) -> dict:
     p = [count(r["messages"][0]["content"] + r["messages"][1]["content"])[0] + b.TEMPLATE_OVERHEAD for r in rows]
     t = [count(r["messages"][2]["content"])[0] for r in rows]
@@ -69,6 +75,8 @@ def build_perdoc(rendered: Path, truth_dirs: list[Path], out: Path, count) -> di
              "raw": {"rows": b.write_jsonl(out / "raw" / "sft-perdoc" / "train.jsonl", raw), "by_difficulty": by_diff(raw),
                      "tokens": _tokens(raw, count)},
              "curated": {"rows": b.write_jsonl(out / "curated" / "sft-perdoc" / "train.jsonl", curated),
+                         "prompt_completion_rows": b.write_jsonl(out / "curated" / "sft-perdoc-pc" / "train.jsonl",
+                                                                 [prompt_completion(r) for r in curated]),
                          "by_difficulty": by_diff(curated), "docs_dropped_ocr": dropped, "hsn_blanked": masked,
                          "tokens": _tokens(curated, count)}}
     (out / "perdoc_stats.json").write_text(json.dumps(stats, indent=1))

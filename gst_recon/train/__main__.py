@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import time
 from collections import Counter
 from pathlib import Path
@@ -208,11 +209,38 @@ def _add_step_log(trainer, max_hours: float | None = None) -> None:
     trainer.get_hf_callbacks = lambda: [*callbacks(), StepLog()]
 
 
+def mask_report(labels: list[int]) -> str:
+    """The prompt must be a fully masked prefix and the reply fully trained; raises otherwise."""
+    start = next((i for i, x in enumerate(labels) if x != -100), len(labels))
+    trained = sum(x != -100 for x in labels)
+    if not (0 < start and trained > 0 and start + trained == len(labels)):
+        raise SystemExit(f"completion-only loss is not active: labels start {start}, trained {trained} of {len(labels)}")
+    return f"MASK row0: {start} prompt tokens labelled -100, {trained} reply tokens trained ({len(labels)} total)"
+
+
+def _add_mask_check(trainer) -> None:
+    """Verify completion-only loss on the first real training row, through the trainer's own collator, before step 1."""
+    from transformers import TrainerCallback
+
+    class MaskCheck(TrainerCallback):
+        def on_train_begin(self, args, state, control, train_dataloader=None, **kwargs):
+            batch = train_dataloader.collate_fn([train_dataloader.dataset[0]])
+            print(mask_report(batch["labels"][0].tolist()), flush=True)
+
+    callbacks = trainer.get_hf_callbacks
+    trainer.get_hf_callbacks = lambda: [*callbacks(), MaskCheck()]
+
+
 def cmd_run(a: argparse.Namespace) -> None:
     import faulthandler
     import signal
 
-    faulthandler.register(signal.SIGUSR1)  # `kill -USR1 <pid>` prints every thread's stack (memory triage)
+    if hasattr(signal, "SIGUSR1"):  # POSIX only (rs-lab is Windows)
+        faulthandler.register(signal.SIGUSR1)  # `kill -USR1 <pid>` prints every thread's stack (memory triage)
+    if os.environ.get("GST_MEM_CAP_GB"):  # Windows has no run_guarded.sh: Job Object commit cap instead
+        from gst_recon.render.memlimit import apply_memory_cap
+
+        print(f"memory cap {os.environ['GST_MEM_CAP_GB']} GB: {apply_memory_cap(float(os.environ['GST_MEM_CAP_GB']))}", flush=True)
     cfg, extras = load_config(a.config)
     if cfg.get("backend") == "unsloth":
         import unsloth  # noqa: F401 - must precede transformers/trl/peft or its patches (incl. memory) are skipped
@@ -221,6 +249,7 @@ def cmd_run(a: argparse.Namespace) -> None:
 
     responses_only = extras.pop("train_on_responses_only", None)
     init_adapter, max_hours = extras.pop("init_adapter", None), extras.pop("max_hours", None)
+    check_mask = extras.pop("check_completion_mask", False)
     if "dataset_num_proc" in extras:
         _pin_dataset_num_proc(extras.pop("dataset_num_proc"))
 
@@ -236,6 +265,8 @@ def cmd_run(a: argparse.Namespace) -> None:
     # RAM (42 GB, rs-epyc OOM on 2026-10-24). Hash the trainer by identity instead.
     type(trainer).__getstate__ = lambda self: {"trainer_id": id(self)}
     _add_step_log(trainer, max_hours)
+    if check_mask:
+        _add_mask_check(trainer)
     if init_adapter:
         _init_from_adapter(trainer, init_adapter)
     if responses_only:

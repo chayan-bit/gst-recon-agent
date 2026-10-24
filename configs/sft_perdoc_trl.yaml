@@ -1,0 +1,56 @@
+# Per-document SFT for the hybrid mode on rs-lab (RTX A6000 48 GB, Windows): configs/sft_perdoc.yaml on the
+# trl backend (unsloth does not run on Windows). Rows are the same curated per-document rows in TRL
+# prompt/completion form (data/train/curated/sft-perdoc-pc), so TRL's SFTTrainer puts the loss on the
+# completion only; gst_recon.check_completion_mask proves it on the first training row before step 1.
+# Without unsloth's fused loss the batch is 4 x 4 accumulation (16 rows per step, as on the H100), which keeps
+# the 152k-vocab logits small. 298 steps = 1 epoch; the 1 h wall-clock cap (save, then stop) binds if slower.
+#   configs/launch_sft_perdoc_rslab.ps1 (preflight, Job Object memory cap, scheduled task)
+algo: sft
+backend: trl
+
+model:
+  name_or_path: Qwen/Qwen3-4B-Instruct-2507
+  precision: bf16
+  max_seq_length: 4096  # longest curated row is 3785 tokens
+  use_peft: true
+  lora_r: 32
+  lora_alpha: 64
+  lora_dropout: 0.0
+  lora_target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+
+datasets:
+  - name: data/train/curated/sft-perdoc-pc  # directory with train.jsonl (columns: prompt, completion)
+    split: train
+    task_type: sft
+
+train:
+  epochs: 1
+  max_steps: 298  # 1 epoch: 4759 rows / 16 per step
+  per_device_batch_size: 4
+  gradient_accumulation_steps: 4
+  learning_rate: 1.0e-4
+  warmup_ratio: 0.03
+  weight_decay: 0.0
+  max_grad_norm: 1.0
+  packing: false
+  logging_steps: 1
+  save_steps: 100
+  save_total_limit: 1  # the final adapter is what ships; checkpoints are removed after a clean run
+  seed: 42
+
+logging:
+  output_dir: runs/sft-perdoc
+  run_name: gst-recon-sft-perdoc
+  loggers: [tensorboard]
+
+chat_template: auto
+
+# Runner kwargs: settings AlignTune's YAML parser drops, plus the runner's own checks and cap.
+gst_recon:
+  gradient_checkpointing: true
+  optimizer: adamw_torch  # bitsandbytes is not installed on the Windows host
+  lr_scheduler: cosine
+  dataloader_num_workers: 0
+  dataset_num_proc: 1
+  check_completion_mask: true  # abort before step 1 unless row 0's prompt is all -100 and its reply trained
+  max_hours: 1  # wall-clock cap: save, then stop

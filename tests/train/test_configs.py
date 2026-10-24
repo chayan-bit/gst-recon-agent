@@ -53,3 +53,12 @@ def test_every_grpo_config_uses_sglang_rollouts():
     pytest.importorskip("yaml")
     grpo = [load_config(str(p))[0] for p in CONFIGS if load_config(str(p))[0]["algo"] == "grpo"]
     assert grpo and all(c["train"]["rollout_backend"] == "sglang" and c["backend"] == "trl" for c in grpo)
+
+
+def test_mask_report_accepts_only_a_masked_prompt_prefix():
+    from gst_recon.train.__main__ import mask_report
+
+    assert mask_report([-100, -100, 7, 8]) == "MASK row0: 2 prompt tokens labelled -100, 2 reply tokens trained (4 total)"
+    for bad in ([7, 8, 9], [-100, -100], [-100, 7, -100, 8]):
+        with pytest.raises(SystemExit):
+            mask_report(bad)
