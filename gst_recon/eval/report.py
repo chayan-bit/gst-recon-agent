@@ -122,7 +122,8 @@ def report_md(runs: list[dict], baselines: dict[str, dict[str, dict]] | None = N
     parts = ["# gst-recon evaluation results", "",
              "Component metrics are primary; composite is the weighted reward. Cells are percentages unless stated; "
              "[lo, hi] is a bootstrap 95% CI over cases. Trivial baselines are handed the true extraction and links "
-             "(they isolate the decisions), so field F1 and match accuracy are not comparable for them.", "",
+             "(they isolate the decisions): their field F1 and match accuracy are oracle values and their composite already "
+             "includes full credit for extraction, schema and arithmetic, so compare them on ITC invoice exact, context accuracy and ITC error only.", "",
              "## Overall", "", _table(head, [[r["label"], str(r["n_cases"])] + _metric_cells(r["overall"], True) for r in runs]),
              "", "## Throughput and cost per 1,000 cases", "",
              _table(["run", *PERF_HEAD], [[r["label"], *_perf_cells(r)] for r in runs]),
@@ -132,7 +133,8 @@ def report_md(runs: list[dict], baselines: dict[str, dict[str, dict]] | None = N
     for split in splits:
         rows = [[r["label"], str(r["breakdowns"]["split"][split]["n"])] + _metric_cells(r["breakdowns"]["split"][split], False)
                 for r in runs if split in r["breakdowns"]["split"]]
-        rows += [[f"baseline: {name}", "-"] + _baseline_cells(row) for name, row in baselines.get(split, {}).items()]
+        rows += [[f"baseline: {name}", "-"] + _baseline_cells(row) for name, row in baselines.get(split, {}).items()
+                 if any(row.get(k) is not None for k, _, _ in COLS)]
         parts += [f"## {split}", "", _table(head, rows), ""]
     for dim, title in (("difficulty", "By difficulty"), ("ocr_bucket", "By OCR recall (full vs partial)")):
         rows = [[r["label"], g, str(s["n"])] + _metric_cells(s, False) for r in runs for g, s in r["breakdowns"][dim].items()]
@@ -177,16 +179,23 @@ def chart(runs: list[dict], baselines: dict[str, dict[str, dict]], out_png: Path
         w = 0.8 / len(CHART_METRICS)
         for j, (key, name) in enumerate(CHART_METRICS):
             vals = [e[1].get(key) for e in entries]
-            ax.bar([i + j * w for i in range(len(entries))], [v if v is not None else 0 for v in vals], w, label=name, color=colors[j])
+            bars = ax.bar([i + j * w for i in range(len(entries))], [v if v is not None else 0 for v in vals], w, label=name, color=colors[j])
+            for bar, (label, _) in zip(bars, entries):
+                if label.endswith("(baseline)"):
+                    bar.set_hatch("//")
+                    bar.set_alpha(0.55)
         ax.set_xticks([i + 0.4 - w / 2 for i in range(len(entries))])
         ax.set_xticklabels([e[0] for e in entries], rotation=35, ha="right", fontsize=8)
         ax.set_title(split)
-        ax.set_ylim(0, 1)
+        ax.set_ylim(0, 1.05)
         ax.spines[["top", "right"]].set_visible(False)
         ax.grid(axis="y", alpha=0.25)
     axes[0][0].set_ylabel("score (0-1)")
-    axes[0][-1].legend(fontsize=8, frameon=False, loc="upper right")
-    fig.tight_layout()
+    handles, labels = axes[0][0].get_legend_handles_labels()
+    fig.legend(handles, labels, fontsize=8, frameon=False, loc="upper center", ncol=len(labels))
+    fig.text(0.5, 0.005, "hatched = trivial baseline given the true extraction and links (oracle field F1 and match accuracy)",
+             ha="center", fontsize=7, color="#555555")
+    fig.tight_layout(rect=(0, 0.02, 1, 0.94))
     out_png.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out_png, dpi=150)
     plt.close(fig)
