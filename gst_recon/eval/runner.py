@@ -54,6 +54,7 @@ def generate_all(cases: list[EvalCase], gen: Generate, out: Path, *, concurrency
     """Call `gen` for each case not already cached; write cases/<id>.json. Returns fresh-request stats."""
     (out / "cases").mkdir(parents=True, exist_ok=True)
     todo = [c for c in cases if not (resume and _usable(_case_path(out, c.case_id)))]
+    todo.sort(key=lambda c: -(c.meta.get("prompt_tokens", 0) + c.meta.get("target_tokens", 0)))  # longest first: no serial tail
     stats = {"n_requests": 0, "prompt_tokens": 0, "completion_tokens": 0, "wall_s": 0.0}
 
     def work(c: EvalCase) -> tuple[EvalCase, dict]:

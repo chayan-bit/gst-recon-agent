@@ -48,17 +48,34 @@ def _load_truth(truth_dir: Path | None, case_id: str) -> Case | None:
     return Case.model_validate_json(found[0].read_text()) if found else None
 
 
+def _sample(d: Path, ids: list[str], n: int, seed: int, stratify: bool) -> list[str]:
+    rng = random.Random(f"{seed}:{d}")
+    if not stratify:
+        return sorted(rng.sample(ids, n))
+    by: dict[str, list[str]] = {}
+    for i in ids:
+        by.setdefault(str(json.loads((d / i / "meta.json").read_text()).get("difficulty")), []).append(i)
+    for v in by.values():
+        rng.shuffle(v)
+    picked: list[str] = []
+    while len(picked) < n:  # round-robin over difficulties, so the sample is as balanced as the data allows
+        for v in by.values():
+            if v and len(picked) < n:
+                picked.append(v.pop())
+    return sorted(picked)
+
+
 def load_cases(dirs: list[Path], *, truth_dir: Path | None = None, n_per_dir: int | None = None,
-               seed: int = 0) -> list[EvalCase]:
+               seed: int = 0, stratify: bool = False) -> list[EvalCase]:
     """All cases under each dir (a dir of case dirs). `n_per_dir` takes a seeded random sample of
-    that size from each, so a sample mixes difficulties; the result is sorted by case_id per dir."""
+    that size from each (`stratify`: balanced across difficulties); the result is sorted by case_id per dir."""
     out: list[EvalCase] = []
     for d in dirs:
         ids = sorted(p.parent.name for p in Path(d).glob("*/meta.json"))
         if not ids:
             raise FileNotFoundError(f"no <case_id>/meta.json under {d}")
         if n_per_dir is not None and n_per_dir < len(ids):
-            ids = sorted(random.Random(f"{seed}:{d}").sample(ids, n_per_dir))
+            ids = _sample(Path(d), ids, n_per_dir, seed, stratify)
         for cid in ids:
             c = Path(d) / cid
             out.append(EvalCase(cid, (c / "prompt.txt").read_text(), json.loads((c / "target.json").read_text()),

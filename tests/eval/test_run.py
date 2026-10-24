@@ -127,3 +127,18 @@ def test_max_tokens_factor_caps_per_case_budget(world):
     assert {r["max_tokens"] for r in world["stub"].requests} == {2500}
     _run(world, "perfect", "f2", "--max-tokens-factor", "1.5", "--max-tokens", "2000", "--no-resume")
     assert {r["max_tokens"] for r in world["stub"].requests[-6:]} == {2000}
+
+
+def test_stratified_sample_balances_difficulties_and_longest_runs_first(world):
+    _, _, agg = _run(world, "perfect", "strat", "--n-per-dir", "3", "--stratify")
+    assert agg["n_cases"] == 6
+    assert {k: v["n"] for k, v in agg["breakdowns"]["difficulty"].items()} == {"easy": 2, "medium": 2, "hard": 2}
+    assert agg["config"]["stratify"] is True
+
+
+def test_longest_cases_are_dispatched_first(world):
+    _run(world, "perfect", "order", "--concurrency", "1")
+    ids = [r["messages"][-1]["content"].split("\n", 1)[0].removeprefix("CASE_ID: ") for r in world["stub"].requests]
+    tokens = {c.case_id: c.meta["prompt_tokens"] for c in load_cases(list(world["dirs"].values()), truth_dir=world["truth"])}
+    sent = [tokens[i] for i in ids]
+    assert sent == sorted(sent, reverse=True)

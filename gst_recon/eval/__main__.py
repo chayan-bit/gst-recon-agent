@@ -20,7 +20,7 @@ def _price(a: argparse.Namespace) -> dict:
 
 def cmd_run(a: argparse.Namespace) -> int:
     truth = a.truth_dir if a.truth_dir and a.truth_dir.exists() else None
-    cases = load_cases(a.cases, truth_dir=truth, n_per_dir=a.n_per_dir, seed=a.seed)
+    cases = load_cases(a.cases, truth_dir=truth, n_per_dir=a.n_per_dir, seed=a.seed, stratify=a.stratify)
     fmt = json_schema_format() if a.constrained else None
     extra = json.loads(a.extra_body) if a.extra_body else {}
     if a.no_thinking:
@@ -40,7 +40,7 @@ def cmd_run(a: argparse.Namespace) -> int:
 
     config = {"label": a.label or a.out.name, "model": a.model, "endpoint": a.endpoint, "constrained": a.constrained,
               "schema_in_prompt": (not a.constrained) and a.schema_in_prompt, "max_tokens": a.max_tokens, "max_tokens_factor": a.max_tokens_factor,
-              "temperature": a.temperature, "extra_body": extra, "cases": [str(p) for p in a.cases], "n_per_dir": a.n_per_dir,
+              "temperature": a.temperature, "extra_body": extra, "cases": [str(p) for p in a.cases], "n_per_dir": a.n_per_dir, "stratify": a.stratify,
               "truth_dir": str(truth) if truth else None, "prices": _price(a)}
     agg = run_eval(cases, gen, a.out, config, concurrency=a.concurrency, resume=not a.no_resume,
                    progress=lambda d, n: print(f"\r{d}/{n}", end="", file=sys.stderr, flush=True))
@@ -90,6 +90,7 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument("--extra-body", help="JSON object merged into the request body")
     r.add_argument("--api-key", help="bearer token (SGLang ignores it unless started with --api-key)")
     r.add_argument("--n-per-dir", type=int, help="seeded random sample of this many cases per --cases dir")
+    r.add_argument("--stratify", action="store_true", help="with --n-per-dir: balance the sample across difficulties")
     r.add_argument("--seed", type=int, default=0)
     r.add_argument("--truth-dir", type=Path, default=Path("data/truth"),
                    help="truth Case JSONs, for context-dependent document detection (default data/truth if present)")
