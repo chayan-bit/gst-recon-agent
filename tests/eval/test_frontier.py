@@ -60,7 +60,7 @@ def test_frontier_refuses_other_output_dirs_and_high_concurrency(world):
     with pytest.raises(SystemExit):
         mod.main([*base, "--out", str(world["tmp"] / "elsewhere")])
     with pytest.raises(SystemExit):
-        mod.main([*base, "--out", str(world["tmp"] / "runs" / "eval" / "frontier"), "--concurrency", "5"])
+        mod.main([*base, "--out", str(world["tmp"] / "runs" / "eval" / "frontier"), "--concurrency", "7"])
 
 
 def test_frontier_label_and_sibling_out_dir_keep_the_sonnet_outputs_separate(world, monkeypatch):

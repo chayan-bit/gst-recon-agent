@@ -122,7 +122,7 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--cases", type=Path, nargs="+", required=True)
     ap.add_argument("--n-per-dir", type=int, default=50, help="seeded sample per test split dir (default 50)")
-    ap.add_argument("--concurrency", type=int, default=2, help="capped at 4: this runs on the Mac")
+    ap.add_argument("--concurrency", type=int, default=2, help="capped at 6: this runs on the Mac")
     ap.add_argument("--model", default="sonnet")
     ap.add_argument("--out", type=Path, default=OUT, help="runs/eval/frontier or a sibling runs/eval/frontier-<name>")
     ap.add_argument("--label", default=LABEL, help="report row label (default: the Sonnet baseline's)")
@@ -150,8 +150,8 @@ def main(argv: list[str] | None = None) -> int:
                  "frontier outputs must never leave runs/eval/")
     if a.backend == "codex" and a.mode != "hybrid":
         ap.error("--backend codex needs --mode hybrid")
-    if a.concurrency > (6 if a.backend == "codex" else 4):
-        ap.error(f"concurrency is capped at {6 if a.backend == 'codex' else 4} on the Mac")
+    if a.concurrency > 6:
+        ap.error("concurrency is capped at 6 on the Mac")
     if a.claude_effort:
         CMD.extend(["--effort", a.claude_effort])
     work = a.out.resolve() / "cwd"  # neutral cwd: no project files or CLAUDE.md picked up
