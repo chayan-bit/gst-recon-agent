@@ -102,6 +102,7 @@ def render_case(case: Case, out_root: Path, *, split: str | None = None, keep_im
     meta = {
         "case_id": cid, "seed": case.seed, "difficulty": case.difficulty, "split": split, "render_version": VERSION,
         "ocr_engine": ocrmod.tesseract_version() if ocr else "none",
+        "ocr_build": ocrmod.ocr_build() if ocr else None,
         "documents": [{k: d[k] for k in ("doc_id", "layout", "supplier_layout", "delivery", "date_fmt", "num_fmt", "pages", "degrade") if k in d}
                       for d in docs],
         "register": reg_meta, "bank": bank_meta,

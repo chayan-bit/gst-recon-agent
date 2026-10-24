@@ -8,8 +8,11 @@ from __future__ import annotations
 
 import io
 import os
+import platform
 import re
 import subprocess
+import sys
+from functools import lru_cache
 
 from PIL import Image
 
@@ -20,6 +23,22 @@ def tesseract_version() -> str:
     cmd = os.environ.get("GST_TESSERACT", "tesseract")
     out = subprocess.run([cmd, "--version"], capture_output=True, text=True, check=True)
     return (out.stdout or out.stderr).splitlines()[0].strip()
+
+
+@lru_cache(maxsize=1)
+def ocr_build() -> dict:
+    """Exact OCR build, recorded in meta.json so corpora can be sliced by it (hosts differ in OCR noise)."""
+    cmd = os.environ.get("GST_TESSERACT", "tesseract")
+    out = subprocess.run([cmd, "--version"], capture_output=True, text=True, check=True)
+    text = (out.stdout or "") + (out.stderr or "")
+    lept = re.search(r"leptonica-([\w.]+)", text)
+    return {
+        "engine": text.splitlines()[0].strip(),
+        "leptonica": lept.group(1) if lept else "unknown",
+        "simd": sorted(re.findall(r"Found (\w+)", text)),
+        "dotproduct": "auto",  # no -c dotproduct override is passed to tesseract
+        "platform": f"{sys.platform}-{platform.machine().lower()}",
+    }
 
 
 SCALE = float(os.environ.get("GST_OCR_SCALE", "1.5"))  # 200 dpi pages: x1.0 vs x1.5 vs x2.0 gave medium recall .87/.90/.90, easy .94/.94/.92; psm 6 beat psm 3/4/11 on noisy scans

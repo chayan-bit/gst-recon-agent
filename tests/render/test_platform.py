@@ -71,3 +71,19 @@ def test_pool_entry_points_live_in_an_importable_module():
 
     assert entry._render_one is worker._render_one and entry._init_worker is worker._init_worker
     assert worker._render_one.__module__ == "gst_recon.render.worker"
+
+
+def test_ocr_build_parses_version_leptonica_and_simd(monkeypatch):
+    import subprocess
+
+    from gst_recon.render import ocr
+
+    banner = "tesseract 5.5.0\n leptonica-1.83.1 (Mar 2025) [MSC]\n Found AVX512F\n Found AVX2\n Found libarchive 3.7.7\n"
+    monkeypatch.setattr(subprocess, "run", lambda *a, **k: subprocess.CompletedProcess(a, 0, "", banner))
+    ocr.ocr_build.cache_clear()
+    try:
+        b = ocr.ocr_build()
+    finally:
+        ocr.ocr_build.cache_clear()
+    assert b["engine"] == "tesseract 5.5.0" and b["leptonica"] == "1.83.1"
+    assert b["simd"] == ["AVX2", "AVX512F", "libarchive"] and b["dotproduct"] == "auto"

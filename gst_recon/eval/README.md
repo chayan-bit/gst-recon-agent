@@ -131,6 +131,8 @@ The data lives outside git under `data/eval/` and is pinned by `gst_recon/eval/e
 
 Seeds 9001 and 9002 are disjoint from every training seed.
 Both splits were rendered once, on kratos, with one OCR engine: Tesseract 5.5.0 (`GST_TESSERACT=$HOME/gst-tess/tesseract`).
+Both sets predate commit 73cd471, which disables OpenCV CPU dispatch (`cv2.setUseOptimized(False)`) so degraded pixels are identical across hosts; they are not re-rendered and stay kratos-only.
+Training corpora may also be rendered on rs-lab (conda win-64 Tesseract 5.5.0, leptonica 1.83.1), whose OCR text differs slightly from kratos for the same input; `meta.json` `ocr_build` records engine, leptonica, SIMD flags, dotproduct and platform.
 The manifest records the engine, the render version, per-case hashes and the per-split difficulty and length-bucket counts.
 
 Command per split (kratos, `~/gst-recon-eval/render_split.sh <split> <seed>`, run under tmux, one worker per split):
