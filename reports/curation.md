@@ -13,7 +13,6 @@ The teacher (Qwen3-30B-A3B) paraphrases the text-delivered documents; a paraphra
 | 1,242 | 1,242 | 651 (52.4%) | 471 | 120 |
 
 The percentage is 651 divided by 1,242.
-An earlier first paraphrase build kept 55% (121 failed the fact check, 28 the hallucination gate); it is superseded by the build above.
 
 ## Later stages of the same build
 
