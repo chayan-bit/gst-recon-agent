@@ -1,0 +1,44 @@
+# 20-step SFT smoke test (rs-epyc H100 next to the teacher: ~33 GB GPU, ~3-6 GB host RAM, ~14 GB disk).
+# Data: data/smoke/sft/train.jsonl = ~200 SFT rows of at most 12k tokens (see the train report).
+algo: sft
+backend: unsloth
+
+model:
+  name_or_path: Qwen/Qwen3-4B-Instruct-2507
+  precision: bf16
+  max_seq_length: 12288
+  gradient_checkpointing: true
+  use_peft: true
+  lora_r: 32
+  lora_alpha: 64
+  lora_dropout: 0.0
+  lora_target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+
+datasets:
+  - name: data/smoke/sft
+    split: train
+    task_type: supervised_fine_tuning
+
+train:
+  max_steps: 20
+  epochs: 1
+  per_device_batch_size: 1
+  gradient_accumulation_steps: 4
+  learning_rate: 2.0e-4
+  warmup_steps: 2
+  weight_decay: 0.0
+  optimizer: adamw_8bit
+  lr_scheduler: cosine
+  packing: false
+  dataloader_num_workers: 0
+  logging_steps: 1
+  save_steps: 1000  # no mid-run checkpoint (it would add optimizer state); the final save writes the adapter only
+  save_total_limit: 1
+  seed: 42
+
+logging:
+  output_dir: runs/sft-smoke
+  run_name: gst-recon-sft-smoke
+  loggers: []
+
+chat_template: auto

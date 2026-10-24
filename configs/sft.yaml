@@ -1,0 +1,47 @@
+# SFT: Qwen3-4B-Instruct-2507 + LoRA on the curated SFT pool (AlignTune 0.1.28, unsloth backend).
+# Run from the repo root:  python -m gst_recon.train run configs/sft.yaml
+# Raw-vs-curated ablation: copy this file and point datasets[0].name at data/train/raw/sft.
+# Known limit (0.1.28): the unsloth SFT backend flattens `messages` into one text column, so the
+# loss also covers the prompt (rendered documents). Response-only loss needs the trl backend with
+# train.assistant_only_loss: true and a chat template carrying generation markers; check before switching.
+algo: sft
+backend: unsloth
+
+model:
+  name_or_path: Qwen/Qwen3-4B-Instruct-2507
+  precision: bf16
+  max_seq_length: 12288  # training budget: prompt + target <= 12k (build drops longer cases)
+  gradient_checkpointing: true
+  use_peft: true
+  lora_r: 32
+  lora_alpha: 64
+  lora_dropout: 0.0
+  lora_target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+
+datasets:
+  - name: data/train/curated/sft  # directory with train.jsonl (column: messages)
+    split: train
+    task_type: supervised_fine_tuning
+
+train:
+  epochs: 2
+  per_device_batch_size: 1
+  gradient_accumulation_steps: 16
+  learning_rate: 1.0e-4
+  warmup_ratio: 0.03
+  weight_decay: 0.0
+  max_grad_norm: 1.0
+  optimizer: adamw_8bit
+  lr_scheduler: cosine
+  packing: false
+  logging_steps: 5
+  save_steps: 200
+  save_total_limit: 1  # rs-epyc disk is tight
+  seed: 42
+
+logging:
+  output_dir: runs/sft-curated
+  run_name: gst-recon-sft-curated
+  loggers: [tensorboard]
+
+chat_template: auto
