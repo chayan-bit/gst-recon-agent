@@ -16,6 +16,7 @@ render = [
   "numpy>=1.26",
   "tokenizers>=0.20",
 ]
+eval = ["numpy>=1.26", "matplotlib>=3.8"]
 
 [dependency-groups]
 dev = ["pytest>=8"]
