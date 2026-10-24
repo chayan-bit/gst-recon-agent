@@ -19,6 +19,7 @@ MODEL = os.environ.get("GST_SFT_TOKENIZER", "Qwen/Qwen3-4B-Instruct-2507")
 
 
 def test_prompt_is_masked_and_reply_is_trained():
+    pytest.importorskip("unsloth")  # unsloth_zoo refuses to import before unsloth (the runner orders it the same way)
     dataset_utils = pytest.importorskip("unsloth_zoo.dataset_utils")
     transformers = pytest.importorskip("transformers")
     if not ROWS.exists():
