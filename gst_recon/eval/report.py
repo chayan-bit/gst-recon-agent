@@ -161,6 +161,13 @@ def report_md(runs: list[dict], baselines: dict[str, dict[str, dict]] | None = N
         if not rows:
             continue
         parts += [f"## {title}", "", _table(["run", "group", "n", *[c[1] for c in COLS]], rows), ""]
+    ls_rows = [[r["label"], b, str(v["n"]), str(v["context_overflow"]), str(v["truncated"])]
+               for r in runs for b, v in r.get("length_status", {}).items() if v["context_overflow"] or v["truncated"]]
+    if ls_rows:
+        parts += ["## Context overflow and truncation by prompt length", "",
+                  _table(["run", "length bucket", "cases", "context overflow", "cut at the token cap"], ls_rows), "",
+                  "Context overflow = the prompt alone does not fit the server context, so the case scores 0 (what a real deployment at that "
+                  "context would do). Cut at the cap = the reply was truncated and is scored as it stands. Only buckets with at least one are listed.", ""]
     if ref:
         refs = [r for r in runs if ref in (r["label"], Path(r["dir"]).name)]
         if refs:

@@ -19,7 +19,7 @@ from gst_recon.eval.cost import cost_per_1000
 from gst_recon.eval.guard import mark_eval_dir
 from gst_recon.eval.metrics import case_metrics
 from gst_recon.eval.prompts import SYSTEM_PROMPT
-from gst_recon.eval.stats import EXTERNAL_SPLITS, breakdowns, external, summarize
+from gst_recon.eval.stats import EXTERNAL_SPLITS, LENGTH_ORDER, breakdowns, external, summarize
 from gst_recon.rewards import parse_output
 from gst_recon.schema import output_json_schema
 
@@ -108,6 +108,19 @@ def score_all(cases: list[EvalCase], out: Path) -> list[dict]:
     return records
 
 
+def length_status(records: list[dict]) -> dict[str, dict[str, int]]:
+    """Per prompt-length bucket: cases, context overflows (prompt alone exceeds the server context) and completions cut at the cap."""
+    out: dict[str, dict[str, int]] = {}
+    for r in records:
+        if r["split"] in EXTERNAL_SPLITS:
+            continue
+        b = out.setdefault(r["length_bucket"], {"n": 0, "context_overflow": 0, "truncated": 0})
+        b["n"] += 1
+        b["context_overflow"] += "context length" in (r.get("error") or "")
+        b["truncated"] += r.get("finish_reason") == "length"
+    return dict(sorted(out.items(), key=lambda kv: LENGTH_ORDER.index(kv[0]) if kv[0] in LENGTH_ORDER else 9))
+
+
 def aggregate(records: list[dict], config: dict, run_stats: dict, ctx_sources: set[str]) -> dict[str, Any]:
     lat = [r["latency_s"] for r in records if r.get("latency_s") is not None]
     n_req, wall = run_stats["n_requests"], run_stats["wall_s"]
@@ -118,7 +131,7 @@ def aggregate(records: list[dict], config: dict, run_stats: dict, ctx_sources: s
         "n_truncated": sum(1 for r in records if r.get("finish_reason") == "length"),
         "context_source": "truth" if ctx_sources == {"truth"} else "proxy (no truth Case JSON; BLOCKED-reason docs)",
         "overall": summarize([r for r in records if r["split"] not in EXTERNAL_SPLITS]), "breakdowns": breakdowns(records),
-        "external": external(records),
+        "external": external(records), "length_status": length_status(records),
         "throughput": {
             "n_requests": n_req, "wall_s": wall,
             "req_per_s": n_req / wall if wall > 0 else None,
