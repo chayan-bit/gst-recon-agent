@@ -214,3 +214,9 @@ Paired by case_id; p-value from a centred paired bootstrap (null: zero mean diff
 - Forced to emit slots it never saw in training, the model fills blocked and deferred with junk: predicted blocked is nonzero in 78.5% of 2,246 ITC records (truth 21.9%) and deferred in 71.4% (truth 12.2%).
 - Per ITC record, the eligible bucket is exactly right in 59.0% of records, but all three buckets are right in only 12.3%, which matches the headline 10.9% ITC invoice exact.
 - Rows labelled "compact grammar" use `--compact-schema`, which makes the zero-droppable inner fields optional while keeping top-level keys, types and reason enums.
+- Per-record ITC comparison on the 120 simulator cases (2,252 truth records; a record is correct when all four heads are within Rs 0.02, records aligned by doc_id), eligible bucket exactly right / all three buckets right, as a share of aligned records (share of all truth records in brackets):
+- SFT full grammar: 59.0% (57.9%) / 12.1% (11.9%); teacher-30B constrained: 61.6% (53.1%) / 61.0% (52.5%); Sonnet: 96.9% (96.4%) / 96.5% (96.0%).
+- The teacher aligns only 1,939 of 2,252 records because some of its replies are invalid or cut, which is why its share of truth records is lower than its share of aligned records.
+- Predicted blocked is nonzero in 79.0% of SFT records, 2.9% of teacher records and 19.8% of Sonnet records (deferred 72.2%, 1.7%, 12.8%); the truth rates are 21.9% and 12.2%.
+- So on the eligible bucket the SFT model matches the teacher, and the whole gap to the teacher on ITC invoice exact comes from blocked and deferred under the full grammar.
+- The earlier SFT figures 59.0% and 12.3% above include realworld (2,246 aligned records); the simulator-only figures are in this note.
