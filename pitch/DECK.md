@@ -70,6 +70,7 @@ Visual: a split bar showing train / test_iid / test_ood, with the held-out items
 <!-- Slide 6 SFT figures: reports/results.md, "SFT constrained (full grammar)" rows, test_iid 8.1, test_ood 13.7, context accuracy test_ood 33.2, composite test_ood 58.9. -->
 - Hybrid mode, the best measured student so far: the model reads one document at a time and deterministic code does the matching, rupee arithmetic and ITC rules.
   With the per-document LoRA on the 120 simulator cases the 4B student reaches ITC-exact 62.9% [60.2, 65.3] (in-distribution 67.0, out-of-distribution 58.7), context accuracy 82.7% and composite 73.2, against 44.3% / 67.6% / 65.1 for the same model without the adapter (paired gain +20.3 ITC-exact points, p = 0.0005, n = 132).
+  Against the 30B model run end to end (paired by case on the 120 simulator cases), the 4B per-document hybrid system is level on ITC-exact (+3.1 points [-1.6, +7.5], p = 0.175, not significant) and ahead on context accuracy (+47.2 [+41.1, +53.7], p = 0.0005) and on the composite (+4.2 [+0.8, +8.1], p = 0.026).
   ITC overclaim is Rs 19,053 for the adapter against Rs 72,728 for the base student in the same mode.
   On the real-world sanity cases (12 cases) it scores ITC-exact 76.4% with context accuracy 100%; Claude Sonnet in the same mode scores 97.2%, so the gap to the frontier remains.
   <!-- Hybrid figures: reports/hybrid.md (commit daf6aae), "student-perdoc-sft hybrid" and "student-base hybrid" rows, reconciler v1; a v2 with code fixes is pending. -->
