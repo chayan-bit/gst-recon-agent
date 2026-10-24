@@ -97,10 +97,13 @@ Because of a mismatch between the grammar we decoded with and the format we trai
 The SFT targets use a compact form that drops fields that are zero, empty or false.
 The constrained-decoding grammar we first served it with was the full one, which requires the blocked and deferred buckets and all four tax heads in every ITC record.
 Those are slots the student never saw filled in training, and the grammar leaves it no way to omit them, so it filled them with junk.
-In the report, predicted blocked is nonzero in 78.5% of 2,246 ITC records where the truth is 21.9%, and predicted deferred is nonzero in 71.4% where the truth is 12.2%.
-The eligible bucket, the part the model did learn, is exactly right in 59.0% of ITC records.
-All three buckets are right together in only 12.3% of records, and that is what the headline 10.9% ITC-exact measures.
+On the 120 simulator cases (2,252 truth ITC records), the SFT model predicts blocked as nonzero in 79.0% of records where the truth is 21.9%, and deferred as nonzero in 72.2% where the truth is 12.2%.
+The eligible bucket, the part the model did learn, is exactly right in 59.0% of aligned records (57.9% of all truth records).
+For comparison, the 30B teacher gets 61.6% (53.1% of all truth records) and Claude Sonnet 96.9% (96.4%), so on the eligible bucket alone the student is within about 3 points of the teacher on aligned records.
+The teacher aligns only 1,939 of the 2,252 records because some of its replies are invalid or cut, which is why the share of all truth records is the fairer comparison.
+All three buckets are right together in only 12.1% of SFT records, against 61.0% for the teacher and 96.5% for Sonnet, and that gap is what drags the headline 10.9% ITC-exact down.
+A record counts as right when all four tax heads are within Rs 0.02 of the truth.
 The fix is a compact grammar that matches the training format: it makes the zero-droppable inner fields optional and keeps the top-level keys, types and reason enums.
 We label that row "compact grammar" in the report, and the full-grammar row stays in as evidence of the failure.
 The lesson is about structured output with small models: constrained decoding is only as good as the agreement between the grammar and what the model was trained to emit, and a grammar stricter than the training format does not catch errors, it manufactures them.
-What we do not claim: the compact-grammar numbers are not in the report yet, so we say "not measured yet" for them and do not quote the first row as the SFT model's capability.
+What we do not claim: the compact-grammar rerun is pending, so we say "not measured yet" for it and do not quote the full-grammar row as the SFT model's capability; and the student is far behind Sonnet, which is why the eligible-bucket parity with the teacher is not the headline.
