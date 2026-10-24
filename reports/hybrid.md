@@ -211,7 +211,7 @@ That tension is the main open finding for the next round: the simulated dev sets
 pd3a's abstentions cost ITC on real documents (underclaim Rs 19k to 26k per level against v1's Rs 6k to 10k), because an empty identity is recovered only when exactly one book entry matches.
 The semireal books follow the simulator's distributions and the labels were drafted by Claude, so these are real-document reading results, not a real-world book result.
 
-### Decision update (user override, committed 2026-10-25 03:31 IST, before any test-set number for it)
+### Decision update (user override, committed 2026-10-25 03:27 IST in a50f90b, before any test-set number for it)
 
 pd3g287 (GRPO from pd3, 287 steps; adapter `adapter_model.safetensors` sha256 8941cff5...3655) ships instead of student-perdoc-sft v1, by the user's decision.
 This overrides pre-registered rule (a): pd3g287's paired ITC delta on the small simulated dev set has a 95% CI lower bound of -4.5, below the -3.0 limit.
