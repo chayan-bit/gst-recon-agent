@@ -85,11 +85,11 @@ Narration:
 "We do not claim to beat frontier models.
 We measured the climb.
 On unseen items and layouts, invoices exactly right go from 53.1 percent for the base model to 78.9 with SFT, on a sample of fifteen cases.
-We also tried GRPO on a rule-checked reward, twice, and neither run cleared our bar, so we did not ship it.
-On the 120 test cases Claude Sonnet gets 96.3 and our hybrid system gets 79.9, which is 83.0 percent of that, and nothing leaves the machine.
+We also trained with GRPO on a rule-checked reward, twice; the first run did not help and we dropped it, and the second ships, by an override of our own dev rule that we explain in the repository.
+On the 120 test cases Claude Sonnet gets 96.3 and our hybrid system gets {{SHIP_ITC_PT}}, which is {{SHIP_PCT_SONNET}} percent of that, and nothing leaves the machine.
 Constrained decoding lifts valid output from 70 to 100 percent."
 
-<!-- Sources: 96.3 (Sonnet, n = 120) and 79.9 (student-perdoc-sft hybrid, reconciler v3, n = 120) are reports/results.md overall rows, 79.9 / 96.3 = 83.0 percent; recompute from the shipped system's test row if the shipped system changes. Base 53.1 is the "student-base constrained" test_ood row and SFT 78.9 is the "SFT constrained (compact grammar)" test_ood row, both n = 15; 70 to 100 is the SFT unconstrained versus compact-grammar schema-valid share on 30 simulator cases (commit da4120a, 42-case stratified sample); say that it is a small sample. -->
+<!-- Sources: 96.3 (Sonnet, n = 120) and the shipped pd3g287 hybrid test ITC-exact (reconciler v3, doc schema v2, n = 120, pending) are reports/results.md and reports/hybrid.md rows; percent = pd3g287 / 96.3; the previous adapter was 79.9 / 96.3 = 83.0 percent. Base 53.1 is the "student-base constrained" test_ood row and SFT 78.9 is the "SFT constrained (compact grammar)" test_ood row, both n = 15; 70 to 100 is the SFT unconstrained versus compact-grammar schema-valid share on 30 simulator cases (commit da4120a, 42-case stratified sample); say that it is a small sample. -->
 
 ### Shot 6 - What we built for the sponsor stack (2:03 to 2:33)
 
@@ -124,7 +124,7 @@ Do not remove shot 5's constrained-versus-unconstrained pair or shot 7's limitat
 
 ## Fallbacks if something is not ready by the deadline
 
-- GRPO: shot 5 shows base and SFT only, and the narration says GRPO was tried twice and not shipped; do not show a GRPO bar.
+- GRPO: shot 5 shows base and SFT only, and the narration says GRPO was trained twice and the second run ships by an override; do not show a GRPO bar.
 - Real documents: a 42-document eval-only set exists, so shot 7 may say the check was done and the result is a failure analysis; do not quote a real-world accuracy figure.
 - Rollout speedup not measured: shot 6 card 1 shows only the measured cache-sharing line, not a speedup.
 - Student cannot stream a full case in time: show the first 20 seconds of the stream and the final table, with the "cut" label.
