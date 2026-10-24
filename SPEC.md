@@ -30,5 +30,5 @@ Outputs per case (strict JSON, enforced by SGLang grammar-constrained decoding):
 - `gst_recon/sim/` - world simulator and GST rules engine (ground truth).
 - `gst_recon/render/` - document rendering, degradation, OCR.
 - `gst_recon/rewards/` - verifiable reward functions (shared by GRPO and evals).
-- `infra/` - host setup, SGLang launch scripts, `infra/launch_teacher.sh`.
+- `infra/` - host setup and SGLang launch scripts; serving measurements are in `reports/serving.md`.
 - `data/`, `runs/` - gitignored.

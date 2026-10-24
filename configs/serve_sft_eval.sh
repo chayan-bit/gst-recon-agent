@@ -11,7 +11,7 @@ set -euo pipefail
 ROOT=$HOME/gst-recon
 BASE=${BASE:-$ROOT/hf/hub/models--Qwen--Qwen3-4B-Instruct-2507/snapshots/cdbee75f17c01a7cc42f958dc650907174af0554}
 ADAPTER=${ADAPTER:-$ROOT/runs/sft-curated}
-PORT=${PORT:-30000}        # the teacher's port, so the existing ssh tunnels (infra/launch_teacher.sh) work unchanged
+PORT=${PORT:-30000}        # the teacher's port, so existing client configuration works unchanged
 MEMFRAC=${MEMFRAC:-0.80}
 CONTEXT=${CONTEXT:-32768}  # longest built SFT row is ~18k tokens; eval cases come from the same renderer
 

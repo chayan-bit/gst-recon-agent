@@ -1,7 +1,7 @@
 # Deck outline: gst-recon (Syntax Error 2026, Local LLM track)
 
 Ten slides, about 4 minutes if presented live, and each slide also reads on its own as a static PDF.
-Every number is copied from a public report: `reports/results.md`, `reports/hybrid.md`, `reports/pipeline.md` or `reports/curation.md`.
+Every number is copied from a public report: `reports/results.md`, `reports/hybrid.md`, `reports/pipeline.md`, `reports/curation.md` or `reports/serving.md`.
 A token in double braces is a number that has not been measured yet; nothing else on this page is an unmeasured claim.
 Visuals marked "committed" already exist in the repo (`examples/`, `reports/smoke/`); all others have to be made.
 All invoices, GSTINs and buyers are synthetic (simulator output), and the deck says so on the slides that show them.

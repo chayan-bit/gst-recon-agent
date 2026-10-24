@@ -187,7 +187,7 @@ The Sonnet run covers it in `runs/eval/frontier` (132 cases: 120 simulator, 12 r
 
 ## SGLang tunnel
 
-See `infra/launch_teacher.sh`: `ssh -N -L 30000:127.0.0.1:30000 rs-epyc`, then `--endpoint http://localhost:30000/v1`.
+Serve the model with SGLang and pass its OpenAI-compatible URL, for example `--endpoint http://localhost:30000/v1`.
 The teacher is served with `--context-length 16384`, which is too small for most medium and hard cases (prompts of 5k to 36k tokens plus 2.5k to 18k tokens of output); the harness reports such cases as `context overflow` errors.
 
 ## Guard

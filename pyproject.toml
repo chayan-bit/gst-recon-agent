@@ -17,7 +17,7 @@ render = [
   "tokenizers>=0.20",
 ]
 eval = ["numpy>=1.26", "matplotlib>=3.8"]
-# Runner + reward plugin. AlignTune 0.1.28 itself is installed --no-deps per infra/align-reqs.txt
+# Runner + reward plugin. AlignTune 0.1.28 itself is installed --no-deps
 # (venv-align): its declared deps pull trl[vllm] (torch 2.11 / CUDA 13, unusable on driver 550) and PyICU.
 train = ["pyyaml>=6"]
 # CuratorKIT stage of `python -m gst_recon.train build` (teacher via LiteLLM, SecretsGate)

@@ -409,7 +409,7 @@ def main(argv: list[str] | None = None) -> None:
                            help="build --rendered without teacher paraphrase (recorded in stats.json and the manifest)")
     p.add_argument("--keep-grpo", help="a previous build's curated grpo/train.jsonl: rows kept verbatim (their own "
                    "paraphrase), gated and deduplicated together with --rendered, listed first so duplicates drop the new case")
-    p.add_argument("--teacher-model", default="teacher", help="served model name (infra/launch_teacher.sh)")
+    p.add_argument("--teacher-model", default="teacher", help="served model name of the teacher server")
     p.add_argument("--judge-model", help="grounding judge (default: the teacher)")
     p.add_argument("--workers", type=int, default=32)
     p.add_argument("--grpo-max-prompt", type=int, default=b.GRPO_MAX_PROMPT)
