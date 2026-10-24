@@ -471,8 +471,9 @@ Ablation, variant B (pre-registered 2026-10-25 03:13 IST, commit 5c95f97, after 
 Rationale: pd3g287 almost never invents an identity (0% on both real sets), so a non-blank value from it is a confirmation rather than a vote.
 Variant A stays the primary ensemble whichever scores higher; there are no other variants.
 
-Amendment (user decision after the ensemble results, committed 2026-10-25 03:21 IST, before any variant B semireal number existed): the per-invoice ITC tie on realinv is structural (B takes all ITC-relevant fields from v1), so it no longer counts as a fail.
+Amendment (user decision after the ensemble results, committed 2026-10-25 03:20 IST in 8419cf6, before any variant B semireal number existed): the per-invoice ITC tie on realinv is structural (B takes all ITC-relevant fields from v1), so it no longer counts as a fail.
 Replacement criterion (b'): on semireal under schema v2, pooled over all 54 cases (clean 9 + sim-s0 9 + sim-s1to4 36), ensemble B must be at least student-perdoc-sft v1 on both ITC invoice exact and match accuracy (point estimates; paired deltas and CIs reported).
+Pooled means the mean of the per-case values over the 54 cases (the case mean the eval tables report), with a paired bootstrap of 10,000 case resamples (seed 0) for the CIs; fixed before any B semireal number.
 Variant A is not eligible (it fails rule (a)).
 If B passes (b'), the frozen test set is run once under schema v2 for v1, pd3, pd3a and pd3g287 and B is built offline from those replies (v1's second test run, the members' first, the protocol change applied to all); B then becomes the shipped configuration. If it fails, v1 ships and the test set stays untouched.
 
