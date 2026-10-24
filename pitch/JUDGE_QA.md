@@ -37,7 +37,7 @@ If the model of the law is wrong, the student faithfully learns the error, but t
 SFT teaches the model to imitate a reference answer token by token, which is how it learns the format and the common patterns.
 GRPO samples several answers to the same case and rewards the outcome we care about, which code can check exactly: schema validity, flag and reason-code sets, and exact ITC on the invoices that are not fully eligible, with a dense term so partial progress still counts.
 The hypothesis is that this helps most where imitation is weak: context-dependent blocked credits and exact amounts.
-The measured effect on ITC-exact out-of-distribution is {{GRPO_DELTA_VS_SFT_ITCEXACT_OOD}} points (95% CI {{GRPO_VS_SFT_CI}}, p = {{GRPO_VS_SFT_P}} from a paired bootstrap), and on context accuracy it is 33.2% (the full-grammar SFT run, a format mismatch) -> {{GRPO_CTX_OOD}}.
+The measured effect on ITC-exact out-of-distribution is {{GRPO_DELTA_VS_SFT_ITCEXACT_OOD}} points (95% CI {{GRPO_VS_SFT_CI}}, p = {{GRPO_VS_SFT_P}} from a paired bootstrap), and on context accuracy it is 71.4% (the compact-grammar SFT run, 15 out-of-distribution cases) -> {{GRPO_CTX_OOD}}.
 If that interval includes zero we say GRPO did not help on that metric, and we show where it did.
 One limit we know about: our GRPO cases are short (2 to 4 invoices, prompts up to 6,144 tokens).
 One thing we checked rather than assumed: both SFT runs used completion-only loss, with every prompt token labelled -100 so the model is trained on its reply only.
@@ -117,7 +117,12 @@ A record counts as right when all four tax heads are within Rs 0.02 of the truth
 The fix is a compact grammar that matches the training format: it makes the zero-droppable inner fields optional and keeps the top-level keys, types and reason enums.
 We label that row "compact grammar" in the report, and the full-grammar row stays in as evidence of the failure.
 The lesson is about structured output with small models: constrained decoding is only as good as the agreement between the grammar and what the model was trained to emit, and a grammar stricter than the training format does not catch errors, it manufactures them.
-What we do not claim: the compact-grammar rerun is pending, so we say "not measured yet" for it and do not quote the full-grammar row as the SFT model's capability; and the student is far behind Sonnet, which is why the eligible-bucket parity with the teacher is not the headline.
+We then reran the same SFT model with that grammar on a seeded stratified sample of 42 cases (15 in-distribution, 15 out-of-distribution, 12 realworld).
+On the 30 simulator cases it scores ITC-exact 75.7% [70.0, 81.5] and context accuracy 63.9% [52.5, 73.8], against 10.9% and 30.7% for the full grammar on all 120 cases; on the same 42 cases the matching grammar is 59.5 points better on ITC-exact (p = 0.0005), so the mismatch, not the model, caused the 10.9%.
+On realworld (12 cases) it scores 68.8% ITC-exact and 83.3% context accuracy.
+Paired on the same cases, the 30B teacher served end to end is 20.7 points lower on ITC-exact [-27.6, -14.2] and 38.3 lower on context accuracy, both p = 0.0005, so on this sample the 4B SFT student scores above the 30B teacher.
+Claude Sonnet is still 24.7 points ahead on ITC-exact (+28.7 on context accuracy, n = 42), and the context-blind rules engine, which is handed the true extraction and links, is 6.7 points ahead on ITC-exact, a difference that is not significant (CI -0.6 to +14.0, p = 0.07).
+What we do not claim: this is a sample of 42 and the intervals are wide, so we say "on a sample of 30 simulator cases", not "beats the teacher" in general; the teacher runs used the task prompt from before the compact-form sentence was added; the full-grammar row is format-mismatch evidence and not the SFT model's capability; and we have not computed a compact-grammar per-record bucket comparison, so the per-record numbers above are the full-grammar run.
 
 ## 12. What is hybrid mode, and what is your best number?
 
@@ -134,7 +139,7 @@ Overclaim rises across versions: documents that used to stay deferred for lack o
 Against the 30B model run end to end (paired by case on the 120 simulator cases), the 4B per-document hybrid system under reconciler v3 is ahead on ITC-exact (+20.2 points [+16.4, +24.2]), context accuracy (+47.2 [+41.1, +53.7]) and the composite (+13.6 [+10.3, +17.6]), all p = 0.0005; it was level on ITC-exact under reconciler v1 (+3.1 [-1.6, +7.5], p = 0.175) and ahead on all three under v2 (ITC-exact +13.4).
 That is a comparison of systems, not of models: the 4B system has deterministic code doing the matching and the 30B model does not.
 On the 12 real-world sanity cases it scores 81.9% under v2 and v3 (76.4% under v1) against 97.2% for Claude Sonnet in the same mode, so we are still far behind the frontier.
-What we do not claim: these hybrid rows are not like-for-like with the end-to-end rows of the 30B teacher and Sonnet, because code does part of the work; the reconciler was revised twice (v1 to v2 to v3) and all three are reported; and throughput is slightly understated because a demo recording shared the server for the first four minutes (reconciler v2 reuses the same model replies, so its throughput is the v1 figure).
+What we do not claim: that hybrid mode beats end-to-end SFT on ITC-exact, because the compact-grammar end-to-end SFT run (75.7% [70.0, 81.5] on a sample of 30 cases) and the per-document hybrid under v3 (79.9% [77.5, 82.4] on 120 cases) have overlapping intervals and we have no paired comparison on the same cases; the hybrid's clearer gain is context accuracy (82.7% against 63.9%, not paired) and that code, not the model, does the rupee arithmetic; these hybrid rows are not like-for-like with the end-to-end rows of the 30B teacher and Sonnet, because code does part of the work; the reconciler was revised twice (v1 to v2 to v3) and all three are reported; and throughput is slightly understated because a demo recording shared the server for the first four minutes (reconciler v2 reuses the same model replies, so its throughput is the v1 figure).
 
 ## 13. Isn't this mostly deterministic rules? Why not OCR plus rules?
 

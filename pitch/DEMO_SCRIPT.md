@@ -84,11 +84,11 @@ A footer on the chart reads "held-out out-of-distribution cases, n = 60".
 Narration:
 "We do not claim to beat frontier models.
 We measured the climb.
-On unseen items and layouts, invoices exactly right go from {{BASE_ITCEXACT_OOD}} percent for the base model, to 13.7 with SFT, to {{GRPO_ITCEXACT_OOD}} with GRPO on a rule-checked reward.
+On unseen items and layouts, invoices exactly right go from {{BASE_ITCEXACT_OOD}} percent for the base model, to 78.9 with SFT on a sample of fifteen cases, to {{GRPO_ITCEXACT_OOD}} with GRPO on a rule-checked reward.
 Claude Sonnet gets 97.8: the local model reaches {{Y_PCT_OF_SONNET_ACCURACY}} percent of that, at {{Z_COST_PCT}} percent of the cost.
 Constrained decoding lifts valid output from {{GRPO_SCHEMA_VALID_UNCON}} to {{GRPO_SCHEMA_VALID_CON}} percent."
 
-<!-- Sources: n = 60 and Sonnet 97.8 are reports/results.md, test_ood rows. SFT 13.7 is the "SFT constrained (full grammar)" test_ood row, a format mismatch: replace it with the compact-grammar run before recording the voice-over. -->
+<!-- Sources: n = 60 and Sonnet 97.8 are reports/results.md, test_ood rows. SFT 78.9 is the "SFT constrained (compact grammar)" test_ood row, n = 15 (commit da4120a, 42-case stratified sample); say that it is a small sample. -->
 
 ### Shot 6 - What we built for the sponsor stack (2:03 to 2:33)
 
