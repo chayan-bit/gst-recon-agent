@@ -38,7 +38,7 @@ run_lock = asyncio.Lock()  # one generation at a time: the demo must never pile 
 app = FastAPI(title="gst-recon demo")
 
 
-async def _get(url: str, timeout: float = 2.0) -> dict | list | None:
+async def _get(url: str, timeout: float = 6.0) -> dict | list | None:
     try:
         async with httpx.AsyncClient(timeout=timeout) as c:
             r = await c.get(url, headers={"Authorization": f"Bearer {API_KEY}"})
