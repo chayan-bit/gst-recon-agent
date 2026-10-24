@@ -45,6 +45,9 @@ def _job_object_cap(max_gb: float) -> str:
     k32 = ctypes.WinDLL("kernel32", use_last_error=True)
     k32.CreateJobObjectW.restype = wintypes.HANDLE
     k32.GetCurrentProcess.restype = wintypes.HANDLE
+    # without argtypes ctypes passes 64-bit handles as C int and raises OverflowError
+    k32.SetInformationJobObject.argtypes = [wintypes.HANDLE, ctypes.c_int, ctypes.c_void_p, wintypes.DWORD]
+    k32.AssignProcessToJobObject.argtypes = [wintypes.HANDLE, wintypes.HANDLE]
     job = k32.CreateJobObjectW(None, None)
     if not job:
         return "unsupported"
