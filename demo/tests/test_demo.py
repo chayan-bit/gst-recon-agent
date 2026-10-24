@@ -92,6 +92,15 @@ def test_adapter_models_get_the_compact_grammar_and_base_the_strict_one():
     assert v["validity"]["schema"] is True and v["diff"]["wrong_cells"] == 0
 
 
+def test_per_document_request_carries_the_invoice_number_cap():
+    from gst_demo.hybrid import doc_request
+    from gst_recon.hybrid.docschema import INVOICE_NO_MAX
+
+    props = doc_request("h", "b", "base:perdoc", True)["response_format"]["json_schema"]["schema"]["properties"]
+    assert INVOICE_NO_MAX == 16
+    assert props["invoice_no"]["maxLength"] == props["original_invoice_no"]["maxLength"] == INVOICE_NO_MAX
+
+
 def test_results_page_and_its_numbers_are_served():
     c = TestClient(app_mod.app)
     assert c.get("/results").status_code == 200

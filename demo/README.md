@@ -34,7 +34,7 @@ Config via environment:
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `SGLANG_BASE_URL` | `http://127.0.0.1:30000/v1` | OpenAI-compatible endpoint (use the kratos tunnel port to point at another server) |
+| `SGLANG_BASE_URL` | `http://127.0.0.1:30000/v1` | OpenAI-compatible endpoint (for the kratos server: `ssh -N -L 30400:127.0.0.1:30400 user@gpu-host`, then `SGLANG_BASE_URL=http://127.0.0.1:30400/v1`) |
 | `SGLANG_API_KEY` | `EMPTY` | bearer token |
 | `DEMO_CASE_DIRS` | `<repo>/examples` | `:`-separated case directories; the `+` button in the UI adds one at runtime |
 | `DEMO_RECORDINGS` | `demo/recordings` | where recordings are read and written |
