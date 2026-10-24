@@ -536,6 +536,15 @@ That tension is the main open finding for the next round: the simulated dev sets
 pd3a's abstentions cost ITC on real documents (underclaim Rs 19k to 26k per level against v1's Rs 6k to 10k), because an empty identity is recovered only when exactly one book entry matches.
 The semireal books follow the simulator's distributions and the labels were drafted by Claude, so these are real-document reading results, not a real-world book result.
 
+### Decision update (user override, committed 2026-10-25 03:31 IST, before any test-set number for it)
+
+pd3g287 (GRPO from pd3, 287 steps; adapter `adapter_model.safetensors` sha256 8941cff5...3655) ships instead of student-perdoc-sft v1, by the user's decision.
+This overrides pre-registered rule (a): pd3g287's paired ITC delta on the small simulated dev set has a 95% CI lower bound of -4.5, below the -3.0 limit.
+The user's reason is the real-document evidence: on semireal, pooled over 54 cases under doc schema v2, pd3g287 scores composite +4.3 [+1.7, +7.0], ITC invoice exact +2.6 (not significant) and match accuracy +7.4 against v1.
+The simulated dev sets are rendered in the simulator's original (`fmt_version` 1) identity formats, which v1 was trained on and the pd3-family adapters were not.
+This is a post-hoc override of a pre-registered rule, made after the dev and real-document results were known, and it is disclosed as such.
+The decision is fixed before the test run: pd3g287 and v1 are each run once on the frozen test set under doc schema v2 and reconciler v3 (paired; v1's second test run, pd3g287's first), and the result is reported below whatever it is.
+
 ### GRPO from the per-document SFT (dev only, measured, not shipped)
 
 A GRPO snapshot (step 75) trained from student-perdoc-sft v2 with the per-document reward was measured on both dev sets under reconciler v3; it is not the shipped adapter and was never run on test.
