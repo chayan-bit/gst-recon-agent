@@ -86,7 +86,7 @@ Narration:
 We measured the climb.
 On unseen items and layouts, invoices exactly right go from 53.1 percent for the base model to 78.9 with SFT, on a sample of fifteen cases.
 We also tried GRPO on a rule-checked reward, and it did not beat SFT, so we did not ship it.
-Claude Sonnet gets 97.8: the local model reaches {{Y_PCT_OF_SONNET_ACCURACY}} percent of that, at {{Z_COST_PCT}} percent of the cost.
+Claude Sonnet gets 97.8: the local model reaches {{Y_PCT_OF_SONNET_ACCURACY}} percent of that, and nothing leaves the machine.
 Constrained decoding lifts valid output from 70 to 100 percent."
 
 <!-- Sources: n = 60 and Sonnet 97.8 are reports/results.md, test_ood rows. Base 53.1 is the "student-base constrained" test_ood row and SFT 78.9 is the "SFT constrained (compact grammar)" test_ood row, both n = 15; 70 to 100 is the SFT unconstrained versus compact-grammar schema-valid share on 30 simulator cases (commit da4120a, 42-case stratified sample); say that it is a small sample. -->
@@ -94,7 +94,7 @@ Constrained decoding lifts valid output from 70 to 100 percent."
 ### Shot 6 - What we built for the sponsor stack (2:03 to 2:33)
 
 On screen: four cards, about six seconds each, each with a repo link and one before/after line.
-1. AlignTune: "SGLang rollout backend for GRPO" with the measured rollout speedup {{ROLLOUT_SPEEDUP_X}}x and the line "prefill shared across samples: 1216 of 1216 prompt tokens cached".
+1. AlignTune: "SGLang rollout backend for GRPO" with the measured rollout speedup of about 9x (1,623 against 14,949 tokens per second, a 0.5B benchmark in the pull request) and the line "prefill shared across samples: 1216 of 1216 prompt tokens cached".
 2. AuditKIT: "structured-extraction metrics" and the p-value fix, with a mini before/after "p = 0.52 before the fix on 50 pairs with means 0.11 versus 0.80; after it, a regression test of a comparable large effect asserts p below 0.01".
 3. AlignTune bugs: "the dataset fingerprint pickled the whole trainer: 42.7 GB of host RAM", plus "YAML values silently overridden" and "train keys silently dropped".
 4. CuratorKIT: "651 of 1,242 teacher paraphrases kept; 471 failed the fact check, 120 failed the hallucination gate".
@@ -109,7 +109,7 @@ And CuratorKIT's gates caught the teacher's hallucinations: only 651 of 1,242 pa
 ### Shot 7 - Honest close (2:33 to 2:47)
 
 On screen: a plain card with three lines and the repo QR code.
-Lines: "Trained and tested on a simulator"; "Real-world sanity set: 36 public-format documents, field F1 {{REAL_FIELD_F1}}"; "Code, generator and evals are open".
+Lines: "Trained and tested on a simulator"; "Real-world sanity set: 36 public-format documents, field F1 96.4 percent"; "Code, generator and evals are open".
 
 Narration:
 "This is trained and tested on a simulator, so we also check a small set of real sample formats, and we report what breaks.

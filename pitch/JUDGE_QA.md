@@ -10,13 +10,13 @@ What the simulator buys is a checkable truth: every answer is verified by code, 
 Three things keep it from being a closed loop.
 First, the documents are rendered, degraded (rotation, blur, JPEG, folds, photocopy and fax effects, stamps) and read by real Tesseract, so the text the model sees carries real OCR noise, not generated noise.
 Second, the out-of-distribution split holds out 20 of the 84 item concepts, two invoice layouts, three buyer profiles, a quarter of the states, and number and date formats, so the test measures generalisation within the simulator's world.
-Third, a small real-world sanity set built from public sample invoice formats (36 documents) is reported separately: schema-valid {{REAL_SCHEMA_VALID}}, field F1 {{REAL_FIELD_F1}}.
+Third, a small real-world sanity set built from public sample invoice formats (36 documents) is reported separately: schema-valid 100.0%, field F1 96.4% [92.8, 98.9] (the SFT student with the compact grammar, 12 cases).
 What we do not claim: that the ITC decisions are right on real books, only that the pipeline, the metrics and the generalisation tests are sound.
 
 ## 2. Why not just call GPT or Claude?
 
 For this data, privacy decides: purchase invoices, bank statements and supplier GSTINs are the data a business cannot send to a third-party API, and an on-premises model removes that question.
-Cost and latency at month-end volume are the second reason: {{Z_COST_PCT}}% of Sonnet's cost per 1,000 cases and a p50 of {{STUDENT_P50_LATENCY_S}} s (see question 6 for how fair that comparison is).
+Latency at month-end volume is the second reason: p50 38.0 s per case end to end (SFT with the compact grammar, 30 simulator cases) and 61.2 s per case in hybrid mode (one document per call, first pass, slightly understated because a demo recording shared the server), against 67.9 s for Sonnet through the Claude Code CLI (not a clean API latency) (see question 6 for how fair that comparison is).
 We are not claiming the small model is better: Claude Sonnet scores 97.8% ITC-exact on the same held-out cases against our 78.9 (SFT with the compact grammar, a sample of 15 out-of-distribution cases), so the student reaches {{Y_PCT_OF_SONNET_ACCURACY}}% of it.
 A private deployment of a hosted model is another way to meet a privacy requirement; we did not test that, and a team that can use one should compare it.
 
@@ -50,15 +50,15 @@ That check caught an earlier attempt in which AlignTune's data normaliser had tu
 A text-only model cannot recover what the OCR lost, and we measure that instead of hiding it: each case records `ocr_recall`, and the facts that are unrecoverable from the OCR text (in the committed hard example, line HSN codes on five of 13 documents).
 In training, a target HSN that OCR lost is blanked rather than demanded as a guess.
 On real scans we expect these failure modes, in roughly this order: handwriting, photographs taken at an angle or with shadows, multi-page tables, mixed-language text, and digits confused by OCR (in one committed case OCR turned the I in a supplier GSTIN into a 1, and the model has to repair it against the register and the 2B).
-Results by OCR-recall bucket are in the report: composite on full-recall versus partial-recall cases is {{COMPOSITE_FULL_OCR}} versus {{COMPOSITE_PARTIAL_OCR}}, and on the real-format sanity set field F1 is {{REAL_FIELD_F1}}.
+On the real-format sanity set field F1 is 96.4% [92.8, 98.9] for the SFT student with the compact grammar; every simulator case in the report falls in the partial-recall bucket, so we have no full-recall comparison to show.
 The fix we would build next is a vision-language student that reads the page directly.
 
-## 6. You say 'Y% of Sonnet at Z% of the cost and latency'. Is that comparison fair?
+## 6. How fair is the comparison with Sonnet on accuracy and latency?
 
 Partly, and the caveats are on the slide.
 The Sonnet baseline runs through the Claude Code CLI because there is no API key: each case is one non-interactive call with the schema in the system prompt and no constrained decoding, at concurrency 2.
 Its cost is list-price arithmetic from token counts, and its latency includes CLI overhead, so the latency ratio overstates the gap and should be read as an upper bound.
-The student's GPU cost is measured wall time times an hourly price we choose ({{GPU_HOUR_USD}} dollars per hour here), assuming a saturated GPU; at low utilisation the per-case cost is higher.
+We have not measured the student's GPU cost per 1,000 cases, so we publish no cost ratio; the report has Sonnet's list-price cost ($226.88 per 1,000 cases) and the 30B teacher's illustrative GPU cost ($20.04), both stated there.
 Accuracy is scored by the same code on the same cases for every model, and failed or truncated outputs count as wrong for everyone.
 The claim we stand behind is the ratio of accuracy on the same held-out cases, plus the fact that nothing left the machine.
 
@@ -79,7 +79,7 @@ It guarantees the syntax and the schema, not the content, and a grammar can forc
 That is why validity is reported separately from correctness, and why the table shows both.
 Measured on the 30B teacher, on the same 19 cases: schema-valid 15.8% unconstrained against 94.7% constrained, and ITC-exact 14.9% against 68.0%; 15 of the 19 unconstrained replies hit the 24,000-token cap in repetition loops.
 On the SFT student (30 simulator cases), between unconstrained and constrained decoding: schema-valid 70.0% -> 100.0% and ITC-exact 72.3 -> 75.7; paired on 42 cases, dropping the grammar costs -2.4 ITC-exact points [-7.3, +2.5], p = 0.32, so the grammar buys valid output at no measurable accuracy cost.
-Constrained output can also be cut off by the token budget, which leaves it unfinished; the harness counts truncations and context overflows as failures instead of discarding them, and the overhead of constraining on throughput is {{XGRAMMAR_OVERHEAD_PCT}}%.
+Constrained output can also be cut off by the token budget, which leaves it unfinished; the harness counts truncations and context overflows as failures instead of discarding them, and we have not isolated the throughput overhead of constraining.
 The point of the grammar is operational: downstream code can parse every answer and the reward function always has something to score.
 
 ## 9. Is SGLang really in your training loop, and are the sponsor contributions merged?
@@ -89,7 +89,7 @@ SGLang is the engine for teacher generation, serving and evaluation, and that is
 The SGLang rollout backend for GRPO exists as AlignTune pull request #32 (open) with CPU tests and a GPU integration test, but it is wired into AlignTune's TRL GRPO trainer, while the unsloth backend ignores `rollout_backend`.
 Our only GRPO config (`configs/grpo_sglang.yaml`) uses the TRL backend with `rollout_backend: sglang`, and the GRPO runner refuses to start without it, so a GRPO run cannot silently fall back to Hugging Face generation.
 We do not present the backend as how the shipped model was trained: the shipped adapter is SFT only, the one GRPO run we report (step 75) was not shipped, and the backend stands as a contribution with its measured benchmark.
-The backend was developed against SGLang 0.5.22, and the training host runs SGLang 0.5.10.post1 because of its CUDA driver, so compatibility on that version is a separate check (result: {{SGLANG_0510_COMPAT}}).
+The backend was developed against SGLang 0.5.22, and the training host runs SGLang 0.5.10.post1 because of its CUDA driver, and the backend was tested end to end on both versions (full-sync fidelity on 0.5.10.post1: 0.049 nats per token against a noise floor of 0.052; rollout speedup 9.9x), as reported in PR #32.
 On merging: they are open pull requests (AuditKIT #9, #10, #11, CuratorKIT #34, #35, #36, AlignTune #32, #33, #34, #35, SGLang #46287), eleven in all and none merged at the time of writing.
 
 ## 10. Your test cases are much longer than your training cases. Why should it work?
@@ -98,8 +98,8 @@ It may not, and that is a measured axis, not a hidden assumption.
 Training cases are deliberately short so they fit the hardware: SFT cases have 3 to 6 invoices and fit 12k tokens in total, GRPO cases have 2 to 4 invoices with prompts up to 6,144 tokens and 4,096 completion tokens, while evaluation cases have 5 to 12 documents (easy), 10 to 25 (medium) and 20 to 40 (hard), up to tens of thousands of prompt tokens plus thousands of output tokens.
 So even the easy evaluation cases are larger than most training cases.
 The evaluation keeps the full difficulty sizes on purpose, and the report breaks results down by prompt length (up to 16k, 16 to 32k, over 32k tokens) and by difficulty.
-Results by length: ITC-exact {{ITCEXACT_LEN_LE16K}} up to 16k tokens, {{ITCEXACT_LEN_16_32K}} for 16 to 32k, {{ITCEXACT_LEN_GT32K}} above 32k.
-The student is served at a context of {{STUDENT_CONTEXT_LEN}} tokens, and {{N_CONTEXT_OVERFLOW_STUDENT}} cases overflowed it; those count as failures.
+Results by length for the SFT student with the compact grammar (30 simulator cases): ITC-exact 85.8% up to 16k tokens (16 cases), 69.1% for 16 to 32k (8 cases) and 57.7% above 32k (6 cases), so accuracy does fall with length.
+No SFT-compact case overflowed the server context (the report's overflow table lists none); an overflow would count as a failure, and in hybrid mode no case overflows 16k because each call sees one document.
 If the numbers drop sharply with length, the honest summary is that the system works on small and medium month-ends today and that long ones need longer-case training.
 
 ## 11. Why was your first SFT score 10.9%?

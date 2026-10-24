@@ -91,8 +91,8 @@ The GRPO result is one line of small print next to the chart, not a bar.
 
 ## Slide 7 - Not claiming to beat frontier models: how close, at what cost
 
-- Claim: the 4B student reaches {{Y_PCT_OF_SONNET_ACCURACY}}% of Claude Sonnet's ITC-exact accuracy at {{Z_COST_PCT}}% of the cost per 1,000 cases, fully local.
-- Latency: p50 {{STUDENT_P50_LATENCY_S}} s on SGLang versus 67.9 s for Sonnet (<!-- reports/results.md throughput table, "Claude Sonnet (via Claude Code CLI)" p50 latency -->), with the caveat on the slide that the Sonnet number is measured through a CLI and is not a clean API latency.
+- Claim: the 4B student reaches {{Y_PCT_OF_SONNET_ACCURACY}}% of Claude Sonnet's ITC-exact accuracy on the same cases, fully local; Sonnet costs $226.88 per 1,000 cases at list price (token counts through the CLI), and we do not publish a student cost ratio because we have not measured the student's GPU cost.
+- Latency: p50 38.0 s per case end to end (SFT with the compact grammar, 30 simulator cases) and 61.2 s per case in hybrid mode (one document per call, first pass, slightly understated because a demo recording shared the server), against 67.9 s for Sonnet through the Claude Code CLI (not a clean API latency). <!-- reports/results.md throughput table ("SFT constrained, compact grammar (same 36 cases)", "Claude Sonnet (via Claude Code CLI)") and reports/hybrid.md hybrid throughput -->
 - Open-model reference: Qwen3-30B-A3B (the teacher, served on SGLang with a 64k context) scores 55.7 / 63.8 ITC-exact (in-distribution / out-of-distribution; Claude Sonnet 94.9 / 97.8). <!-- reports/results.md, teacher-30B constrained and Claude Sonnet rows, test_iid and test_ood -->
 - Constrained versus unconstrained decoding on the SFT student (XGrammar, 30 simulator cases): schema-valid 70.0% -> 100.0%, ITC-exact 72.3 -> 75.7 (paired on 42 cases the difference is -2.4 points [-7.3, +2.5], p = 0.32 without the grammar, so the grammar buys valid output at no measurable accuracy cost). <!-- reports/results.md, "SFT unconstrained" and "SFT constrained, compact grammar" rows and their note -->
 
@@ -101,7 +101,7 @@ Next to it, a two-bar chart of the constrained versus unconstrained student.
 
 ## Slide 8 - What we gave back to the sponsor stack
 
-- AlignTune: an SGLang rollout backend for GRPO. Rollouts come from a live SGLang server, prompts are sent once with `n` samples so RadixAttention shares the prefill, and weights are synced after each step. Measured speedup {{ROLLOUT_SPEEDUP_X}}x on rollout generation.
+- AlignTune: an SGLang rollout backend for GRPO. Rollouts come from a live SGLang server, prompts are sent once with `n` samples so RadixAttention shares the prefill, and weights are synced after each step. Measured: about 9x faster rollout generation (9.6x on SGLang 0.5.22 and 9.9x on 0.5.10.post1 with full weight sync, 7.6x with adapter sync; 1,623 tokens/s with Hugging Face generate against 14,949 tokens/s with SGLang on 0.5.22; a 0.5B GSM8K benchmark, AlignTune PR #32).
 - AuditKIT: structured-extraction metrics (`JsonSchemaValid`, `FieldF1`, 66 tests) and a fix for `compare().significance()`, whose p-value was about 0.5 for any effect (50 pairs, means 0.11 vs 0.80, p = 0.52).
 - AlignTune bugs found the hard way: the datasets fingerprint pickles the whole trainer (a 42.7 GB host-RAM blowup), YAML values silently overridden by defaults (512-token truncation, wrong output directory), and dropped train keys (gradient checkpointing silently off).
 - CuratorKIT gates earn their keep: only 651 of 1,242 teacher paraphrases were kept; 471 failed the code fact check and 120 failed the HallucinationGate.
@@ -130,7 +130,7 @@ Only rows with evidence stay on the slide.
 ## Slide 10 - What is solid, what is not yet, and what is next
 
 - Solid: ground-truth-first data, checkable rewards, a held-out OOD set, an honest baseline ladder, and four contributions to the sponsor toolkits.
-- Not yet: real scans at scale (on a private eval-only set of 42 real purchase documents the fine-tuned per-document model reads amounts and categories better than the base but invents invoice numbers in simulator formats; the real-world sanity set is small: 36 documents, field F1 {{REAL_FIELD_F1}}), tax law beyond the modelled sections, and a vision front end that replaces OCR.
+- Not yet: real scans at scale (on a private eval-only set of 42 real purchase documents the fine-tuned per-document model reads amounts and categories better than the base but invents invoice numbers in simulator formats; the real-world sanity set is small: 36 documents, field F1 96.4% [92.8, 98.9] for the SFT student with the compact grammar on the 12 cases), tax law beyond the modelled sections, and a vision front end that replaces OCR.
 - What we learned: the real-invoice eval exposed an overfit to simulator identity formats, and we are fixing it in the simulator from CGST Rule 46 (at most 16 characters, letters, digits, hyphen and slash, unique per financial year) and general Indian invoicing practice, not from those invoices. {{IDENTITY_FIX_OUTCOME_SENTENCE}}
 - Next: a vision-language student that reads the page directly, more of the GST rules (and a lawyer-reviewed rule table), and upstreaming the AlignTune and AuditKIT work.
 
