@@ -30,10 +30,12 @@ CMD = ["claude", "-p", "--model", "{model}", "--output-format", "json", "--syste
 
 
 def claude_cli(prompt: str, model: str, timeout: float, retries: int, cwd: Path, cmd_prefix: list[str] | None = None,
-               system: str | None = None) -> dict:
+               system: str | None = None, json_schema: dict | None = None) -> dict:
     """One CLI call. Never raises. Tokens count input + cache creation + cache reads; cost is the CLI's own total_cost_usd."""
     system = with_schema() if system is None else system
     cmd = [c.replace("{model}", model).replace("{system}", system) for c in CMD]
+    if json_schema is not None:  # the CLI's structured output (a forced tool call), not grammar-constrained decoding
+        cmd += ["--json-schema", json.dumps(json_schema, separators=(",", ":"))]
     if cmd_prefix:
         cmd = [*cmd_prefix, *cmd[1:]]
     err = ""
@@ -47,7 +49,8 @@ def claude_cli(prompt: str, model: str, timeout: float, retries: int, cwd: Path,
             if data.get("is_error"):
                 raise RuntimeError(str(data.get("result"))[:300])
             u = data.get("usage") or {}
-            return {"text": data.get("result") or "", "latency_s": time.perf_counter() - t0, "finish_reason": data.get("stop_reason"),
+            text = data.get("result") or (json.dumps(data["structured_output"]) if data.get("structured_output") else "")
+            return {"text": text, "latency_s": time.perf_counter() - t0, "finish_reason": data.get("stop_reason"),
                     "prompt_tokens": sum(u.get(k, 0) for k in ("input_tokens", "cache_creation_input_tokens", "cache_read_input_tokens")),
                     "completion_tokens": u.get("output_tokens"), "cost_usd": data.get("total_cost_usd"), "error": None}
         except (subprocess.SubprocessError, OSError, ValueError, RuntimeError) as e:
@@ -63,25 +66,31 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--n-per-dir", type=int, default=50, help="seeded sample per test split dir (default 50)")
     ap.add_argument("--concurrency", type=int, default=2, help="capped at 2: this runs on the Mac")
     ap.add_argument("--model", default="sonnet")
-    ap.add_argument("--out", type=Path, default=OUT, help="must be runs/eval/frontier")
+    ap.add_argument("--out", type=Path, default=OUT, help="runs/eval/frontier or a sibling runs/eval/frontier-<name>")
+    ap.add_argument("--label", default=LABEL, help="report row label (default: the Sonnet baseline's)")
     ap.add_argument("--timeout", type=float, default=600.0)
     ap.add_argument("--retries", type=int, default=1)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--truth-dir", type=Path, default=Path("data/truth"))
+    ap.add_argument("--schema-mode", choices=("prompt", "flag"), default="prompt",
+                    help="hybrid only: prompt = doc schema appended to the system prompt (the Sonnet hybrid run); "
+                         "flag = the CLI's --json-schema structured output, system prompt unchanged")
     ap.add_argument("--mode", choices=("e2e", "hybrid"), default="e2e",
                     help="hybrid: one CLI call per document (DOC_SYSTEM_PROMPT + doc schema), code reconciles; "
                          "--out must then be a subdirectory of runs/eval/frontier")
     a = ap.parse_args(argv)
     parts = a.out.resolve().parts
     under = any(parts[i:i + 3] == ("runs", "eval", "frontier") for i in range(len(parts) - 2))
-    if (a.mode == "e2e" and parts[-3:] != ("runs", "eval", "frontier")) or not under:
-        ap.error("--out must be runs/eval/frontier (hybrid: a subdirectory of it); frontier outputs must never leave runs/eval/")
+    sibling = parts[-3:-1] == ("runs", "eval") and parts[-1].startswith("frontier")
+    if (a.mode == "e2e" and not sibling) or (a.mode == "hybrid" and not under):
+        ap.error("--out must be runs/eval/frontier[-name] (hybrid: a subdirectory of runs/eval/frontier); "
+                 "frontier outputs must never leave runs/eval/")
     if a.concurrency > 2:
         ap.error("concurrency is capped at 2 on the Mac")
     work = a.out.resolve() / "cwd"  # neutral cwd: no project files or CLAUDE.md picked up
     work.mkdir(parents=True, exist_ok=True)
     cases = load_cases(a.cases, truth_dir=a.truth_dir if a.truth_dir.exists() else None, n_per_dir=a.n_per_dir, seed=a.seed)
-    config = {"label": LABEL, "model": f"claude {a.model} via `claude -p`", "endpoint": "claude CLI", "constrained": False,
+    config = {"label": a.label, "model": f"claude {a.model} via `claude -p`", "endpoint": "claude CLI", "constrained": False,
               "schema_in_prompt": True, "cases": [str(p) for p in a.cases], "n_per_dir": a.n_per_dir, "invocation": CMD,
               "prices": {}}
     gen = lambda c: claude_cli(c.prompt, a.model, a.timeout, a.retries, work)  # noqa: E731
@@ -90,9 +99,12 @@ def main(argv: list[str] | None = None) -> int:
         from gst_recon.hybrid.run import make_generator
 
         doc_system = lambda m: f"{m}\n\nThe JSON must conform to this JSON Schema:\n{json.dumps(doc_json_schema(), separators=(',', ':'))}"  # noqa: E731
+        flag = a.schema_mode == "flag"
         gen = make_generator(lambda msgs: claude_cli(msgs[1]["content"], a.model, a.timeout, a.retries, work,
-                                                     system=doc_system(msgs[0]["content"])), a.out, concurrency=a.concurrency)
-        config |= {"label": f"{LABEL} hybrid", "mode": "hybrid"}
+                                                     system=msgs[0]["content"] if flag else doc_system(msgs[0]["content"]),
+                                                     json_schema=doc_json_schema() if flag else None),
+                             a.out, concurrency=a.concurrency)
+        config |= {"label": f"{a.label} hybrid", "mode": "hybrid", "schema_mode": a.schema_mode}
     agg = run_eval(cases, gen, a.out, config,
                    concurrency=a.concurrency, progress=lambda d, n: print(f"\r{d}/{n}", end="", file=sys.stderr, flush=True))
     print(file=sys.stderr)

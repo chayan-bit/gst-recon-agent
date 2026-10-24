@@ -61,3 +61,29 @@ def test_frontier_refuses_other_output_dirs_and_high_concurrency(world):
         mod.main([*base, "--out", str(world["tmp"] / "elsewhere")])
     with pytest.raises(SystemExit):
         mod.main([*base, "--out", str(world["tmp"] / "runs" / "eval" / "frontier"), "--concurrency", "4"])
+
+
+def test_frontier_label_and_sibling_out_dir_keep_the_sonnet_outputs_separate(world, monkeypatch):
+    mod = _load()
+    exe = fake_claude(world["tmp"], world["targets"])
+    monkeypatch.setattr(mod, "CMD", [str(exe), *mod.CMD[1:]])
+    out = world["tmp"] / "runs" / "eval" / "frontier-haiku"
+    rc = mod.main(["--cases", *map(str, world["dirs"].values()), "--n-per-dir", "2", "--out", str(out), "--model", "claude-haiku-5-5",
+                   "--label", "Claude Haiku 5.5 (via Claude Code CLI)", "--truth-dir", str(world["truth"])])
+    agg = json.loads((out / "aggregate.json").read_text())
+    assert rc == 0 and agg["label"] == "Claude Haiku 5.5 (via Claude Code CLI)"
+    assert not (world["tmp"] / "runs" / "eval" / "frontier").exists()
+
+
+def test_claude_cli_json_schema_flag_is_passed_and_structured_output_is_the_fallback_text(tmp_path):
+    mod = _load()
+    exe = tmp_path / "claude"
+    exe.write_text(f"""#!{sys.executable}
+import json, sys
+argv = sys.argv[1:]
+print(json.dumps({{"is_error": False, "result": "", "structured_output": {{"schema": json.loads(argv[argv.index("--json-schema") + 1])}},
+                  "stop_reason": "tool_use", "total_cost_usd": 0.01, "usage": {{"input_tokens": 1, "output_tokens": 2}}}}))
+""")
+    exe.chmod(exe.stat().st_mode | stat.S_IEXEC)
+    r = mod.claude_cli("p", "claude-haiku-5-5", 30, 0, tmp_path, cmd_prefix=[str(exe)], system="s", json_schema={"type": "object"})
+    assert r["error"] is None and json.loads(r["text"]) == {"schema": {"type": "object"}} and r["cost_usd"] == 0.01
