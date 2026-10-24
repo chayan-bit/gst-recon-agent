@@ -63,3 +63,19 @@ def test_repair_fixes_all_heads_filled_and_keeps_true_records(ex):
                                   "igst": r.cgst, "total": 1.0})
     fixed, notes = repair(broken)
     assert notes and fixed == r
+
+
+def test_repair_never_mints_tax_from_a_misread_rate(ex):
+    from gst_recon.hybrid.repair import repair
+
+    prompt, target, case = ex
+    recs = truth_records(target, case)
+    doc = next(d for d, r in recs.items() if r.line_items and r.taxable_value and len({li.rate for li in r.line_items}) == 1)
+    r = recs[doc]
+    misread = r.model_copy(update={"line_items": [li.model_copy(update={"rate": 137573.6, "cgst": 9e6, "sgst": 9e6, "igst": 0.0})
+                                                  for li in r.line_items]})
+    fixed, notes = repair(misread)
+    assert notes and fixed == r  # the header's standard rate replaces the amount read into the rate cell
+    unknown = misread.model_copy(update={"cgst": 1.0, "sgst": 1.0, "igst": 0.0})
+    kept, notes = repair(unknown)
+    assert all(li.rate == 137573.6 and li.cgst == 9e6 for li in kept.line_items)  # no standard rate fits: kept as read

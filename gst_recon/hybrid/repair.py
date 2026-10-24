@@ -30,6 +30,11 @@ def _intra(rec: DocRecord, line: DocLine) -> bool:
     return rec.supplier_gstin.strip().upper()[:2].translate(_DIGIT) == rec.place_of_supply.strip()[:2]
 
 
+def _header_rate(rec: DocRecord) -> float | None:
+    tax = sum(getattr(rec, h) for h in HEADS if h != "cess")
+    return next((r for r in RATES if rec.taxable_value and not _off(tax, rec.taxable_value * r / 100)), None)
+
+
 def _repair_line(rec: DocRecord, li: DocLine) -> tuple[DocLine, str]:
     intra = _intra(rec, li)
     tax = li.igst + li.cgst + li.sgst
@@ -40,9 +45,15 @@ def _repair_line(rec: DocRecord, li: DocLine) -> tuple[DocLine, str]:
         fit = [r for r in RATES if not _off(tax, li.taxable_value * r / 100)]
         if fit:
             return li.model_copy(update={"rate": fit[0]}), f"rate {li.rate:g} -> {fit[0]:g} (tax read fits it)"
-    igst, cgst, sgst = split_tax(li.taxable_value, li.rate, intra)
-    return (li.model_copy(update={"igst": igst, "cgst": cgst, "sgst": sgst}),
-            f"heads recomputed from taxable x {li.rate:g}% ({'intra' if intra else 'inter'}-state)")
+    rate, why = li.rate, ""
+    if rate not in RATES:  # a misread rate (e.g. an amount in the rate cell) must not mint tax from taxable x rate
+        rate = _header_rate(rec)
+        if rate is None:
+            return li, f"rate {li.rate:g} not a GST rate and the header fits none: heads kept as read"
+        why = f"rate {li.rate:g} -> {rate:g} (header rate), "
+    igst, cgst, sgst = split_tax(li.taxable_value, rate, intra)
+    return (li.model_copy(update={"rate": rate, "igst": igst, "cgst": cgst, "sgst": sgst}),
+            f"{why}heads recomputed from taxable x {rate:g}% ({'intra' if intra else 'inter'}-state)")
 
 
 def repair(rec: DocRecord) -> tuple[DocRecord, list[str]]:
