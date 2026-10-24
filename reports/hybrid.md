@@ -293,9 +293,6 @@ With reconciler v1 the per-document 4B hybrid is level with the 30B teacher on I
 | student-sft hybrid (reconciler v3) | itc_invoice | 42 | -32.8 [-41.8, -23.7] | 0.0005 |
 | student-sft hybrid (reconciler v3) | context_acc | 41 | -22.8 [-36.1, -9.2] | 0.0030 |
 | student-sft hybrid (reconciler v3) | composite | 42 | -13.2 [-16.8, -9.7] | 0.0005 |
-| student-perdoc-sft hybrid (reconciler v3) | itc_invoice | 42 | +5.9 [-1.8, +13.2] | 0.1144 |
-| student-perdoc-sft hybrid (reconciler v3) | context_acc | 41 | +20.7 [+11.6, +30.5] | 0.0005 |
-| student-perdoc-sft hybrid (reconciler v3) | composite | 42 | +2.5 [-1.1, +6.2] | 0.1639 |
 | student-perdoc-sft-v2 hybrid (reconciler v3) | itc_invoice | 42 | +8.0 [+2.2, +13.8] | 0.0045 |
 | student-perdoc-sft-v2 hybrid (reconciler v3) | context_acc | 41 | +23.1 [+13.6, +32.5] | 0.0005 |
 | student-perdoc-sft-v2 hybrid (reconciler v3) | composite | 42 | +1.5 [-2.0, +4.7] | 0.3718 |
@@ -304,7 +301,8 @@ With reconciler v1 the per-document 4B hybrid is level with the 30B teacher on I
 | heuristic hybrid (code alone) (reconciler v3) | composite | 42 | -34.8 [-38.0, -31.6] | 0.0005 |
 
 Paired by case_id over the 42 cases the compact-grammar end-to-end run covers (15 test_iid, 15 test_ood, 12 realworld); p-value from a centred paired bootstrap (null: zero mean difference).
-On these cases the per-document hybrid (student-perdoc-sft, reconciler v3) is level with the end-to-end SFT model on ITC invoice exact (the CI includes zero) and ahead on context accuracy; student-sft hybrid, the same SFT adapter fed one document at a time, is far below its own end-to-end run, since that adapter was trained on whole cases.
+student-perdoc-sft hybrid (reconciler v3) against this row, with overclaim and underclaim in rupees, is in "Pipeline comparison: e2e SFT-compact vs per-doc hybrid v3" below: level on ITC invoice exact (+5.9 [-1.8, +13.2]) and ahead on context accuracy (+20.7 [+11.6, +30.5]).
+student-sft hybrid, the same SFT adapter fed one document at a time, is far below its own end-to-end run, since that adapter was trained on whole cases.
 
 ### Paired difference vs SFT constrained (full grammar), end-to-end
 
