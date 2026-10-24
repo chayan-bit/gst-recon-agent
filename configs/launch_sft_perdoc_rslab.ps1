@@ -24,6 +24,9 @@ if (-not (Test-Path "$Repo\data\train\curated\sft-perdoc-pc\train.jsonl")) { Die
 $env:HF_HOME = "$T\hf"; $env:HF_HUB_OFFLINE = "1"; $env:HF_DATASETS_OFFLINE = "1"
 $env:PYTHONPATH = $Repo; $env:PYTHONIOENCODING = "utf-8"; $env:PYTHONUNBUFFERED = "1"
 $env:TOKENIZERS_PARALLELISM = "false"; $env:GST_MEM_CAP_GB = "64"  # host commit cap via Job Object (480 GB box, shared)
+# AlignTune's vendored unsloth patches transformers on import, even on the trl backend, and returns empty logits
+# (fused loss); TRL's SFTTrainer computes token accuracy from logits, so ask for real ones (~2 GB at 4 x 1.5k).
+$env:UNSLOTH_RETURN_LOGITS = "1"
 Set-Location $Repo
 cmd /c "`"$T\env\python.exe`" -m gst_recon.train run configs\sft_perdoc_trl.yaml >> `"$Log`" 2>&1"
 $rc = $LASTEXITCODE
