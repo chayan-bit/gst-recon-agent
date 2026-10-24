@@ -37,7 +37,7 @@ VO prompt: scans, photos and a WhatsApp message; Tesseract turns them into text;
 
 ### Shot 3 - Per-document hybrid on the hard case (0:23 to 0:58)
 
-Screen: Pipeline = Hybrid, Model = Per-document (PERDOC), press Run (R).
+Screen: Pipeline = Hybrid, Model = Per-document SFT (shipped), press Run (R).
 The 23 document chips tick off one by one (recorded run is 208 s; at 8x it takes about 30 s), then the line "Then: code reconciler, no model" appears (about 0.25 s), then the table fills.
 Hold 3 s on the finished screen: headline cards and "ITC exact 19/23" with ground truth on.
 Overlay text for this shot: "REPLAY, 8x speed. Recorded run: 208 s, 6,330 tokens, 23 documents."
@@ -66,7 +66,7 @@ When it finishes, point at the headline: deferred ₹0.00 against truth ₹5,07,
 Open D02, Chawla Networks (₹17,00,498.75): the model puts ₹2,59,398.12 under ITC eligible, while the truth is deferred ("Unpaid over 180 days, Sec 16(2), Rule 37").
 
 Part B, hybrid (about 16 s).
-Switch back to Hybrid, Per-document (PERDOC), replay; jump to the finished table (re-run at 8x or cut to a saved clip).
+Switch back to Hybrid, Per-document SFT (shipped), replay; jump to the finished table (re-run at 8x or cut to a saved clip).
 Open D02 and show the trace: "Payment: 204 days since the invoice, ₹17,00,498.75 of ₹17,00,498.75 unpaid; unpaid for over 180 days, credit must be reversed", deferred ₹2,59,398.14, "MATCHES TRUTH".
 The date arithmetic is code, not a model guess.
 

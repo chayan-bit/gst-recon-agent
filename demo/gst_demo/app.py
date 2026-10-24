@@ -69,7 +69,7 @@ async def health() -> dict:
             "recordings": len(stream.list_recordings(RECORDINGS)), "recording_enabled": RECORD, "reconciler": RECONCILER}
 
 
-KNOWN_LABELS = {"teacher": "Teacher 30B", "base:perdoc": "Per-document (PERDOC)", "base:grpo": "Fine-tuned (GRPO)"}
+KNOWN_LABELS = {"teacher": "Teacher 30B", "base:perdoc": "Per-document SFT (shipped)", "base:grpo": "Fine-tuned (GRPO)"}
 
 
 def _model_entry(name: str) -> dict:
