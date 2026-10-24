@@ -36,6 +36,9 @@ async function boot() {
 async function refreshHealth() {
   try { S.health = await api("/api/health"); } catch { S.health = { live: false }; }
   const el = $("srvStatus"), h = S.health;
+  const rv = $("reconVer");
+  rv.hidden = !h.reconciler;
+  rv.textContent = h.reconciler ? `reconciler ${h.reconciler}` : "";
   el.className = "srv " + (h.live ? "up" : "down");
   el.querySelector("span").textContent = h.live
     ? `SGLang up${h.running != null ? ` \u00B7 ${h.running} running` : ""}`

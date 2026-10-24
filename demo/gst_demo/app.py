@@ -9,6 +9,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import subprocess
 from pathlib import Path
 
 import httpx
@@ -47,13 +48,25 @@ async def _get(url: str, timeout: float = 6.0) -> dict | list | None:
         return None
 
 
+def _reconciler_version() -> str:
+    """Short sha of the last commit that touched gst_recon/hybrid (the code reconciler), or "" outside a git checkout."""
+    try:
+        r = subprocess.run(["git", "log", "-1", "--format=%h", "--", "gst_recon/hybrid"], cwd=REPO, capture_output=True, text=True, timeout=3)
+        return r.stdout.strip() if r.returncode == 0 else ""
+    except (OSError, subprocess.SubprocessError):
+        return ""
+
+
+RECONCILER = _reconciler_version()
+
+
 @app.get("/api/health")
 async def health() -> dict:
     models = await _get(f"{BASE_URL}/models")
     load = await _get(f"{ROOT_URL}/get_load") if models else None
     row = load[0] if isinstance(load, list) and load else {}
     return {"live": models is not None, "running": row.get("num_reqs"), "waiting": row.get("num_waiting_reqs"),
-            "recordings": len(stream.list_recordings(RECORDINGS)), "recording_enabled": RECORD}
+            "recordings": len(stream.list_recordings(RECORDINGS)), "recording_enabled": RECORD, "reconciler": RECONCILER}
 
 
 KNOWN_LABELS = {"teacher": "Teacher 30B", "base:perdoc": "Per-document (PERDOC)", "base:grpo": "Fine-tuned (GRPO)"}
