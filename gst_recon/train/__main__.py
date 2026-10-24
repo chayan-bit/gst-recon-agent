@@ -37,7 +37,7 @@ def cmd_build(a: argparse.Namespace) -> dict:
     t0 = time.time()
     limits = {"grpo_max_prompt": a.grpo_max_prompt, "grpo_max_completion": a.grpo_max_completion,
               "sft_max_seq": a.sft_max_seq}
-    cands = b.load_rendered(Path(a.rendered))
+    cands = [b.compact_target(c, count_tokens) for c in b.load_rendered(Path(a.rendered))]
     sys_tokens, method = count_tokens(SYSTEM_PROMPT)
     train = [c for c in cands if c.split == "train"]
     raw_rw, gated_rw, para_rej, para_counts = {}, {}, [], {"skipped": "no --teacher given"}
@@ -77,15 +77,56 @@ def load_config(path: str) -> tuple[dict, dict]:
     return cfg, cfg.pop("gst_recon", None) or {}
 
 
+def shadowed_args(cfg: dict) -> dict:
+    """YAML values that AlignTune 0.1.28's create_sft_trainer / create_rl_trainer ignore in favour of
+    their own parameter defaults (max_seq_length 512, batch_size 4, output_dir ./output, ...): the
+    first smoke run trained on 512-token truncations and saved to ./output. Restate them as arguments."""
+    m, t, log = cfg.get("model", {}), cfg.get("train", {}), cfg.get("logging", {})
+    args = {"max_seq_length": m.get("max_seq_length"), "batch_size": t.get("per_device_batch_size"),
+            "num_epochs": t.get("epochs"), "learning_rate": t.get("learning_rate"),
+            "max_steps": t.get("max_steps"), "output_dir": log.get("output_dir")}
+    return {k: v for k, v in args.items() if v is not None}
+
+
+def _pin_dataset_num_proc(n: int) -> None:
+    """AlignTune 0.1.28 never forwards dataset_num_proc into the TRL SFTConfig, and unsloth's SFT
+    trainer then tokenizes with cpu_count + 4 worker processes (39 on rs-epyc)."""
+    from aligntune.core.sft import training_args_builder as tab
+
+    build = tab.build_sft_config
+
+    def pinned(*args, **kwargs):
+        cfg = build(*args, **kwargs)
+        cfg.dataset_num_proc = n
+        return cfg
+
+    tab.build_sft_config = pinned  # sft.py imports it at call time, so the module attribute is enough
+
+
 def cmd_run(a: argparse.Namespace) -> None:
+    import faulthandler
+    import signal
+
+    faulthandler.register(signal.SIGUSR1)  # `kill -USR1 <pid>` prints every thread's stack (memory triage)
+    cfg, extras = load_config(a.config)
+    if cfg.get("backend") == "unsloth":
+        import unsloth  # noqa: F401 - must precede transformers/trl/peft or its patches (incl. memory) are skipped
+
     from aligntune.core.backend_factory import create_rl_trainer, create_sft_trainer
+
+    if "dataset_num_proc" in extras:
+        _pin_dataset_num_proc(extras.pop("dataset_num_proc"))
 
     from gst_recon.train.reward import register
 
     register()
-    cfg, extras = load_config(a.config)
     make = create_sft_trainer if cfg.get("algo", "sft").lower() == "sft" else create_rl_trainer
-    print(json.dumps(make(config=cfg, **extras).train(), indent=1, default=str))
+    trainer = make(config=cfg, **shadowed_args(cfg), **extras)
+    # datasets fingerprints every .map() function by dill-pickling its closure. AlignTune 0.1.28's
+    # unsloth SFT formatter closes over the trainer, so hashing it copied the whole model into host
+    # RAM (42 GB, rs-epyc OOM on 2026-10-24). Hash the trainer by identity instead.
+    type(trainer).__getstate__ = lambda self: {"trainer_id": id(self)}
+    print(json.dumps(trainer.train(), indent=1, default=str))
 
 
 def main(argv: list[str] | None = None) -> None:

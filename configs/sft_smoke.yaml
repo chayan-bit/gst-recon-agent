@@ -1,4 +1,5 @@
-# 20-step SFT smoke test (rs-epyc H100 next to the teacher: ~33 GB GPU, ~3-6 GB host RAM, ~14 GB disk).
+# 20-step SFT smoke test (rs-epyc H100 next to the teacher: ~33 GB GPU free). Run it under a host-RAM cap:
+#   systemd-run --user --scope -p MemoryMax=12G -p MemorySwapMax=0 python -m gst_recon.train run configs/sft_smoke.yaml
 # Data: data/smoke/sft/train.jsonl = ~200 SFT rows of at most 12k tokens (see the train report).
 algo: sft
 backend: unsloth
@@ -7,7 +8,6 @@ model:
   name_or_path: Qwen/Qwen3-4B-Instruct-2507
   precision: bf16
   max_seq_length: 12288
-  gradient_checkpointing: true
   use_peft: true
   lora_r: 32
   lora_alpha: 64
@@ -27,10 +27,7 @@ train:
   learning_rate: 2.0e-4
   warmup_steps: 2
   weight_decay: 0.0
-  optimizer: adamw_8bit
-  lr_scheduler: cosine
   packing: false
-  dataloader_num_workers: 0
   logging_steps: 1
   save_steps: 1000  # no mid-run checkpoint (it would add optimizer state); the final save writes the adapter only
   save_total_limit: 1
@@ -42,3 +39,14 @@ logging:
   loggers: []
 
 chat_template: auto
+
+# create_sft_trainer kwargs (python -m gst_recon.train run passes this section through):
+# AlignTune 0.1.28's YAML parser silently drops these train keys, so without this the run has
+# no gradient checkpointing, adamw_torch and the default scheduler. gradient_checkpointing: true
+# is standard checkpointing; unsloth's "unsloth" mode offloads activations to host RAM.
+gst_recon:
+  gradient_checkpointing: true
+  optimizer: adamw_8bit
+  lr_scheduler: cosine
+  dataloader_num_workers: 0
+  dataset_num_proc: 1  # tokenization workers (unsloth would fork cpu_count + 4)

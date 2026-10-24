@@ -71,7 +71,16 @@ def test_lost_hsn_is_blanked_and_other_lost_facts_drop_the_case(rendered):
     assert b.mask_lost_hsn(c) is c
     m = b.mask_lost_hsn(dataclasses.replace(c, unrecoverable=("D01:line0_hsn",)))
     d01 = next(e for e in json.loads(m.target)["extractions"] if e["doc_id"] == "D01")
-    assert d01["line_items"][0]["hsn"] == "" and m.unrecoverable == ()
+    assert "hsn" not in d01["line_items"][0] and m.unrecoverable == ()  # blanked, then left out (compact form)
     assert json.loads(c.target)["extractions"][0]["line_items"][0]["hsn"]  # original untouched
     assert b.mask_lost_hsn(dataclasses.replace(c, unrecoverable=("D01:line0_hsn", "D01:invoice_no"))) is None
     assert b.mask_lost_hsn(dataclasses.replace(c, unrecoverable=("D01:line9_hsn",))) is None
+
+
+def test_compact_target_shrinks_and_expands_back(rendered):
+    from gst_recon.rewards import expand
+
+    c = next(c for c in b.load_rendered(rendered) if c.split == "train")
+    small = b.compact_target(c, lambda t: (len(t) // 4, "chars"))
+    assert len(small.target) < len(c.target) and small.target_tokens == len(small.target) // 4
+    assert expand(json.loads(small.target)) == json.loads(c.target)

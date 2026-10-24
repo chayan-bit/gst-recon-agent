@@ -16,6 +16,7 @@ from pathlib import Path
 
 from gst_recon.eval.guard import refuse_eval_path
 from gst_recon.eval.prompts import build_messages
+from gst_recon.rewards import compact
 
 SFT_SHARE = 0.7
 TEMPLATE_OVERHEAD = 16  # chat-template role markers around system + user (+ assistant) turns
@@ -74,7 +75,18 @@ def mask_lost_hsn(c: Candidate) -> Candidate | None:
         if int(m.group(2)) >= len(lines):
             return None
         lines[int(m.group(2))]["hsn"] = ""
-    return replace(c, target=json.dumps(t, ensure_ascii=False, separators=(",", ":")), unrecoverable=())
+    return replace(c, target=_dump(compact(t)), unrecoverable=())
+
+
+def _dump(obj: dict) -> str:
+    return json.dumps(obj, ensure_ascii=False, separators=(",", ":"))
+
+
+def compact_target(c: Candidate, count) -> Candidate:
+    """Training targets use the compact output form (zero / false / empty fields left out, about
+    a quarter fewer tokens); rewards.parse_output expands it, so it scores like the full form."""
+    target = _dump(compact(json.loads(c.target)))
+    return replace(c, target=target, target_tokens=count(target)[0])
 
 
 def role(case_id: str) -> str:

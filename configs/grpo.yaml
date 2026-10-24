@@ -40,7 +40,6 @@ train:
   top_p: 0.95
   max_prompt_length: 6144  # used by the trl backend; unsloth uses the max_seq_length split above
   max_completion_length: 4096
-  mask_truncated_completions: true
   logging_steps: 1
   save_steps: 50
   save_total_limit: 1  # rs-epyc disk is tight
@@ -56,5 +55,12 @@ chat_template: auto
 # Runner-only knobs (python -m gst_recon.train run), passed to create_rl_trainer as kwargs.
 # AlignTune 0.1.28 does not read rollout_backend from YAML or kwargs (always HF generate);
 # set it to sglang once the AlignTune fork with the SGLang rollout lands.
+# The other keys are create_rl_trainer kwargs that AlignTune 0.1.28's YAML parser silently drops
+# from the train section (gradient_checkpointing true = standard, not unsloth's host-RAM offload).
 gst_recon:
   rollout_backend: hf
+  mask_truncated_completions: true
+  gradient_checkpointing: true
+  optimizer: adamw_8bit
+  lr_scheduler: cosine
+  dataloader_num_workers: 0
