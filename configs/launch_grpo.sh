@@ -43,7 +43,7 @@ fi
 grep -q "init_adapter: $INIT_ADAPTER" "$CONFIG" || die "$CONFIG does not start from $INIT_ADAPTER"
 [ -s "$DATA/train.jsonl" ] || die "no $DATA/train.jsonl"
 tmux has-session -t sglang-rollout 2>/dev/null && die "tmux session sglang-rollout already exists"
-pgrep -u "$USER" -f "[s]glang.launch_server" >/dev/null && die "an SGLang server of ours is still running (eval?)"
+pgrep -u "$USER" -f "[s]glang.launch_server.*--port $PORT" >/dev/null && die "an SGLang rollout server of ours is still on port $PORT"
 pgrep -u "$USER" -f "[g]st_recon.train run" >/dev/null && die "a training run of ours is still running"
 ss -ltn | grep -q ":$PORT " && die "port $PORT in use"
 grep -q "sglang_server_url: http://127.0.0.1:$PORT" "$CONFIG" || die "config does not point at port $PORT"
