@@ -57,7 +57,7 @@ def run_table_md(agg: dict) -> str:
     """table.md of one run: primary metrics with 95% CIs, breakdowns, throughput and cost."""
     head = ["group", "n"] + [c[1] for c in COLS]
     parts = [f"# {agg['label']}", "",
-             f"cases: {agg['n_cases']}, transport errors: {agg['n_errors']}, truncated (finish_reason=length): {agg['n_truncated']}",
+             f"cases: {agg['n_cases']}, transport errors: {agg['n_errors']} (context overflow: {agg.get('n_context_overflow', 0)}), truncated (finish_reason=length): {agg['n_truncated']}",
              f"context accuracy source: {agg['context_source']}", "", "## Overall (bootstrap 95% CI over cases)", "",
              _table(head, [["all", str(agg["n_cases"])] + _metric_cells(agg["overall"], True)])]
     for dim, title in (("split", "By split"), ("difficulty", "By difficulty"), ("ocr_bucket", "By OCR recall (full = every field present in the prompt)")):

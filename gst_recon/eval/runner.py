@@ -114,6 +114,7 @@ def aggregate(records: list[dict], config: dict, run_stats: dict, ctx_sources: s
     agg = {
         "label": config["label"], "config": config, "n_cases": len(records),
         "n_errors": sum(1 for r in records if r.get("error")),
+        "n_context_overflow": sum(1 for r in records if "context length" in (r.get("error") or "")),
         "n_truncated": sum(1 for r in records if r.get("finish_reason") == "length"),
         "context_source": "truth" if ctx_sources == {"truth"} else "proxy (no truth Case JSON; BLOCKED-reason docs)",
         "overall": summarize(records), "breakdowns": breakdowns(records),

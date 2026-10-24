@@ -52,6 +52,14 @@ class Stub:
                 user = body["messages"][-1]["content"]
                 cid = user.split("\n", 1)[0].removeprefix("CASE_ID: ")
                 mode = body["model"]
+                if mode == "ctx":  # server context 10000 tokens, prompt 1000: max_tokens above 8992 is a 400
+                    if body["max_tokens"] > 8992:
+                        self.send_response(400)
+                        self.end_headers()
+                        self.wfile.write(b"Requested token count exceeds the model's maximum context length of 10000 tokens. "
+                                         b"You requested a total of 40000 tokens: 1000 tokens from the input messages and 32768 for the completion.")
+                        return
+                    mode = "perfect"
                 if mode == "fail500":
                     self.send_response(500)
                     self.end_headers()

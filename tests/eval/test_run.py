@@ -100,3 +100,17 @@ def test_guard_refuses_eval_outputs(world, tmp_path):
     d = tmp_path / "elsewhere"
     d.mkdir()
     assert refuse_eval_path(d) == d
+
+
+def test_max_tokens_is_clipped_to_the_server_context_instead_of_failing(world):
+    _, _, agg = _run(world, "ctx", "ctx")
+    assert agg["n_errors"] == 0 and agg["overall"]["composite"]["mean"] == pytest.approx(1.0)
+    assert {r["max_tokens"] for r in world["stub"].requests} == {32768, 8992}
+
+
+def test_context_overflow_is_counted_separately(world, monkeypatch):
+    from gst_recon.eval import client
+
+    assert client.clip_max_tokens("The input (37032 tokens) is longer than the model's context length (16384 tokens).") is None
+    assert client.clip_max_tokens("maximum context length of 16384 tokens. You requested a total of 17858 tokens: "
+                                  "9666 tokens from the input messages and 8192") == 16384 - 9666 - 8

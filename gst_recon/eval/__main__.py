@@ -74,7 +74,7 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument("--schema-in-prompt", action=argparse.BooleanOptionalAction, default=True,
                    help="unconstrained runs only: append the JSON Schema to the system prompt")
     r.add_argument("--concurrency", type=int, default=16)
-    r.add_argument("--max-tokens", type=int, default=8192)
+    r.add_argument("--max-tokens", type=int, default=32768, help="completion cap; clipped automatically to what fits the server context")
     r.add_argument("--temperature", type=float, default=0.0)
     r.add_argument("--retries", type=int, default=2, help="per-request retries on 5xx/429/connection errors")
     r.add_argument("--timeout", type=float, default=900.0)
