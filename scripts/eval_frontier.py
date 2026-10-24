@@ -64,7 +64,7 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--cases", type=Path, nargs="+", required=True)
     ap.add_argument("--n-per-dir", type=int, default=50, help="seeded sample per test split dir (default 50)")
-    ap.add_argument("--concurrency", type=int, default=2, help="capped at 2: this runs on the Mac")
+    ap.add_argument("--concurrency", type=int, default=2, help="capped at 4: this runs on the Mac")
     ap.add_argument("--model", default="sonnet")
     ap.add_argument("--out", type=Path, default=OUT, help="runs/eval/frontier or a sibling runs/eval/frontier-<name>")
     ap.add_argument("--label", default=LABEL, help="report row label (default: the Sonnet baseline's)")
@@ -85,8 +85,8 @@ def main(argv: list[str] | None = None) -> int:
     if (a.mode == "e2e" and not sibling) or (a.mode == "hybrid" and not under):
         ap.error("--out must be runs/eval/frontier[-name] (hybrid: a subdirectory of runs/eval/frontier); "
                  "frontier outputs must never leave runs/eval/")
-    if a.concurrency > 2:
-        ap.error("concurrency is capped at 2 on the Mac")
+    if a.concurrency > 4:
+        ap.error("concurrency is capped at 4 on the Mac")
     work = a.out.resolve() / "cwd"  # neutral cwd: no project files or CLAUDE.md picked up
     work.mkdir(parents=True, exist_ok=True)
     cases = load_cases(a.cases, truth_dir=a.truth_dir if a.truth_dir.exists() else None, n_per_dir=a.n_per_dir, seed=a.seed)
