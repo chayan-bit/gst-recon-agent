@@ -24,6 +24,7 @@ v3 was developed only on train-split dev cases (an error attribution of the dev 
 - An invoice number or date that the document text does not show (empty, or not found in the OCR text within one edit) is taken from the one GSTR-2B entry of this GSTIN with the same taxable value, tax heads, total and note type (else from the one such register row, date only, since registers carry number typos); a value the text does show is never replaced, and every fill is recorded in the trace.
 - The v2 GSTIN fix may change either the state code or the rest of the GSTIN, never both: on the larger dev set two fixes had changed the state code together with another character, turning the document's GSTIN into another state's registration of the same PAN (one of them an Rs 4.3 lakh overclaim).
 Dev, student-perdoc-sft, v2 to v3: ITC invoice exact 80.1% to 87.8% and composite 85.3 to 91.2 on the 120 small cases, 76.7% to 81.1% and 79.6 to 82.6 on the 60 larger cases (below); student-base 53.1% to 54.5% on the small cases; no false register or GSTR-2B link on either dev set.
+The code-alone floor (`--extractor heuristic`, OCR text and regex, no model), re-scored once under v3 from the same cached extractions: ITC invoice exact 10.4% to 11.1%, context 40.9% unchanged, composite 47.0 to 47.4 on the 120 simulator cases, and 4.9% to 13.2% ITC on realworld; the model rows gain far more from v3 because the fill and the GSTIN fix need a mostly right reading to start from.
 ITC overclaim rises from v1 to v3 (test, student-perdoc-sft: Rs 19,053 to 27,183 per case; larger dev set: Rs 4,913 to 39,752): a document that v1 left deferred for lack of a link now links, so a wrong model judgment on it (a works contract or motor vehicle line read as normal) counts as overclaim instead of being masked.
 
 ### Larger dev set (60 train-split cases, about 25 documents each)
@@ -64,6 +65,7 @@ A single temperature-0.7 sample scores 79.3% to 80.7% under v2, so greedy is alr
 | student-perdoc-sft-v2 hybrid | 120 | 63.3 [60.6, 66.1] | 83.6 [80.0, 86.8] | 25,888 [11,450, 44,211] | 448,650 [337,891, 568,733] | 450,437 [342,534, 570,806] | 68.1 [65.8, 70.5] | 91.8 [91.0, 92.5] | 100.0 [100.0, 100.0] | 72.4 [71.1, 73.7] |
 | student-perdoc-sft-v2 hybrid (reconciler v3) | 120 | 81.8 [79.7, 84.0] | 83.6 [80.0, 86.8] | 34,409 [18,311, 53,983] | 164,628 [117,658, 216,980] | 178,646 [130,931, 229,316] | 86.6 [84.6, 88.7] | 93.7 [92.9, 94.5] | 100.0 [100.0, 100.0] | 82.5 [81.1, 84.0] |
 | heuristic hybrid (code alone) | 120 | 10.4 [8.8, 12.1] | 40.9 [34.7, 46.3] | 29,728 [14,899, 51,425] | 743,155 [574,896, 930,170] | 726,778 [561,474, 909,353] | 35.2 [33.3, 37.2] | 58.4 [57.6, 59.1] | 100.0 [100.0, 100.0] | 47.0 [46.2, 47.8] |
+| heuristic hybrid (code alone) (reconciler v3) | 120 | 11.1 [9.5, 12.7] | 40.9 [34.7, 46.3] | 30,075 [15,301, 51,702] | 735,840 [568,629, 920,114] | 719,127 [554,115, 900,987] | 36.3 [34.4, 38.2] | 58.6 [57.8, 59.3] | 100.0 [100.0, 100.0] | 47.4 [46.6, 48.2] |
 
 ### test_iid
 
@@ -82,6 +84,7 @@ A single temperature-0.7 sample scores 79.3% to 80.7% under v2, so greedy is alr
 | student-perdoc-sft-v2 hybrid | 60 | 69.4 | 86.3 | 29,837 | 487,086 | 495,389 | 77.9 | 93.6 | 100.0 | 76.5 |
 | student-perdoc-sft-v2 hybrid (reconciler v3) | 60 | 84.0 | 86.3 | 44,644 | 199,038 | 228,769 | 92.6 | 95.5 | 100.0 | 85.1 |
 | heuristic hybrid (code alone) | 60 | 10.3 | 39.6 | 39,569 | 981,934 | 968,462 | 35.2 | 57.7 | 100.0 | 46.8 |
+| heuristic hybrid (code alone) (reconciler v3) | 60 | 11.2 | 39.6 | 39,759 | 967,588 | 953,927 | 36.6 | 58.0 | 100.0 | 47.3 |
 
 ### test_ood
 
@@ -100,6 +103,7 @@ A single temperature-0.7 sample scores 79.3% to 80.7% under v2, so greedy is alr
 | student-perdoc-sft-v2 hybrid | 60 | 57.2 | 80.5 | 21,940 | 410,214 | 405,486 | 58.3 | 89.9 | 100.0 | 68.3 |
 | student-perdoc-sft-v2 hybrid (reconciler v3) | 60 | 79.6 | 80.5 | 24,175 | 130,218 | 128,524 | 80.7 | 91.9 | 100.0 | 79.9 |
 | heuristic hybrid (code alone) | 60 | 10.6 | 42.4 | 19,888 | 504,377 | 485,094 | 35.2 | 59.0 | 100.0 | 47.2 |
+| heuristic hybrid (code alone) (reconciler v3) | 60 | 11.0 | 42.4 | 20,391 | 504,092 | 484,327 | 36.0 | 59.1 | 100.0 | 47.5 |
 
 ### realworld (12 cases, bootstrap 95% CI)
 
@@ -118,6 +122,7 @@ A single temperature-0.7 sample scores 79.3% to 80.7% under v2, so greedy is alr
 | student-perdoc-sft-v2 hybrid | 12 | 73.6 [62.5, 84.7] | 100.0 [100.0, 100.0] | 0 [0, 0] | 6,366 [795, 13,563] | 6,366 [795, 13,563] | 75.5 [67.9, 83.2] | 91.1 [87.2, 94.8] | 100.0 [100.0, 100.0] | 79.3 [73.0, 85.9] |
 | student-perdoc-sft-v2 hybrid (reconciler v3) | 12 | 79.2 [69.4, 88.9] | 100.0 [100.0, 100.0] | 0 [0, 0] | 3,100 [128, 8,568] | 3,100 [128, 8,568] | 86.3 [77.4, 93.8] | 91.7 [87.6, 95.7] | 100.0 [100.0, 100.0] | 84.0 [77.1, 90.9] |
 | heuristic hybrid (code alone) | 12 | 4.9 [0.0, 11.1] | 55.6 [21.4, 78.3] | 784 [0, 2,288] | 54,093 [32,921, 78,573] | 53,309 [32,040, 78,142] | 19.1 [13.2, 24.7] | 52.5 [49.0, 55.8] | 100.0 [100.0, 100.0] | 40.0 [37.2, 42.9] |
+| heuristic hybrid (code alone) (reconciler v3) | 12 | 13.2 [4.9, 22.2] | 55.6 [21.4, 78.3] | 7,189 [192, 16,219] | 43,360 [25,658, 66,762] | 38,923 [21,410, 63,630] | 29.5 [21.9, 36.5] | 53.1 [49.5, 56.6] | 100.0 [100.0, 100.0] | 44.4 [40.4, 48.1] |
 | Claude Sonnet (via Claude Code CLI) hybrid | 12 | 97.2 [91.7, 100.0] | 100.0 [100.0, 100.0] | 0 [0, 0] | 152 [0, 454] | 152 [0, 454] | 97.0 [94.3, 99.3] | 98.0 [96.0, 99.2] | 100.0 [100.0, 100.0] | 97.2 [93.5, 99.4] |
 
 ### By case prompt length (Qwen3 tokens of the whole case)
@@ -163,6 +168,9 @@ A single temperature-0.7 sample scores 79.3% to 80.7% under v2, so greedy is alr
 | heuristic hybrid (code alone) | <=16k | 63 | 12.0 | 41.7 | 12,616 | 314,325 | 310,491 | 38.8 | 59.8 | 100.0 | 48.7 |
 | heuristic hybrid (code alone) | 16-32k | 44 | 9.4 | 41.0 | 52,868 | 1,128,930 | 1,099,501 | 32.6 | 57.2 | 100.0 | 45.7 |
 | heuristic hybrid (code alone) | >32k | 13 | 6.6 | 39.7 | 34,338 | 1,515,636 | 1,482,645 | 26.6 | 55.5 | 100.0 | 43.2 |
+| heuristic hybrid (code alone) (reconciler v3) | <=16k | 63 | 12.8 | 41.7 | 12,616 | 302,020 | 298,187 | 40.0 | 60.0 | 100.0 | 49.2 |
+| heuristic hybrid (code alone) (reconciler v3) | 16-32k | 44 | 9.8 | 41.0 | 53,813 | 1,126,611 | 1,096,238 | 33.7 | 57.4 | 100.0 | 46.1 |
+| heuristic hybrid (code alone) (reconciler v3) | >32k | 13 | 6.8 | 39.7 | 34,338 | 1,515,588 | 1,482,693 | 27.2 | 55.6 | 100.0 | 43.4 |
 
 Each model call sees one document (about 1.5-3k tokens), so no hybrid case overflows the 16k context; accuracy still falls with case length because long cases carry more documents and more matching.
 
@@ -199,6 +207,8 @@ The column counts cases with at least one cut document reply (student-sft hybrid
 | student-perdoc-sft hybrid (reconciler v3) | 304 [31] | 1 [0] | 329 [30] | 1 [0] | 149 [14] | 19 [2] |
 | student-perdoc-sft-v2 hybrid | 979 [108] | 1 [0] | 617 [66] | 1 [0] | 205 [13] | 33 [0] |
 | student-perdoc-sft-v2 hybrid (reconciler v3) | 341 [27] | 1 [0] | 367 [24] | 1 [0] | 199 [10] | 31 [0] |
+| heuristic hybrid (code alone) | 1,281 | 1 | 1,393 | 0 | 1,532 | 3 |
+| heuristic hybrid (code alone) (reconciler v3) | 1,222 | 1 | 1,391 | 0 | 1,522 | 3 |
 
 Test has 2,109 true GSTR-2B links, 2,398 register links and 1,674 payment links (dev: 355, 401, 270); `python scripts/hybrid_link_audit.py RUN_DIR CASE_ROOT...` reproduces the counts.
 v2 recovers 291 to 321 GSTR-2B links per model on test without adding a false one (student-perdoc-sft: 2 false links under v1, 1 under v2).
@@ -313,6 +323,9 @@ With reconciler v1 the per-document 4B hybrid is level with the 30B teacher on I
 | heuristic hybrid (code alone) | itc_invoice | 132 | -2.4 [-6.8, +1.4] | 0.2499 |
 | heuristic hybrid (code alone) | context_acc | 130 | -2.8 [-11.9, +6.0] | 0.5217 |
 | heuristic hybrid (code alone) | composite | 132 | -12.5 [-14.3, -10.8] | 0.0005 |
+| heuristic hybrid (code alone) (reconciler v3) | itc_invoice | 132 | -1.1 [-5.4, +2.7] | 0.6052 |
+| heuristic hybrid (code alone) (reconciler v3) | context_acc | 130 | -2.8 [-11.9, +6.0] | 0.5217 |
+| heuristic hybrid (code alone) (reconciler v3) | composite | 132 | -11.8 [-13.4, -10.1] | 0.0005 |
 | Claude Sonnet (via Claude Code CLI) hybrid | itc_invoice | 12 | +70.1 [+52.8, +84.7] | 0.0005 |
 | Claude Sonnet (via Claude Code CLI) hybrid | context_acc | 11 | +36.4 [+13.6, +63.6] | 0.0035 |
 | Claude Sonnet (via Claude Code CLI) hybrid | composite | 12 | +31.5 [+24.6, +36.7] | 0.0005 |
@@ -338,6 +351,7 @@ student-sft hybrid vs this row is the like-for-like pairing (same adapter, same 
 | student-perdoc-sft-v2 hybrid | 0.11 | 488 | 62.7 | - | - |
 | student-perdoc-sft-v2 hybrid (reconciler v3) | - | - | - | - | - |
 | heuristic hybrid (code alone) | 15.55 | 0 | 1.0 | - | - |
+| heuristic hybrid (code alone) (reconciler v3) | - | - | - | - | - |
 | Claude Sonnet (via Claude Code CLI) hybrid | 0.11 | 185 | 16.9 | - | - |
 
 Throughput is from each run's first pass: student-base made 2,288 document calls in 1,553 s wall (2.79M prompt and 0.73M completion tokens), and Sonnet made 36 document calls through `claude -p` at concurrency 2 on the Mac.
