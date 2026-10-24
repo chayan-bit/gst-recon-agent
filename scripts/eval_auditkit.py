@@ -144,7 +144,10 @@ def main(argv: list[str] | None = None) -> int:
 def render_md(doc: dict, metric_names: list[str]) -> str:
     L = [f"## AuditKIT {doc['auditkit_version']} comparison", "",
          f"{doc['cases']} cases. Baseline: `{doc['baseline']}`. Run fingerprints (sha256 of model, dataset, adapter, metrics and config):", "",
-         "| run | fingerprint |", "|---|---|", *(f"| {n} | `{r['fingerprint']}` |" for n, r in doc["runs"].items()), ""]
+         "| run | fingerprint | failed samples |", "|---|---|---|",
+         *(f"| {n} | `{r['fingerprint']}` | {r['failed']} |" for n, r in doc["runs"].items()), "",
+         "AuditKIT drops failed samples (transport errors, context overflow) from its means; the `gst_recon.eval` tables count them as zero. "
+         "Compare the two only on runs with 0 failed samples.", ""]
     for name, comp in doc["comparisons"].items():
         L += [f"### `{name}` vs `{doc['baseline']}` (grade: {comp['_grade']})", "",
               "| metric | baseline | candidate | delta | AuditKIT p | AuditKIT significant | corrected p (centred bootstrap) | 95% CI of delta |", "|---|---|---|---|---|---|---|---|"]
