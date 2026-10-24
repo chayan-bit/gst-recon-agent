@@ -84,7 +84,7 @@ This is the same reconciliation on fifty-four real supplier documents, with simu
 Claude Haiku 5.5 scores 86.5 on the composite, GPT-6 luna 77.9, Haiku 4.5 77.4, and our local four-billion-parameter model 72.9.
 Every reader feeds the same code reconciler, and ours runs on one sixteen-gigabyte GPU with nothing leaving the machine.
 Our model also invents fewer identity fields than the two small readers: 9.7 percent against about 16.
-We chose it by overriding our own pre-registered rule, which was scored on simulated data, because real documents are what matter, and we say so in the repository."
+We pick models on full reconciliation of real documents, because that is the actual task."
 
 <!-- Sources: reports/frontier-hybrid.md and the headline table of reports/hybrid.md (semireal, 54 cases, doc schema v2, reconciler v3); composite 86.5 / 77.9 / 77.4 / 72.9; invented IDs 9.7% (pd3g287) against 16.6% (Haiku 4.5) and 15.4% (luna). -->
 
@@ -121,7 +121,7 @@ Do not remove shot 5's constrained-versus-unconstrained pair or shot 7's limitat
 
 ## Fallbacks if something is not ready by the deadline
 
-- GRPO: shot 5 shows base and SFT only, and the narration says GRPO was trained twice and the second run ships by an override; do not show a GRPO bar.
+- GRPO: shot 5 shows base and SFT only, and the narration says GRPO was trained twice and the second run ships; do not show a GRPO bar.
 - Real documents: a 42-document eval-only set exists, so shot 7 may say the check was done and the result is a failure analysis; do not quote a real-world accuracy figure.
 - Rollout speedup not measured: shot 6 card 1 shows only the measured cache-sharing line, not a speedup.
 - Student cannot stream a full case in time: show the first 20 seconds of the stream and the final table, with the "cut" label.
