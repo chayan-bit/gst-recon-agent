@@ -1,0 +1,392 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "extractions": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "doc_id": {
+            "type": "string"
+          },
+          "doc_type": {
+            "enum": [
+              "invoice",
+              "credit_note"
+            ],
+            "type": "string"
+          },
+          "supplier_gstin": {
+            "type": "string"
+          },
+          "supplier_name": {
+            "type": "string"
+          },
+          "invoice_no": {
+            "type": "string"
+          },
+          "invoice_date": {
+            "description": "YYYY-MM-DD",
+            "type": "string"
+          },
+          "place_of_supply": {
+            "description": "2-digit GST state code",
+            "type": "string"
+          },
+          "reverse_charge": {
+            "type": "boolean"
+          },
+          "original_invoice_no": {
+            "description": "credit notes only, else empty string",
+            "type": "string"
+          },
+          "line_items": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "description": {
+                  "type": "string"
+                },
+                "hsn": {
+                  "type": "string"
+                },
+                "taxable_value": {
+                  "type": "number"
+                },
+                "rate": {
+                  "type": "number"
+                },
+                "igst": {
+                  "type": "number"
+                },
+                "cgst": {
+                  "type": "number"
+                },
+                "sgst": {
+                  "type": "number"
+                },
+                "cess": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "description",
+                "hsn",
+                "taxable_value",
+                "rate",
+                "igst",
+                "cgst",
+                "sgst",
+                "cess"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "taxable_value": {
+            "type": "number"
+          },
+          "igst": {
+            "type": "number"
+          },
+          "cgst": {
+            "type": "number"
+          },
+          "sgst": {
+            "type": "number"
+          },
+          "cess": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "doc_id",
+          "doc_type",
+          "supplier_gstin",
+          "supplier_name",
+          "invoice_no",
+          "invoice_date",
+          "place_of_supply",
+          "reverse_charge",
+          "original_invoice_no",
+          "line_items",
+          "taxable_value",
+          "igst",
+          "cgst",
+          "sgst",
+          "cess",
+          "total"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "matches": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "doc_id": {
+            "type": "string"
+          },
+          "register_vouchers": {
+            "description": "matching purchase register voucher_no values",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "gstr2b_period": {
+            "description": "MMYYYY of the GSTR-2B where found, else empty string",
+            "type": "string"
+          },
+          "gstr2b_ctin": {
+            "description": "supplier GSTIN as shown in GSTR-2B, else empty string",
+            "type": "string"
+          },
+          "gstr2b_doc_no": {
+            "description": "inum/ntnum as shown in GSTR-2B, else empty string",
+            "type": "string"
+          },
+          "payment_refs": {
+            "description": "bank statement ref_no values paying this document",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "flags": {
+            "items": {
+              "enum": [
+                "missing_in_2b",
+                "gstin_mismatch",
+                "amount_mismatch",
+                "duplicate",
+                "period_mismatch",
+                "unpaid_180d"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "doc_id",
+          "register_vouchers",
+          "gstr2b_period",
+          "gstr2b_ctin",
+          "gstr2b_doc_no",
+          "payment_refs",
+          "flags"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "itc": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "doc_id": {
+            "type": "string"
+          },
+          "eligible": {
+            "additionalProperties": false,
+            "properties": {
+              "igst": {
+                "type": "number"
+              },
+              "cgst": {
+                "type": "number"
+              },
+              "sgst": {
+                "type": "number"
+              },
+              "cess": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "igst",
+              "cgst",
+              "sgst",
+              "cess"
+            ],
+            "type": "object"
+          },
+          "blocked": {
+            "additionalProperties": false,
+            "properties": {
+              "igst": {
+                "type": "number"
+              },
+              "cgst": {
+                "type": "number"
+              },
+              "sgst": {
+                "type": "number"
+              },
+              "cess": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "igst",
+              "cgst",
+              "sgst",
+              "cess"
+            ],
+            "type": "object"
+          },
+          "deferred": {
+            "additionalProperties": false,
+            "properties": {
+              "igst": {
+                "type": "number"
+              },
+              "cgst": {
+                "type": "number"
+              },
+              "sgst": {
+                "type": "number"
+              },
+              "cess": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "igst",
+              "cgst",
+              "sgst",
+              "cess"
+            ],
+            "type": "object"
+          },
+          "reasons": {
+            "items": {
+              "description": "ITC reason codes. Section refs are to the CGST Act 2017 unless noted.",
+              "enum": [
+                "ELIGIBLE",
+                "RCM_ELIGIBLE",
+                "BLOCKED_MOTOR_VEHICLE",
+                "BLOCKED_FOOD_BEVERAGE",
+                "BLOCKED_CLUB_MEMBERSHIP",
+                "BLOCKED_WORKS_CONTRACT",
+                "BLOCKED_PERSONAL_USE",
+                "BLOCKED_GIFT",
+                "DEFERRED_NOT_IN_2B",
+                "DEFERRED_PERIOD_MISMATCH",
+                "DEFERRED_GSTIN_MISMATCH",
+                "DEFERRED_AMOUNT_MISMATCH",
+                "DEFERRED_UNPAID_180D",
+                "CREDIT_NOTE_REVERSAL"
+              ],
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "doc_id",
+          "eligible",
+          "blocked",
+          "deferred",
+          "reasons"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "itc_totals": {
+      "additionalProperties": false,
+      "properties": {
+        "eligible": {
+          "additionalProperties": false,
+          "properties": {
+            "igst": {
+              "type": "number"
+            },
+            "cgst": {
+              "type": "number"
+            },
+            "sgst": {
+              "type": "number"
+            },
+            "cess": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "igst",
+            "cgst",
+            "sgst",
+            "cess"
+          ],
+          "type": "object"
+        },
+        "blocked": {
+          "additionalProperties": false,
+          "properties": {
+            "igst": {
+              "type": "number"
+            },
+            "cgst": {
+              "type": "number"
+            },
+            "sgst": {
+              "type": "number"
+            },
+            "cess": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "igst",
+            "cgst",
+            "sgst",
+            "cess"
+          ],
+          "type": "object"
+        },
+        "deferred": {
+          "additionalProperties": false,
+          "properties": {
+            "igst": {
+              "type": "number"
+            },
+            "cgst": {
+              "type": "number"
+            },
+            "sgst": {
+              "type": "number"
+            },
+            "cess": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "igst",
+            "cgst",
+            "sgst",
+            "cess"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "eligible",
+        "blocked",
+        "deferred"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "extractions",
+    "matches",
+    "itc",
+    "itc_totals"
+  ],
+  "type": "object"
+}
