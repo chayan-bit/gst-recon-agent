@@ -315,6 +315,17 @@ The column counts cases with at least one cut document reply (student-sft hybrid
 
 Paired by case_id over all 132 cases (realworld included); same prompts, same code, same server; the only change is the per-document LoRA adapter.
 
+### Paired difference vs teacher-30B constrained, end-to-end
+
+| run | metric | paired n | delta pts [95% CI] | bootstrap p |
+|---|---|---|---|---|
+| student-perdoc-sft hybrid | itc_invoice | 120 | +3.1 [-1.6, +7.5] | 0.1754 |
+| student-perdoc-sft hybrid | context_acc | 119 | +47.2 [+41.1, +53.7] | 0.0005 |
+| student-perdoc-sft hybrid | composite | 120 | +4.2 [+0.8, +8.1] | 0.0260 |
+
+Paired by case_id over the 120 simulator cases (the teacher did not run realworld); the teacher is the end-to-end teacher-30B constrained row above in this report.
+On ITC invoice exact the per-document 4B hybrid is level with the 30B teacher (the CI includes zero); it is ahead on context accuracy and on the composite.
+
 ### Paired difference vs SFT constrained (full grammar), end-to-end
 
 | run | metric | paired n | delta pts [95% CI] | bootstrap p |
