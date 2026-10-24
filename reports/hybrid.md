@@ -48,6 +48,29 @@ Five replies per document sampled at temperature 0.7 and voted field by field (t
 A single temperature-0.7 sample scores 79.3% to 80.7% under v2, so greedy is already near the vote; the vote costs 5x the completion tokens and about 3.3x the wall time on one 16 GB card, so the test set was not run with it.
 `python scripts/hybrid_vote.py OUT_RUN SAMPLE_RUN...` builds the voted run from cached replies.
 
+### Doc schema v2 (protocol change, 61f4b63)
+
+The per-document SFT v3 adapter (trained on the simulator's diverse identity formats, `fmt_version` 2) fell into a greedy loop inside `invoice_no` on 81 of the 384 small-dev document replies: after a fiscal-year prefix such as `2627` it kept choosing `0` until the 4,096-token cap, so the reply did not parse and the document dropped out of the reconciliation (ITC invoice exact 69.7% against 87.8% for student-perdoc-sft v1, all of the gap from the unparsed documents; on the parsed documents it read every header field better than v1).
+Doc schema v2 caps `invoice_no` and `original_invoice_no` at 16 characters (`maxLength` in `doc_json_schema`), the legal maximum of an invoice number under CGST Rule 46(b), so grammar-constrained decoding has to close the string.
+It is the default for every arm from 61f4b63 on, including the shipped system; the reconciler (v3) is unchanged.
+Sanity check on an adapter that never looped (student-perdoc-sft v1, fresh replies, schema v2 vs v1): small dev ITC invoice exact 87.9% vs 87.8%, composite 91.3 vs 91.2, context 90.7% vs 90.7%, 0 unparsed replies (big dev pending).
+Two cases of the 12-case realworld set carry an 18-character invoice number (beyond the Rule 46 limit, which that hand-built set did not enforce), so no arm can read those two fields under v2; every other set's invoice numbers are at most 16 characters long.
+Results labelled "doc schema v2" below were run with fresh replies under this protocol; earlier rows are schema v1.
+
+### Ship rule for the v3 adapters (pre-registered 2026-10-25 02:21 IST, before their final numbers)
+
+The small dev set uses the simulator's original (`fmt_version` 1) identity formats, which student-perdoc-sft v1 was trained on, so "beats v1 on sim dev" is biased against adapters trained on the diverse formats.
+Candidates: student-perdoc-sft v3 (pd3), its GRPO final (pd3g287), the abstention SFT (pd3a: identity fields not visible on the page blanked in the SFT targets) and its GRPO final, if it lands in time.
+All of them, and student-perdoc-sft v1 as the reference, are run under doc schema v2 and reconciler v3.
+
+A candidate ships instead of student-perdoc-sft v1 if and only if:
+- (a) it is non-inferior on simulated dev: the paired ITC invoice exact delta against v1 has a 95% CI lower bound of at least -3.0 points on both the small (120) and the big (60) dev set;
+- (b) on the realinv per-document set it beats v1 on ITC doc exact and on the mean of invoice number and invoice date accuracy, with a lower invented-identity rate.
+
+Among the candidates that pass (a), the best on (b) is chosen.
+That candidate and v1 are then run once on the simulated test set (paired, schema v2; this is v1's second test run, under a protocol change applied to both arms) and scored once on realinv2, a fresh held-out set of about 30 real invoices labelled the same way.
+From this point realinv is a selection set; realinv2 is never used for selection.
+
 ### GRPO from the per-document SFT (dev only, measured, not shipped)
 
 A GRPO snapshot (step 75) trained from student-perdoc-sft v2 with the per-document reward was measured on both dev sets under reconciler v3; it is not the shipped adapter and was never run on test.
