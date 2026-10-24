@@ -235,7 +235,7 @@ All rows include commit ac03f32, which stops the repair step from computing tax 
 ### Reconciler v1 and v2
 
 Rows without a suffix use reconciler v1; rows marked "(reconciler v2)" re-score the same cached model replies (no new model calls) with reconciler v2, commit b5c3c0b.
-v2's rules were fixed after an error analysis of one demo case (examples/test_iid-hard-23-00001, not one of the 132 evaluation cases) and checked on the train split before the test set was re-scored once:
+v2's rules were fixed after an error analysis of one demo case (examples/test_iid-hard-23-00001, a test_iid-split example case, seed 23, not among the 132 scored cases, seeds 9001/9002) and checked on the train split before the test set was re-scored once:
 - A GSTR-2B link no longer requires the invoice number to match within one edit; the number adds to the score and a link without it needs GSTIN, date and amounts (threshold unchanged).
 - A supplier GSTIN that fails the mod-36 check digit is an OCR misread and is replaced by the linked GSTR-2B (else register) GSTIN when that one is valid and within 2 edits; a valid GSTIN is never changed, so a real registration in another state still raises gstin_mismatch.
 - A line read as motor_vehicle with HSN 8704 (goods vehicle) is not blocked under s.17(5)(a).
