@@ -45,6 +45,19 @@ def test_constrained_flag_sends_json_schema_response_format(world):
     assert "JSON Schema" not in body["messages"][0]["content"]
 
 
+def test_compact_schema_flag_makes_zero_slots_optional_but_keeps_types_and_enums(world):
+    _run(world, "perfect", "cc", "--constrained", "--compact-schema")
+    schema = world["stub"].requests[-1]["response_format"]["json_schema"]["schema"]
+    assert schema["required"] == ["extractions", "matches", "itc", "itc_totals"]
+    rec = schema["properties"]["itc"]["items"]
+    assert rec["required"] == ["doc_id"]
+    for bucket in ("eligible", "blocked", "deferred"):
+        assert "required" not in rec["properties"][bucket]
+        assert rec["properties"][bucket]["properties"]["igst"] == {"type": "number"}
+    assert rec["properties"]["reasons"]["items"]["enum"][0] == "ELIGIBLE"
+    assert "required" not in schema["properties"]["itc_totals"]["properties"]["blocked"]
+
+
 def test_unconstrained_has_no_response_format_and_schema_in_prompt(world):
     _run(world, "perfect", "u")
     body = world["stub"].requests[-1]

@@ -9,7 +9,7 @@ from pathlib import Path
 
 from gst_recon.eval import report as rep
 from gst_recon.eval.cases import load_cases
-from gst_recon.eval.client import chat, json_schema_format
+from gst_recon.eval.client import chat, compact_json_schema, json_schema_format
 from gst_recon.eval.prompts import build_messages
 from gst_recon.eval.runner import run_eval
 
@@ -21,7 +21,7 @@ def _price(a: argparse.Namespace) -> dict:
 def cmd_run(a: argparse.Namespace) -> int:
     truth = a.truth_dir if a.truth_dir and a.truth_dir.exists() else None
     cases = load_cases(a.cases, truth_dir=truth, n_per_dir=a.n_per_dir, seed=a.seed, stratify=a.stratify)
-    fmt = json_schema_format() if a.constrained else None
+    fmt = json_schema_format(compact_json_schema() if a.compact_schema else None) if a.constrained else None
     extra = json.loads(a.extra_body) if a.extra_body else {}
     if a.no_thinking:
         extra.setdefault("chat_template_kwargs", {"enable_thinking": False})
@@ -103,6 +103,8 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument("--label", help="name shown in reports (default: out dir name)")
     r.add_argument("--constrained", action=argparse.BooleanOptionalAction, default=False,
                    help="send response_format json_schema (grammar-constrained decoding); default unconstrained")
+    r.add_argument("--compact-schema", action="store_true",
+                   help="with --constrained: let inner fields be omitted (zero fields dropped), the form the SFT targets use")
     r.add_argument("--schema-in-prompt", action=argparse.BooleanOptionalAction, default=True,
                    help="unconstrained runs only: append the JSON Schema to the system prompt")
     r.add_argument("--mode", choices=("e2e", "hybrid"), default="e2e",

@@ -24,6 +24,20 @@ def json_schema_format(schema: dict | None = None) -> dict:
     return {"type": "json_schema", "json_schema": {"name": "recon", "schema": schema or output_json_schema()}}
 
 
+def compact_json_schema() -> dict:
+    """output_json_schema with every inner `required` list dropped (only doc_id stays required, plus the top-level keys),
+    matching the compact form of rewards.scoring.compact that the SFT targets use: zero fields may be omitted."""
+    def loosen(x):
+        if isinstance(x, dict):
+            out = {k: loosen(v) for k, v in x.items() if k != "required"}
+            if "doc_id" in x.get("properties", {}):
+                out["required"] = ["doc_id"]
+            return out
+        return [loosen(v) for v in x] if isinstance(x, list) else x
+    schema = output_json_schema()
+    return {**loosen(schema), "required": schema["required"]}
+
+
 _CTX = re.compile(r"maximum context length of (\d+) tokens.*?(\d+) tokens from the input", re.S)
 _CAP = re.compile(r"supports at most (\d+) completion tokens")
 

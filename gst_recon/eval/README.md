@@ -27,6 +27,8 @@ Training data builders must wrap `prompt.txt` with the same `SYSTEM_PROMPT`, oth
       --constrained --concurrency 32 \
       --gpu-hour-usd 2.5 --api-in-per-mtok 3 --api-out-per-mtok 15
 
+- `--compact-schema` (with `--constrained`) drops the inner `required` lists so zero fields may be omitted, the compact form the SFT targets use.
+  The full grammar forces every slot and corrupts blocked and deferred for a compact-trained model.
 - `--constrained` sends `response_format={"type":"json_schema","json_schema":{"name":"recon","schema":<schemas/output.schema.json>}}`; `--unconstrained` (default) sends none.
 - `--cases` takes one or more directories whose children are `<case_id>/{prompt.txt,target.json,meta.json}`; split, difficulty and `ocr_recall` come from `meta.json`.
   `--n-per-dir N` takes a seeded random sample per directory.
