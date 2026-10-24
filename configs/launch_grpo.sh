@@ -9,7 +9,9 @@
 set -u
 ROOT=$HOME/gst-recon; REPO=$ROOT/repo; LOG=$ROOT/logs/grpo.log
 BASE=$ROOT/hf/hub/models--Qwen--Qwen3-4B-Instruct-2507/snapshots/cdbee75f17c01a7cc42f958dc650907174af0554
-ALIGN_PY=$ROOT/venv-align/bin/python    # AlignTune fork ef217fc (installed 2026-10-24)
+ALIGN_PY=$ROOT/venv-align/bin/python    # AlignTune fork at ALIGN_REF, installed with:
+# uv pip install --python $ALIGN_PY --no-deps "aligntune @ git+https://github.com/chayan-bit/aligntune@$ALIGN_REF"
+ALIGN_REF=5e987f3c89a144d7f96da6cdf6d90d95ef35b47d  # ef217fc + unique per-run adapter names (restart-safe)
 SGLANG_PY=$ROOT/venv-sglang/bin/python  # sglang 0.5.10.post1
 PORT=30001; MEMFRAC=0.45                # must match configs/grpo_sglang.yaml (sglang_server_url, budget)
 cd "$REPO" || exit 1
@@ -28,6 +30,8 @@ ss -ltn | grep -q ":$PORT " && die "port $PORT in use"
 grep -q "sglang_server_url: http://127.0.0.1:$PORT" configs/grpo_sglang.yaml || die "config does not point at port $PORT"
 "$ALIGN_PY" -c "import importlib.util as u; assert u.find_spec('aligntune.backends.trl.rl.rollout.sglang_rollout')" 2>/dev/null \
   || die "AlignTune in $ALIGN_PY has no SGLang rollout"
+grep -q "\"commit_id\":\"$ALIGN_REF\"" "$ROOT"/venv-align/lib/python3.11/site-packages/aligntune-*.dist-info/direct_url.json \
+  || die "AlignTune in venv-align is not the fork at $ALIGN_REF"
 avail=$(free -g | awk '/Mem:/{print $7}'); gpu=$(nvidia-smi --query-gpu=memory.free --format=csv,noheader,nounits)
 disk=$(df -BG --output=avail ~ | tail -1 | tr -dc 0-9)
 log "preflight avail=${avail}G gpu_free=${gpu}MiB disk=${disk}G load=$(cut -d' ' -f1 /proc/loadavg) rows=$(wc -l < data/train/curated/grpo-merged/train.jsonl)"

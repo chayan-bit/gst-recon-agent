@@ -1,5 +1,5 @@
 # GRPO from the SFT adapter with the schema-gated gst_recon_grpo reward (gst_recon/rewards, registered by
-# gst_recon/train/reward.py). Rollouts come from an SGLang server (AlignTune fork ef217fc, TRL GRPO path).
+# gst_recon/train/reward.py). Rollouts come from an SGLang server (AlignTune fork 5e987f3, TRL GRPO path).
 # This is the only GRPO config: the runner refuses GRPO without train.rollout_backend sglang (no HF fallback).
 # Policy = base Qwen3-4B (run with MODEL=<the exact local snapshot the server serves>) + the SFT LoRA loaded as
 # the trainable adapter (gst_recon.init_adapter). The server runs the same snapshot with --enable-lora, so the
