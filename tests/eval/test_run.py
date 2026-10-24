@@ -120,3 +120,10 @@ def test_completion_cap_error_is_clipped():
     from gst_recon.eval import client
 
     assert client.clip_max_tokens("max_completion_tokens is too large: 32768.This model supports at most 16384 completion tokens.") == 16384
+
+
+def test_max_tokens_factor_caps_per_case_budget(world):
+    _run(world, "perfect", "f", "--max-tokens-factor", "1.5")
+    assert {r["max_tokens"] for r in world["stub"].requests} == {2500}
+    _run(world, "perfect", "f2", "--max-tokens-factor", "1.5", "--max-tokens", "2000", "--no-resume")
+    assert {r["max_tokens"] for r in world["stub"].requests[-6:]} == {2000}

@@ -27,13 +27,19 @@ def cmd_run(a: argparse.Namespace) -> int:
         extra.setdefault("chat_template_kwargs", {"enable_thinking": False})
     api_key = a.api_key or "EMPTY"
 
+    def cap(c) -> int:
+        """Completion budget: --max-tokens, or --max-tokens-factor x the reference length (+1000) if smaller. A reply
+        that outgrows the reference by that factor is a runaway loop, not an answer."""
+        t = c.meta.get("target_tokens")
+        return a.max_tokens if not a.max_tokens_factor or not t else min(a.max_tokens, int(a.max_tokens_factor * t) + 1000)
+
     def gen(c):
         return chat(a.endpoint, a.model, build_messages(c.prompt, schema_in_prompt=not a.constrained and a.schema_in_prompt),
-                    response_format=fmt, max_tokens=a.max_tokens, temperature=a.temperature, timeout=a.timeout,
+                    response_format=fmt, max_tokens=cap(c), temperature=a.temperature, timeout=a.timeout,
                     api_key=api_key, extra=extra, retries=a.retries)
 
     config = {"label": a.label or a.out.name, "model": a.model, "endpoint": a.endpoint, "constrained": a.constrained,
-              "schema_in_prompt": (not a.constrained) and a.schema_in_prompt, "max_tokens": a.max_tokens,
+              "schema_in_prompt": (not a.constrained) and a.schema_in_prompt, "max_tokens": a.max_tokens, "max_tokens_factor": a.max_tokens_factor,
               "temperature": a.temperature, "extra_body": extra, "cases": [str(p) for p in a.cases], "n_per_dir": a.n_per_dir,
               "truth_dir": str(truth) if truth else None, "prices": _price(a)}
     agg = run_eval(cases, gen, a.out, config, concurrency=a.concurrency, resume=not a.no_resume,
@@ -75,6 +81,8 @@ def main(argv: list[str] | None = None) -> int:
                    help="unconstrained runs only: append the JSON Schema to the system prompt")
     r.add_argument("--concurrency", type=int, default=16)
     r.add_argument("--max-tokens", type=int, default=32768, help="completion cap; clipped automatically to what fits the server context")
+    r.add_argument("--max-tokens-factor", type=float, help="per-case cap = factor x meta.target_tokens + 1000 (never above --max-tokens); "
+                   "stops runaway repetition from holding a server slot for minutes")
     r.add_argument("--temperature", type=float, default=0.0)
     r.add_argument("--retries", type=int, default=2, help="per-request retries on 5xx/429/connection errors")
     r.add_argument("--timeout", type=float, default=900.0)
