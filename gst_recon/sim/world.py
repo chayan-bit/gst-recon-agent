@@ -50,8 +50,26 @@ TWOB_ANOMALIES = ("not_filed", "filed_wrong_buyer", "filed_other_gstin", "filed_
 REG_ANOMALIES = ("reg_duplicate", "reg_amount_typo", "reg_gstin_typo", "reg_invoice_no_typo")
 PAY_ANOMALIES = ("unpaid", "partial", "paid_late")
 
-# FY 2024-25 return periods (pre GST-rate-rationalisation, see RULES.md)
-PERIODS = [(2024, m) for m in range(4, 13)] + [(2025, m) for m in range(1, 4)]
+
+
+def period_range(first: tuple[int, int], last: tuple[int, int]) -> list[tuple[int, int]]:
+    """Inclusive list of (year, month) return periods."""
+    out, (y, m) = [], first
+    while (y, m) <= last:
+        out.append((y, m))
+        y, m = (y + 1, 1) if m == 12 else (y, m + 1)
+    if not out:
+        raise ValueError(f"empty period range {first}..{last}")
+    return out
+
+
+# April 2024 to September 2026: spans the 22 Sep 2025 GST 2.0 rate cutover (RULES.md)
+DEFAULT_PERIODS = period_range((2024, 4), (2026, 9))
+
+
+def fy_label(d: date) -> str:
+    start = d.year if d.month >= 4 else d.year - 1
+    return f"{start % 100:02d}-{(start + 1) % 100:02d}"
 
 
 @dataclass
@@ -100,25 +118,31 @@ def make_party(rng: random.Random, state: str) -> Party:
                  address=_address(rng, state))
 
 
-def _new_supplier(rng: random.Random, buyer_state: str, kind: str) -> Supplier:
+def _offered(pool: tuple[cat.Product, ...], start: date, end: date) -> list[cat.Product]:
+    """Products with a known rate on every day of the period (both regimes if it straddles the cutover)."""
+    return [p for p in pool if cat.rate_on(p, start) and cat.rate_on(p, end)]
+
+
+def _new_supplier(rng: random.Random, buyer_state: str, kind: str, start: date, end: date) -> Supplier:
     state = buyer_state if rng.random() < 0.6 else rng.choice(sorted(cat.STATES))
     party = make_party(rng, state)
     other = rng.choice([s for s in sorted(cat.STATES) if s != state])
-    pool = {"goods": cat.GOODS, "services": cat.SERVICES, "rcm": cat.RCM, "blocked": cat.BLOCKED}[kind]
+    pool = _offered({"goods": cat.GOODS, "services": cat.SERVICES, "rcm": cat.RCM, "blocked": cat.BLOCKED}[kind], start, end)
     k = 1 if kind in ("rcm", "blocked") else min(len(pool), rng.randint(2, 5))
-    fmt = rng.choice(("INV/24-25/{:04d}", "{:05d}", "GST-{:04d}", "SI{:06d}", "2024-25/{:d}", "TI/{:03d}"))
+    fmt = rng.choice(("INV/{fy}/{:04d}", "{:05d}", "GST-{:04d}", "SI{:06d}", "{fy}/{:d}", "TI/{:03d}"))
     return Supplier(party, make_gstin(other, party.gstin[2:12]), tuple(rng.sample(pool, k)), kind, fmt,
                     rng.randint(1, 900))
 
 
-def _line(rng: random.Random, p: cat.Product, intra: bool, scale: float = 1.0) -> TruthLineItem:
+def _line(rng: random.Random, p: cat.Product, intra: bool, supply_date: date) -> TruthLineItem:
+    rate, cess_rate = cat.rate_on(p, supply_date)
     qty = rng.randint(*p.qty_range)
     price = r2(rng.uniform(*p.price_range))
-    taxable = r2(qty * price * scale)
-    igst, cgst, sgst = split_tax(taxable, p.rate, intra)
+    taxable = r2(qty * price)
+    igst, cgst, sgst = split_tax(taxable, rate, intra)
     return TruthLineItem(description=p.description, hsn=p.hsn, quantity=qty, unit=p.unit, unit_price=price,
-                         taxable_value=taxable, rate=p.rate, igst=igst, cgst=cgst, sgst=sgst,
-                         cess=r2(taxable * p.cess_rate / 100), category=p.category)
+                         taxable_value=taxable, rate=rate, igst=igst, cgst=cgst, sgst=sgst,
+                         cess=r2(taxable * cess_rate / 100), category=p.category)
 
 
 def _assemble(s: Supplier, buyer: Party, lines: list[TruthLineItem], no: str, dt: date, doc_type: DocType,
@@ -133,17 +157,18 @@ def _assemble(s: Supplier, buyer: Party, lines: list[TruthLineItem], no: str, dt
     )
 
 
-def _invoice(rng: random.Random, s: Supplier, buyer: Party, dt: date) -> TruthInvoice:
+def _invoice(rng: random.Random, s: Supplier, buyer: Party, dt: date, goods: list[cat.Product]) -> TruthInvoice:
     intra = s.party.state_code == buyer.state_code  # place of supply = buyer's state (IGST Act s.10/12(2))
-    lines = [_line(rng, p, intra) for p in rng.sample(s.products, rng.randint(1, len(s.products)))]
+    lines = [_line(rng, p, intra, dt) for p in rng.sample(s.products, rng.randint(1, len(s.products)))]
     if s.kind == "blocked" and rng.random() < 0.25:
-        lines.append(_line(rng, rng.choice(cat.GOODS), intra))  # mixed invoice: blocked + normal line
+        lines.append(_line(rng, rng.choice(goods), intra, dt))  # mixed invoice: blocked + normal line
     s.counter += 1
-    return _assemble(s, buyer, lines, s.number_fmt.format(s.counter), dt, DocType.INVOICE, s.kind == "rcm")
+    no = s.number_fmt.format(s.counter, fy=fy_label(dt))
+    return _assemble(s, buyer, lines, no, dt, DocType.INVOICE, s.kind == "rcm")
 
 
 def _credit_note(rng: random.Random, d: Draft, buyer: Party, period_end: date) -> TruthInvoice:
-    src = d.inv.line_items[0]
+    src = d.inv.line_items[0]  # rate/cess follow the original supply, even across the cutover (s.34)
     intra = d.supplier.party.state_code == buyer.state_code
     taxable = r2(src.taxable_value * rng.choice((0.05, 0.1, 0.2, 0.25)))
     igst, cgst, sgst = split_tax(taxable, src.rate, intra)
@@ -202,7 +227,7 @@ def _register(rng: random.Random, drafts: list[Draft], period_end: date) -> list
         for _ in range(2 if d.reg == "reg_duplicate" else 1):
             seq[vtype] += 1
             prefix = "PUR" if vtype == "Purchase" else "DN"
-            vno = f"{prefix}/24-25/{seq[vtype]:04d}"
+            vno = f"{prefix}/{fy_label(period_end)}/{seq[vtype]:04d}"
             rows.append(PurchaseRegisterRow(voucher_no=vno, **base))
             d.vouchers.append(vno)
     return rows
@@ -212,24 +237,26 @@ def _month_end(y: int, m: int) -> date:
     return date(y, m, calendar.monthrange(y, m)[1])
 
 
-def generate_case(seed: int, difficulty: str = "medium", index: int = 0) -> Case:
+def generate_case(seed: int, difficulty: str = "medium", index: int = 0,
+                  periods: list[tuple[int, int]] | None = None) -> Case:
     knobs = DIFFICULTY[difficulty]
     rng = random.Random(f"gst-recon:{seed}:{difficulty}:{index}")
-    y, m = rng.choice(PERIODS)
+    y, m = rng.choice(periods or DEFAULT_PERIODS)
     start, end = date(y, m, 1), _month_end(y, m)
     late = rng.random() < knobs.p_late_recon
     as_of = end + timedelta(days=rng.randint(190, 230) if late else rng.randint(12, 25))
     buyer = make_party(rng, rng.choice(sorted(cat.STATES)))
 
+    goods = _offered(cat.GOODS, start, end)
     suppliers: dict[str, list[Supplier]] = {}
     drafts: list[Draft] = []
     for _ in range(rng.randint(*knobs.n_invoices)):
         kind = _pick_kind(rng, knobs)
         pool = suppliers.setdefault(kind, [])
         if not pool or rng.random() < 0.4:
-            pool.append(_new_supplier(rng, buyer.state_code, kind))
+            pool.append(_new_supplier(rng, buyer.state_code, kind, start, end))
         s = rng.choice(pool)
-        inv = _invoice(rng, s, buyer, start + timedelta(days=rng.randrange(end.day)))
+        inv = _invoice(rng, s, buyer, start + timedelta(days=rng.randrange(end.day)), goods)
         d = Draft(inv, s, twob=_maybe(rng, knobs.p_side, TWOB_ANOMALIES), reg=_maybe(rng, knobs.p_side, REG_ANOMALIES),
                   pay=_maybe(rng, knobs.p_side, PAY_ANOMALIES) if late else None)
         if s.kind == "rcm" and d.twob == "filed_other_gstin":
