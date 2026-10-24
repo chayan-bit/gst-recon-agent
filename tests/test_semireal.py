@@ -61,15 +61,18 @@ def built(tmp_path_factory):
                     "scanned document, OCR text", "medium", frozenset({"supplier_gstin"}))
     bad = RealDoc("z1", a[0].record.model_copy(update={"supplier_gstin": ""}), "illegible", "scanned document, OCR text")
     out = tmp_path_factory.mktemp("semireal")
-    manifest = build_set(a + b + [unreg, bad], buyer, profile, out, seed=3)
+    manifest = build_set(a + b + [unreg, bad], buyer, profile, out, seed=3, sim_seeds=(3, 4))
     return out, manifest, {d.key: d for d in a + b + [unreg]}
 
 
 def test_manifest_counts_levels_and_exclusions(built):
     _, m, docs = built
     assert m["excluded"] == [{"source_key": "z1", "reason": m["excluded"][0]["reason"]}]
-    for level in ("clean", "sim"):
-        assert m["levels"][level]["n_cases"] == 2 and m["levels"][level]["n_docs"] == len(docs)
+    assert m["levels"]["clean"]["n_cases"] == 2 and m["levels"]["clean"]["n_docs"] == len(docs)
+    assert m["levels"]["sim"]["n_cases"] == 4 and m["levels"]["sim"]["n_docs"] == 2 * len(docs)
+    assert set(m["levels"]["sim"]["per_seed"]) == {"3", "4"}
+    ids = [c["case_id"] for c in m["levels"]["sim"]["cases"]]
+    assert len(set(ids)) == 4 and all(i.startswith(("semireal-sim-s3-", "semireal-sim-s4-")) for i in ids)
     assert all(not c["planted"] for c in m["levels"]["clean"]["cases"])
     assert sum(len(c["planted"]) for c in m["levels"]["sim"]["cases"]) > 0
     assert any("unregistered_supplier_not_in_2b" in a for c in m["levels"]["clean"]["cases"] for a in c["anomalies"])
@@ -79,15 +82,16 @@ def test_cases_round_trip_through_load_cases_and_the_hybrid_parsers(built):
     out, _, docs = built
     for level in ("clean", "sim"):
         cases = load_cases([out / level], truth_dir=out / "truth")
-        assert len(cases) == 2 and all(c.truth is not None and c.split == f"semireal_{level}" for c in cases)
+        assert len(cases) == (2 if level == "clean" else 4)
+        assert all(c.truth is not None and c.truth.case_id == c.case_id and c.split == f"semireal_{level}" for c in cases)
         for c in cases:
             h = parse_header(split_sections(c.prompt)["CASE"])
             assert (h.period, h.as_of) == (c.truth.inputs.period, c.truth.inputs.as_of_date)
             keys = {d["doc_id"]: d["source_key"] for d in c.meta["documents"]}
             assert [d.text for d in parse_prompt(c.prompt).docs] == [docs[keys[d.doc_id]].text.rstrip("\n") for d in parse_prompt(c.prompt).docs]
     clean = {c.case_id[len("semireal-clean-"):]: c for c in load_cases([out / "clean"], truth_dir=out / "truth")}
-    sim = {c.case_id[len("semireal-sim-"):]: c for c in load_cases([out / "sim"], truth_dir=out / "truth")}
-    for k, c in clean.items():  # same documents in the same order and the same reconciliation date at both levels
+    sim = {c.case_id[len("semireal-sim-s3-"):]: c for c in load_cases([out / "sim"], truth_dir=out / "truth") if "-s3-" in c.case_id}
+    for k, c in clean.items():  # the sim replica with the clean seed shares document order and reconciliation date
         assert c.meta["documents"] == sim[k].meta["documents"]
         assert c.truth.inputs.as_of_date == sim[k].truth.inputs.as_of_date
 
@@ -98,3 +102,4 @@ def test_oracle_true_records_reproduce_the_target(built, tmp_path, level):
     o = run_oracle(out / level, out / "truth", tmp_path / "oracle")
     assert o["n_errors"] == 0 and o["overall"]["itc_invoice"] == pytest.approx(1.0)
     assert {cid: c["misses"] for cid, c in o["cases"].items() if c["misses"]} == {}
+    assert set(o["by_difficulty"]) == ({"clean"} if level == "clean" else {"sim-s3", "sim-s4"})

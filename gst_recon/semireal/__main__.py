@@ -1,4 +1,4 @@
-"""CLI: python -m gst_recon.semireal build --labels <dir> --out <dir> [--seed 0] [--max-docs 25] [--no-oracle]
+"""CLI: python -m gst_recon.semireal build --labels <dir> --out <dir> [--seed 0] [--sim-seeds 0,1,2,3,4] [--max-docs 25] [--no-oracle]
 
 <labels> layout (the per-document labelling output):
   manifest.json                        buyer_profile_header (a "=== CASE ===" block), documents[] {doc_id, confidence, section_label}
@@ -57,17 +57,19 @@ def main(argv: list[str] | None = None) -> int:
     b.add_argument("--labels", type=Path, required=True)
     b.add_argument("--out", type=Path, required=True)
     b.add_argument("--seed", type=int, default=0)
+    b.add_argument("--sim-seeds", default="0", help="comma-separated seeds of the sim-level replicas, e.g. 0,1,2,3,4")
     b.add_argument("--max-docs", type=int, default=MAX_DOCS)
     b.add_argument("--no-oracle", action="store_true")
     a = ap.parse_args(argv)
     docs, buyer, profile = load_labels(a.labels)
     a.out.mkdir(parents=True, exist_ok=True)
     mark_eval_dir(a.out)
-    manifest = build_set(docs, buyer, profile, a.out, seed=a.seed, max_docs=a.max_docs)
+    manifest = build_set(docs, buyer, profile, a.out, seed=a.seed, max_docs=a.max_docs,
+                         sim_seeds=tuple(int(x) for x in a.sim_seeds.split(",")))
     manifest["confidence"] = {d.key: d.confidence for d in docs}
     (a.out / "manifest.json").write_text(json.dumps(manifest, indent=1))
     for level, v in manifest["levels"].items():
-        print(f"{level}: {v['n_cases']} cases, {v['n_docs']} docs, {sum(len(c['planted']) for c in v['cases'])} planted discrepancies")
+        print(f"{level}: {v['n_cases']} cases, {v['n_docs']} docs; per seed: {v['per_seed']}")
     print(f"excluded {len(manifest['excluded'])}: " + "; ".join(f"{e['source_key']} ({e['reason']})" for e in manifest["excluded"]))
     if a.no_oracle:
         return 0
@@ -77,7 +79,7 @@ def main(argv: list[str] | None = None) -> int:
     for lv, o in oracle.items():
         misses = {cid: c["misses"] for cid, c in o["cases"].items() if c["misses"]}
         bad += len(misses)
-        print(f"oracle {lv}: {o['overall']}, errors {o['n_errors']}, cases with misses {len(misses)}: "
+        print(f"oracle {lv}: {o['overall']}, errors {o['n_errors']}, by difficulty {o['by_difficulty']}, cases with misses {len(misses)}: "
               + ", ".join(f"{cid} {sorted({(m['doc_id'], m['part']) for m in ms})}" for cid, ms in misses.items()))
     return 1 if bad else 0
 

@@ -137,7 +137,8 @@ def build_case(key: str, docs: list[RealDoc], buyer: Party, profile: BuyerProfil
     structural = {n.split(":", 1)[0] for n in notes if "unregistered" in n}
     planted = [f"{d.inv.doc_id}:{a}" for d in drafts for a in (d.twob, d.reg, d.pay)
                if a and not (a == "not_filed" and d.inv.doc_id in structural)]
-    case = Case(case_id=f"semireal-{level}-{key}", seed=seed, difficulty=level, split=f"semireal_{level}", inputs=inputs,
+    tag = level if level == "clean" else f"{level}-s{seed}"  # sim replicas differ by seed; the id carries it
+    case = Case(case_id=f"semireal-{tag}-{key}", seed=seed, difficulty=tag, split=f"semireal_{level}", inputs=inputs,
                 expected=reconcile(inputs, links), anomalies=planted + notes + (["late_reconciliation"] if late else []))
     return case, docs
 
@@ -153,11 +154,24 @@ def _check_round_trip(prompt: str, case: Case, blocks: list[tuple[str, str, str]
         raise ValueError(f"{case.case_id}: header does not parse back")
 
 
+def _register_text(case: Case) -> tuple[str, dict]:
+    """render_register as the simulator renders it. shortcut: the hybrid parser splits the fixed-width Tally text
+    style on runs of spaces, so an empty cell (an unregistered supplier's GSTIN) shifts the row; such a register is
+    redrawn until the CSV style comes up, recorded in meta. Upgrade when the parser handles empty fixed-width cells."""
+    inp, i = case.inputs, 0
+    while True:
+        text, meta = render_register(inp.purchase_register, inp.period, inp.buyer.name,
+                                     random.Random(f"{case.case_id}:register" + (f":{i}" if i else "")))
+        if meta["style"] == "csv" or all(r.party_gstin for r in inp.purchase_register):
+            return text, meta | ({"redrawn_for_empty_gstin": i} if i else {})
+        i += 1
+
+
 def write_case(case: Case, docs: list[RealDoc], out: Path, truth_out: Path) -> dict:
     """<out>/<case_id>/{prompt.txt,target.json,meta.json} (the eval case format) + <truth_out>/<case_id>.json."""
     cid, inp = case.case_id, case.inputs
     blocks = [(inv.doc_id, d.source, d.text.rstrip("\n")) for inv, d in zip(inp.invoices, docs)]
-    reg_text, reg_meta = render_register(inp.purchase_register, inp.period, inp.buyer.name, random.Random(f"{cid}:register"))
+    reg_text, reg_meta = _register_text(case)
     bank_text, bank_meta = render_bank(inp.bank_statement, random.Random(f"{cid}:bank"))
     prompt, rest = assemble(case, blocks, (f"Tally {reg_meta['style']} export", reg_text), render_gstr2b(inp.gstr2b),
                             (f"{bank_meta['bank_style'].upper()} CSV", bank_text))
@@ -186,22 +200,29 @@ def write_case(case: Case, docs: list[RealDoc], out: Path, truth_out: Path) -> d
 
 
 def build_set(docs: list[RealDoc], buyer: Party, profile: BuyerProfile, out: Path, *, seed: int = 0,
-              max_docs: int = MAX_DOCS, levels: tuple[str, ...] = tuple(LEVELS)) -> dict:
-    """Write <out>/<level>/<case_id>/... and <out>/truth/<level>/<case_id>.json; returns the manifest."""
+              sim_seeds: tuple[int, ...] = (0,), max_docs: int = MAX_DOCS) -> dict:
+    """Write <out>/<level>/<case_id>/... and <out>/truth/<level>/<case_id>.json; returns the manifest.
+    `clean` is built once with `seed`; `sim` once per seed in `sim_seeds` (replicas: same documents, fresh draws of
+    order, review date and book discrepancies; difficulty "sim-s<seed>" gives per-replica eval breakdowns).
+    The sim replica with seed == `seed` is the clean set's twin (same order and review date)."""
     excluded = [{"source_key": d.key, "reason": r} for d in docs if (r := exclusion_reason(d))]
     kept = [d for d in docs if not exclusion_reason(d)]
-    manifest: dict = {"version": VERSION, "eval_only": True, "seed": seed, "max_docs": max_docs, "excluded": excluded,
+    manifest: dict = {"version": VERSION, "eval_only": True, "seed": seed, "sim_seeds": list(sim_seeds), "max_docs": max_docs, "excluded": excluded,
                       "n_input_docs": len(docs), "n_kept_docs": len(kept), "levels": {}}
     groups = group_docs(kept, max_docs)
-    for level in levels:
+    for level, seeds in (("clean", (seed,)), ("sim", sim_seeds)):
         rows = []
-        for key, group in groups:
-            case, ordered = build_case(key, group, buyer, profile, level, seed)
+        for s, (key, group) in ((s, g) for s in seeds for g in groups):
+            case, ordered = build_case(key, group, buyer, profile, level, s)
             meta = write_case(case, ordered, out / level, out / "truth" / level)
-            rows.append({"case_id": case.case_id, "period": case.inputs.period, "as_of": case.inputs.as_of_date.isoformat(),
+            rows.append({"case_id": case.case_id, "seed": s, "period": case.inputs.period, "as_of": case.inputs.as_of_date.isoformat(),
                          "docs": meta["documents"], "anomalies": case.anomalies,
                          "planted": [a for a in case.anomalies if a.split(":")[-1] in _PLANTED],
-                         "prompt_tokens": meta["prompt_tokens"], "ocr_recall": meta["ocr_recall"]})
-        manifest["levels"][level] = {"n_cases": len(rows), "n_docs": sum(len(r["docs"]) for r in rows), "cases": rows}
+                         "prompt_tokens": meta["prompt_tokens"], "ocr_recall": meta["ocr_recall"],
+                         "deferred_itc": round(sum(case.expected.itc_totals.deferred.model_dump().values()), 2),
+                         "gross_tax": round(sum(sum(getattr(i, h) for h in ("igst", "cgst", "sgst", "cess")) for i in case.inputs.invoices), 2)})
+        per_seed = {str(s): {"n_cases": sum(r["seed"] == s for r in rows), "planted": sum(len(r["planted"]) for r in rows if r["seed"] == s),
+                             "deferred_itc": round(sum(r["deferred_itc"] for r in rows if r["seed"] == s), 2)} for s in seeds}
+        manifest["levels"][level] = {"n_cases": len(rows), "n_docs": sum(len(r["docs"]) for r in rows), "per_seed": per_seed, "cases": rows}
     return manifest
 

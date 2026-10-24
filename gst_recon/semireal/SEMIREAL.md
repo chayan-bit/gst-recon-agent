@@ -9,7 +9,7 @@ The real documents, labels and built cases are client data and stay out of git; 
 
 ## How to build
 
-    python -m gst_recon.semireal build --labels <labels dir> --out <out dir> [--seed 0] [--max-docs 25]
+    python -m gst_recon.semireal build --labels <labels dir> --out <out dir> [--seed 0] [--sim-seeds 0,1,2,3,4] [--max-docs 25]
 
 Input layout and output layout are in the docstring of `gst_recon/semireal/__main__.py`.
 Output: `<out>/{clean,sim}/<case_id>/{prompt.txt,target.json,meta.json}`, truth Case JSON under `<out>/truth/<level>/<case_id>.json` (pass `--truth-dir <out>/truth` to the eval), `<out>/manifest.json` and `<out>/oracle.json`.
@@ -23,6 +23,10 @@ Output: `<out>/{clean,sim}/<case_id>/{prompt.txt,target.json,meta.json}`, truth 
 - Two noise levels:
   - `clean`: no planted book discrepancies (anomaly rate 0); every invoice is booked once, filed in the period's 2B under its GSTIN with its amounts, and paid in full 5 to 60 days after its date (a payment after the reconciliation date is not in the statement, as in the simulator).
   - `sim`: the simulator's default per-document rate (`DIFFICULTY["medium"].p_side` = 0.12 per side): not filed, filed against another buyer, filed under the supplier's other-state GSTIN, filed with a wrong amount, filed in the next period; register duplicate, amount typo, GSTIN typo, invoice-number typo; unpaid, partly paid, paid late (payment anomalies only in late reviews, as in the simulator).
+- Replicas: `clean` is built once (`--seed`); `sim` is built once per `--sim-seeds` seed, each a fresh draw of document order, review date and book discrepancies over the same documents.
+  Case ids carry the seed (`semireal-sim-s<seed>-YYYYMM`, `semireal-clean-YYYYMM`) so the truth lookup stays unique, and `meta.json` `difficulty` is `sim-s<seed>`, so the eval's difficulty breakdown is the per-replica breakdown.
+  The `sim` replica whose seed equals `--seed` is the `clean` set's twin (same order and review date).
+- Register rendering: the hybrid parser reads the fixed-width Tally text style by splitting on runs of spaces, so an empty GSTIN cell (unregistered supplier) would shift the row; such a register is redrawn until the CSV style comes up (`meta.register.redrawn_for_empty_gstin`).
 - Not planted: the simulator's synthetic credit notes (they would need a simulator-rendered document, which is not real) and its buyer-profile purposes (the labels decide category and purpose).
 - Every planted discrepancy is listed per case in `meta.json` `anomalies` and in `manifest.json` (`planted`), in the simulator's `D03:not_filed` form.
 - Structural facts that are not planted discrepancies are listed too: `unregistered_supplier_not_in_2b` and `credit_note_of:Dnn`.
@@ -41,7 +45,8 @@ A document gets books only when its true identity (supplier GSTIN, invoice numbe
 
 `gst_recon.semireal.oracle.run_oracle` feeds the true per-document records (`hybrid.sft.truth_records`, the hybrid worker's oracle) through the real hybrid path (`eval.runner.run_eval` + `hybrid.run.make_generator`: reply parsing, repair, identity fill, linker, rules engine) and lists every document whose extraction, match row or ITC differs from the target, with the reconciler's trace.
 A miss means the reconciler and the truth disagree on correct input, so it must be explained before the set is used.
-Known cause on real documents: `hybrid.repair` sets `total` to taxable value plus tax, so a real invoice whose payable total also carries a non-taxable pass-through (for example a travel agent's invoice that includes the airline fare) loses its extracted total and therefore its payment link; its ITC is unaffected.
+Known cause on real documents: `hybrid.repair` sets `total` to taxable value plus tax, so a real invoice whose payable total also carries a non-taxable pass-through (for example a travel agent's invoice that includes the airline fare) loses its extracted total and therefore its payment link, and the register total then reads as an amount mismatch.
+In a late review the lost payment link cascades into ITC: the reconciler sees the invoice unpaid after 180 days and defers its credit (`DEFERRED_UNPAID_180D`).
 
 ## What this set measures
 

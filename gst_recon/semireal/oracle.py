@@ -59,5 +59,10 @@ def run_oracle(cases_dir: Path, truth_dir: Path, out: Path) -> dict:
     scores = {r["case_id"]: r for r in map(json.loads, (out / "scores.jsonl").read_text().splitlines())}
     per_case = {c.case_id: {"metrics": {k: scores[c.case_id]["metrics"].get(k) for k in ("composite", "itc_invoice", "match_accuracy")},
                             "error": scores[c.case_id].get("error"), "misses": _misses(c)} for c in cases}
-    return {"cases_dir": str(cases_dir), "n_cases": len(cases), "overall": {k: agg["overall"][k]["mean"] for k in
+    groups: dict[str, list] = {}
+    for c in cases:
+        groups.setdefault(c.difficulty, []).append(per_case[c.case_id])
+    by_difficulty = {g: {"n_cases": len(v), "itc_invoice": sum(x["metrics"]["itc_invoice"] for x in v) / len(v),
+                         "cases_with_misses": sum(bool(x["misses"]) for x in v)} for g, v in sorted(groups.items())}
+    return {"cases_dir": str(cases_dir), "n_cases": len(cases), "by_difficulty": by_difficulty, "overall": {k: agg["overall"][k]["mean"] for k in
             ("composite", "itc_invoice", "match_accuracy") if k in agg["overall"]}, "n_errors": agg["n_errors"], "cases": per_case}
