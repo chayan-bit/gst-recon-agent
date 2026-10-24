@@ -1,0 +1,65 @@
+# Per-document SFT v2 on rs-lab: finish v1's epoch. v1 (configs/sft_perdoc_trl.yaml, adapter runs/sft-perdoc) hit
+# its 1 h cap at step 124 of 298 (1984 of 4759 rows) and slowed from 19 to 53 s/step as 4 x 4 batches spilled past
+# the A6000's 48 GB (TRL keeps fp32 152k-vocab logits for the loss, entropy and token accuracy).
+# v1's checkpoints were removed, so this starts from v1's final adapter weights (gst_recon.init_adapter) with a
+# fresh optimizer, on the 2775 rows v1 never saw, in v1's order:
+#   data/train/curated/sft-perdoc-v2-rest = sft-perdoc-pc rows randperm(4759, torch.Generator().manual_seed(47))[1984:]
+# Seed 47 is measured, not assumed: its per-step token sums match v1's logged num_tokens deltas over all 124 steps
+# (correlation 0.992; the next best of seeds 0-19999 is 0.34). sequential_order keeps that file order.
+# Effective batch stays 16 (2 x 8) to cut the logits memory; LR resumes from v1's cosine at step 124 (6.35e-5).
+# Adapters: runs/sft-perdoc-v2/checkpoint-N every 40 steps (keep 1) plus a bf16 copy with SHA256SUMS in
+# runs/sft-perdoc-v2/bf16/step-N (v2 step N = v1-equivalent step 124 + N), also at the last step.
+#   configs/launch_sft_perdoc_rslab.ps1 -Config configs\sft_perdoc_v2_trl.yaml -Name sft_perdoc_v2 -Data sft-perdoc-v2-rest
+algo: sft
+backend: trl
+
+model:
+  name_or_path: Qwen/Qwen3-4B-Instruct-2507
+  precision: bf16
+  max_seq_length: 4096  # longest curated row is 3785 tokens
+  use_peft: true
+  # must match v1's adapter exactly (the runner checks)
+  lora_r: 32
+  lora_alpha: 64
+  lora_dropout: 0.0
+  lora_target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+
+datasets:
+  - name: data/train/curated/sft-perdoc-v2-rest  # columns: prompt, completion (2775 rows, pre-ordered)
+    split: train
+    task_type: sft
+
+train:
+  epochs: 1
+  max_steps: 174  # 2775 rows / 16 per step
+  per_device_batch_size: 2
+  gradient_accumulation_steps: 8
+  learning_rate: 6.35e-5  # v1's cosine LR at step 124; cosine to 0 over the rest
+  warmup_ratio: 0.03  # ~5 steps for the fresh optimizer state
+  weight_decay: 0.0
+  max_grad_norm: 1.0
+  packing: false
+  logging_steps: 1
+  save_steps: 40
+  save_total_limit: 1
+  seed: 42
+
+logging:
+  output_dir: runs/sft-perdoc-v2
+  run_name: gst-recon-sft-perdoc-v2
+  loggers: [tensorboard]
+
+chat_template: auto
+
+gst_recon:
+  init_adapter: runs/sft-perdoc  # v1's step-124 adapter (fp32), loaded into the trainable LoRA; v1 is only read
+  sequential_order: true
+  bf16_snapshots: runs/sft-perdoc-v2/bf16
+  gradient_checkpointing: true
+  optimizer: adamw_torch  # bitsandbytes is not installed on the Windows host
+  lr_scheduler: cosine
+  dataloader_num_workers: 0
+  dataset_num_proc: 1
+  rows_as_is: true
+  check_completion_mask: true
+  max_hours: 2.5  # wall-clock cap: save, then stop

@@ -38,3 +38,28 @@ def test_mismatched_lora_is_refused(tmp_path):
     _init_from_adapter(trainer, str(tmp_path))
     with pytest.raises(SystemExit, match="does not match"):
         trainer.setup_model()
+
+
+def test_bf16_snapshot_casts_weights_and_writes_checksums_last(tmp_path):
+    import hashlib
+
+    torch = pytest.importorskip("torch")
+    from safetensors.torch import load_file, save_file
+
+    from gst_recon.train.__main__ import bf16_snapshot
+
+    src = tmp_path / "checkpoint-40"
+    src.mkdir()
+    save_file({"a.lora_A.weight": torch.randn(4, 8), "step": torch.tensor([3])}, str(src / "adapter_model.safetensors"))
+    config = b'{"r": 4}'
+    (src / "adapter_config.json").write_bytes(config)
+
+    sha = bf16_snapshot(src, tmp_path / "out" / "step-40")
+
+    out = tmp_path / "out" / "step-40"
+    w = load_file(str(out / "adapter_model.safetensors"))
+    assert w["a.lora_A.weight"].dtype == torch.bfloat16 and w["step"].dtype == torch.int64
+    assert sha == hashlib.sha256((out / "adapter_model.safetensors").read_bytes()).hexdigest()
+    lines = (out / "SHA256SUMS").read_text().splitlines()
+    assert lines == [f"{sha}  adapter_model.safetensors",
+                     f"{hashlib.sha256(config).hexdigest()}  adapter_config.json"]

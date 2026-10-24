@@ -192,13 +192,18 @@ def _add_step_log(trainer, max_hours: float | None = None) -> None:
     from transformers import TrainerCallback
 
     class StepLog(TrainerCallback):
-        def on_train_begin(self, args, state, control, **kwargs):
+        def on_train_begin(self, args, state, control, model=None, **kwargs):
             self.t0 = time.time()
+            print(f"batch {args.per_device_train_batch_size}x{args.gradient_accumulation_steps} gradient_checkpointing "
+                  f"args={args.gradient_checkpointing} model={getattr(model, 'is_gradient_checkpointing', None)}", flush=True)
 
         def on_log(self, args, state, control, logs=None, **kwargs):
             line = step_line(state.global_step, state.max_steps, logs or {})
             if line:
-                print(line, flush=True)
+                import torch
+
+                mem = f" gpu_peak {torch.cuda.max_memory_reserved() / 2**30:.1f}G" if torch.cuda.is_available() else ""
+                print(line + mem, flush=True)
 
         def on_step_end(self, args, state, control, **kwargs):
             if max_hours and time.time() - self.t0 > max_hours * 3600:  # wall-clock cap: save, then stop
@@ -207,6 +212,51 @@ def _add_step_log(trainer, max_hours: float | None = None) -> None:
 
     callbacks = trainer.get_hf_callbacks  # both SFT and GRPO trainers build their HF callbacks from this
     trainer.get_hf_callbacks = lambda: [*callbacks(), StepLog()]
+
+
+def bf16_snapshot(src: Path, dst: Path) -> str:
+    """bf16 copy of a saved LoRA adapter and its config; SHA256SUMS is written last. Returns the weights' sha256."""
+    import hashlib
+    import shutil
+
+    import torch
+    from safetensors.torch import load_file, save_file
+
+    dst.mkdir(parents=True, exist_ok=True)
+    weights = load_file(str(src / "adapter_model.safetensors"))
+    save_file({k: v.to(torch.bfloat16) if v.is_floating_point() else v for k, v in weights.items()},
+              str(dst / "adapter_model.safetensors"), metadata={"format": "pt"})
+    shutil.copy2(src / "adapter_config.json", dst / "adapter_config.json")
+    names = ("adapter_model.safetensors", "adapter_config.json")
+    sums = {n: hashlib.sha256((dst / n).read_bytes()).hexdigest() for n in names}
+    (dst / "SHA256SUMS").write_text("".join(f"{h}  {n}\n" for n, h in sums.items()))
+    return sums[names[0]]
+
+
+def _add_bf16_snapshots(trainer, out: str) -> None:
+    """After every checkpoint save (and a forced save at the last step), a bf16 adapter copy in <out>/step-N."""
+    from transformers import TrainerCallback
+
+    class Bf16Snapshots(TrainerCallback):
+        def on_step_end(self, args, state, control, **kwargs):
+            if state.global_step >= state.max_steps:
+                control.should_save = True
+
+        def on_save(self, args, state, control, **kwargs):
+            src = Path(args.output_dir) / f"checkpoint-{state.global_step}"
+            sha = bf16_snapshot(src, Path(out) / f"step-{state.global_step}")
+            print(f"bf16 snapshot step {state.global_step}: {out}/step-{state.global_step} sha256 {sha}", flush=True)
+
+    callbacks = trainer.get_hf_callbacks
+    trainer.get_hf_callbacks = lambda: [*callbacks(), Bf16Snapshots()]
+
+
+def _sequential_order() -> None:
+    """Train on rows in file order instead of the seeded shuffle (rows pre-ordered to finish an interrupted epoch)."""
+    import transformers
+    from torch.utils.data import SequentialSampler
+
+    transformers.Trainer._get_train_sampler = lambda self, ds=None: SequentialSampler(self.train_dataset if ds is None else ds)
 
 
 def mask_report(labels: list[int]) -> str:
@@ -265,6 +315,7 @@ def cmd_run(a: argparse.Namespace) -> None:
     init_adapter, max_hours = extras.pop("init_adapter", None), extras.pop("max_hours", None)
     check_mask = extras.pop("check_completion_mask", False)
     rows_as_is = extras.pop("rows_as_is", False)
+    snapshots, sequential = extras.pop("bf16_snapshots", None), extras.pop("sequential_order", False)
     if "dataset_num_proc" in extras:
         _pin_dataset_num_proc(extras.pop("dataset_num_proc"))
 
@@ -282,6 +333,10 @@ def cmd_run(a: argparse.Namespace) -> None:
     _add_step_log(trainer, max_hours)
     if check_mask:
         _add_mask_check(trainer)
+    if snapshots:
+        _add_bf16_snapshots(trainer, snapshots)
+    if sequential:
+        _sequential_order()
     if rows_as_is:
         _use_rows_as_is(trainer, cfg["datasets"][0]["name"])
     if init_adapter:
