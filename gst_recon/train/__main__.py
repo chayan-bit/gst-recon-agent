@@ -340,6 +340,8 @@ def cmd_run(a: argparse.Namespace) -> None:
 
     responses_only = extras.pop("train_on_responses_only", None)
     init_adapter, max_hours = extras.pop("init_adapter", None), extras.pop("max_hours", None)
+    if os.environ.get("GST_MAX_HOURS"):  # a launcher's wall-clock deadline (e.g. stop by 00:30) tightens the cap
+        max_hours = min(float(max_hours or "inf"), float(os.environ["GST_MAX_HOURS"]))
     check_mask = extras.pop("check_completion_mask", False)
     rows_as_is = extras.pop("rows_as_is", False)
     snapshots, sequential = extras.pop("bf16_snapshots", None), extras.pop("sequential_order", False)

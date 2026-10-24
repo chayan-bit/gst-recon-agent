@@ -41,7 +41,7 @@ train:
   rollout_backend: sglang
   sglang_server_url: http://127.0.0.1:30001  # port 30001, never the teacher's or eval server's 30000
   sglang_sync_dir: runs/grpo-sync  # on disk via the repo's runs link, never /dev/shm
-  max_steps: 649  # one pass at 4 documents per step; the 3 h cap binds (~1 min/step expected: ~180 steps)
+  max_steps: 649  # one pass at 4 documents per step; the STOP_AT deadline binds first
   # 1 x 32 = 32 completions per optimizer step = 4 documents x 8 generations
   per_device_batch_size: 1
   gradient_accumulation_steps: 32
@@ -56,7 +56,7 @@ train:
   max_prompt_length: 4736  # > the longest prompt (4634), so no prompt is truncated
   max_completion_length: 1024  # longest truth record is 480 tokens
   logging_steps: 1
-  save_steps: 50
+  save_steps: 25  # each save also writes a bf16 copy with SHA256SUMS (gst_recon.bf16_snapshots)
   save_total_limit: 2
   seed: 42
 
@@ -72,7 +72,8 @@ gst_recon:
   rollout_json_schema: doc  # SGLang json_schema = doc_json_schema() on every rollout request
   # create_rl_trainer builds the model config from kwargs, so the 4-bit load is restated here as one
   quantization: {load_in_4bit: true, bnb_4bit_compute_dtype: bfloat16, bnb_4bit_quant_type: nf4}
-  max_hours: 3  # wall-clock cap: save, then stop
+  max_hours: 6  # wall-clock cap: save, then stop; the launcher tightens it to its STOP_AT deadline (00:30)
+  bf16_snapshots: runs/grpo-perdoc-kratos/bf16
   mask_truncated_completions: true
   gradient_checkpointing: true
   optimizer: adamw_8bit
