@@ -73,7 +73,7 @@ CODEX_CLEAN = ["--skip-git-repo-check", "--ephemeral", "--ignore-user-config", "
 
 
 def codex_cli(prompt: str, model: str, timeout: float, retries: int, cwd: Path, cmd_prefix: list[str] | None = None,
-              system: str | None = None, json_schema: dict | None = None, effort: str = "medium", codex_home: str | None = None) -> dict:
+              system: str | None = None, json_schema: dict | None = None, effort: str = "none", codex_home: str | None = None) -> dict:
     """One `codex exec` call. Never raises; retries with exponential backoff (rate limits included). Tokens are the turn's input
     tokens (cached included); there is no cost field."""
     err = ""
@@ -85,7 +85,7 @@ def codex_cli(prompt: str, model: str, timeout: float, retries: int, cwd: Path, 
             with tempfile.TemporaryDirectory(dir=cwd) as td:
                 td = Path(td)
                 (td / "system.txt").write_text(system or "")
-                cmd = [*(cmd_prefix or ["codex"]), "exec", "-m", model, *CODEX_CLEAN, "-c", f'model_reasoning_effort="{effort}"',
+                cmd = [*(cmd_prefix or ["codex"]), "exec", "-m", model, *CODEX_CLEAN, "-c", f'model_reasoning_effort="{effort}"', "-c", 'model_reasoning_summary="none"',
                        "-c", f'model_instructions_file="{td / "system.txt"}"', "-o", str(td / "last.txt")]
                 if json_schema is not None:
                     (td / "schema.json").write_text(json.dumps(json_schema))
@@ -100,7 +100,8 @@ def codex_cli(prompt: str, model: str, timeout: float, retries: int, cwd: Path, 
                     raise RuntimeError(f"exit {p.returncode}: {json.dumps(failed)[:300] if failed else 'no completed turn or empty reply'}")
             u = done.get("usage") or {}
             return {"text": text, "latency_s": time.perf_counter() - t0, "finish_reason": "stop", "prompt_tokens": u.get("input_tokens"),
-                    "completion_tokens": u.get("output_tokens"), "cost_usd": None, "error": None}
+                    "completion_tokens": u.get("output_tokens"), "reasoning_tokens": u.get("reasoning_output_tokens"),
+                    "cost_usd": None, "error": None}
         except (subprocess.SubprocessError, OSError, ValueError, RuntimeError) as e:
             err = f"{type(e).__name__}: {e} {stderr}".strip()
             if attempt < retries:
@@ -135,7 +136,7 @@ def main(argv: list[str] | None = None) -> int:
                          "flag = the CLI's --json-schema structured output, system prompt unchanged")
     ap.add_argument("--backend", choices=("claude", "codex"), default="claude",
                     help="codex: `codex exec` per document (hybrid only; CODEX_HOME must hold only auth.json), schema via --output-schema")
-    ap.add_argument("--effort", default="medium", help="codex reasoning effort")
+    ap.add_argument("--effort", default="none", help="codex reasoning effort (none = no test-time compute; gpt-6-luna rejects minimal)")
     ap.add_argument("--mode", choices=("e2e", "hybrid"), default="e2e",
                     help="hybrid: one CLI call per document (DOC_SYSTEM_PROMPT + doc schema), code reconciles; "
                          "--out must then be a subdirectory of runs/eval/frontier")
