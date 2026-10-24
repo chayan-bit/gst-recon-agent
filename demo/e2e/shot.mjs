@@ -1,4 +1,4 @@
-// Usage: node shot.mjs <out.png> [--kind hybrid|e2e] [--mode live|replay] [--model base:sft] [--case ID] [--speed 8] [--wait-done] [--click-row D01]
+// Usage: node shot.mjs <out.png> [--kind hybrid|e2e] [--mode live|replay] [--model base:sft] [--case ID] [--speed 8] [--wait-done] [--click-row D01] [--top]
 import { chromium } from "playwright-core";
 
 const a = process.argv.slice(2), out = a[0];
@@ -24,6 +24,7 @@ if (a.includes("--run")) {
   await page.waitForFunction(() => !document.body.classList.contains("running"), null, { timeout: 280000 });
   await page.waitForTimeout(1200);
 }
+if (a.includes("--top")) { await page.evaluate(() => document.querySelectorAll("*").forEach((e) => { if (e.scrollTop > 0) e.scrollTop = 0; })); await page.waitForTimeout(300); }
 if (opt("click-row")) { await page.click(`tbody[data-id="${opt("click-row")}"] tr.main`); await page.waitForTimeout(400); }
 await page.screenshot({ path: out });
 await browser.close();

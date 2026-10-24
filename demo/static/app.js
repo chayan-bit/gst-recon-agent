@@ -42,7 +42,7 @@ async function refreshHealth() {
   el.className = "srv " + (h.live ? "up" : "down");
   el.querySelector("span").textContent = h.live
     ? `SGLang up${h.running != null ? ` \u00B7 ${h.running} running` : ""}`
-    : `SGLang offline \u00B7 ${h.recordings || 0} recorded runs`;
+    : `Offline \u00B7 ${h.recordings || 0} recorded runs`;
   document.querySelector('#modeSeg [data-mode="live"]').disabled = !h.live;
 }
 

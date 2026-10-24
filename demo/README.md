@@ -28,7 +28,7 @@ uv run uvicorn gst_demo.app:app --port 8765
 # open http://localhost:8765/
 ```
 
-Replay only (no GPU, no tunnel): skip the `ssh` line; the UI shows "SGLang offline" and Replay works.
+Replay only (no GPU, no tunnel): skip the `ssh` line; the UI shows "Offline" and Replay works.
 
 Config via environment:
 
