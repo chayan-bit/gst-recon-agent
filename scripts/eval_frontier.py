@@ -29,9 +29,11 @@ CMD = ["claude", "-p", "--model", "{model}", "--output-format", "json", "--syste
        "--no-session-persistence", "--setting-sources", "", "--disable-slash-commands", "--strict-mcp-config"]
 
 
-def claude_cli(prompt: str, model: str, timeout: float, retries: int, cwd: Path, cmd_prefix: list[str] | None = None) -> dict:
+def claude_cli(prompt: str, model: str, timeout: float, retries: int, cwd: Path, cmd_prefix: list[str] | None = None,
+               system: str | None = None) -> dict:
     """One CLI call. Never raises. Tokens count input + cache creation + cache reads; cost is the CLI's own total_cost_usd."""
-    cmd = [c.replace("{model}", model).replace("{system}", with_schema()) for c in CMD]
+    system = with_schema() if system is None else system
+    cmd = [c.replace("{model}", model).replace("{system}", system) for c in CMD]
     if cmd_prefix:
         cmd = [*cmd_prefix, *cmd[1:]]
     err = ""
@@ -66,9 +68,14 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--retries", type=int, default=1)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--truth-dir", type=Path, default=Path("data/truth"))
+    ap.add_argument("--mode", choices=("e2e", "hybrid"), default="e2e",
+                    help="hybrid: one CLI call per document (DOC_SYSTEM_PROMPT + doc schema), code reconciles; "
+                         "--out must then be a subdirectory of runs/eval/frontier")
     a = ap.parse_args(argv)
-    if a.out.resolve().parts[-3:] != ("runs", "eval", "frontier"):
-        ap.error("--out must be runs/eval/frontier (frontier outputs must never leave runs/eval/)")
+    parts = a.out.resolve().parts
+    under = any(parts[i:i + 3] == ("runs", "eval", "frontier") for i in range(len(parts) - 2))
+    if (a.mode == "e2e" and parts[-3:] != ("runs", "eval", "frontier")) or not under:
+        ap.error("--out must be runs/eval/frontier (hybrid: a subdirectory of it); frontier outputs must never leave runs/eval/")
     if a.concurrency > 2:
         ap.error("concurrency is capped at 2 on the Mac")
     work = a.out.resolve() / "cwd"  # neutral cwd: no project files or CLAUDE.md picked up
@@ -77,7 +84,16 @@ def main(argv: list[str] | None = None) -> int:
     config = {"label": LABEL, "model": f"claude {a.model} via `claude -p`", "endpoint": "claude CLI", "constrained": False,
               "schema_in_prompt": True, "cases": [str(p) for p in a.cases], "n_per_dir": a.n_per_dir, "invocation": CMD,
               "prices": {}}
-    agg = run_eval(cases, lambda c: claude_cli(c.prompt, a.model, a.timeout, a.retries, work), a.out, config,
+    gen = lambda c: claude_cli(c.prompt, a.model, a.timeout, a.retries, work)  # noqa: E731
+    if a.mode == "hybrid":
+        from gst_recon.hybrid.docschema import doc_json_schema
+        from gst_recon.hybrid.run import make_generator
+
+        doc_system = lambda m: f"{m}\n\nThe JSON must conform to this JSON Schema:\n{json.dumps(doc_json_schema(), separators=(',', ':'))}"  # noqa: E731
+        gen = make_generator(lambda msgs: claude_cli(msgs[1]["content"], a.model, a.timeout, a.retries, work,
+                                                     system=doc_system(msgs[0]["content"])), a.out, concurrency=a.concurrency)
+        config |= {"label": f"{LABEL} hybrid", "mode": "hybrid"}
+    agg = run_eval(cases, gen, a.out, config,
                    concurrency=a.concurrency, progress=lambda d, n: print(f"\r{d}/{n}", end="", file=sys.stderr, flush=True))
     print(file=sys.stderr)
     print((a.out / "table.md").read_text())

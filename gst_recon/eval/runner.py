@@ -42,7 +42,11 @@ def _git_sha() -> str | None:
 
 def fingerprint_prompts() -> dict[str, str]:
     h = lambda s: hashlib.sha256(s.encode()).hexdigest()[:12]  # noqa: E731
-    return {"system_prompt": h(SYSTEM_PROMPT), "output_schema": h(json.dumps(output_json_schema(), sort_keys=True))}
+    from gst_recon.eval.prompts import DOC_SYSTEM_PROMPT
+    from gst_recon.hybrid.docschema import doc_json_schema
+
+    return {"system_prompt": h(SYSTEM_PROMPT), "output_schema": h(json.dumps(output_json_schema(), sort_keys=True)),
+            "doc_system_prompt": h(DOC_SYSTEM_PROMPT), "doc_schema": h(json.dumps(doc_json_schema(), sort_keys=True))}
 
 
 def _case_path(out: Path, case_id: str) -> Path:

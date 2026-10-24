@@ -38,15 +38,41 @@ def cmd_run(a: argparse.Namespace) -> int:
                     response_format=fmt, max_tokens=cap(c), temperature=a.temperature, timeout=a.timeout,
                     api_key=api_key, extra=extra, retries=a.retries)
 
-    config = {"label": a.label or a.out.name, "model": a.model, "endpoint": a.endpoint, "constrained": a.constrained,
+    if a.mode == "hybrid":
+        gen = _hybrid_gen(a, api_key, extra)
+
+    config = {"label": a.label or a.out.name, "mode": a.mode, "model": a.model, "endpoint": a.endpoint, "constrained": a.constrained,
               "schema_in_prompt": (not a.constrained) and a.schema_in_prompt, "max_tokens": a.max_tokens, "max_tokens_factor": a.max_tokens_factor,
               "temperature": a.temperature, "extra_body": extra, "cases": [str(p) for p in a.cases], "n_per_dir": a.n_per_dir, "stratify": a.stratify,
-              "truth_dir": str(truth) if truth else None, "prices": _price(a)}
+              "truth_dir": str(truth) if truth else None, "prices": _price(a),
+              **({"doc_max_tokens": a.doc_max_tokens, "extractor": a.extractor} if a.mode == "hybrid" else {})}
     agg = run_eval(cases, gen, a.out, config, concurrency=a.concurrency, resume=not a.no_resume,
                    progress=lambda d, n: print(f"\r{d}/{n}", end="", file=sys.stderr, flush=True))
     print(file=sys.stderr)
     print((a.out / "table.md").read_text())
     return 1 if agg["n_errors"] == agg["n_cases"] else 0
+
+
+def _hybrid_gen(a: argparse.Namespace, api_key: str, extra: dict):
+    """Hybrid mode: one call per document (DOC_SYSTEM_PROMPT, doc_json_schema), then the code reconciler."""
+    from gst_recon.hybrid.docschema import doc_json_schema
+    from gst_recon.hybrid.run import make_generator
+
+    fmt = {"type": "json_schema", "json_schema": {"name": "doc", "schema": doc_json_schema()}} if a.constrained else None
+
+    if a.extractor == "heuristic":
+        from gst_recon.hybrid.heuristic import heuristic_call
+
+        return make_generator(heuristic_call, a.out, concurrency=a.concurrency)
+
+    def call(messages):
+        if not a.constrained and a.schema_in_prompt:
+            messages = [{**messages[0], "content": messages[0]["content"] + "\n\nThe JSON must conform to this JSON Schema:\n"
+                         + json.dumps(doc_json_schema(), separators=(",", ":"))}, *messages[1:]]
+        return chat(a.endpoint, a.model, messages, response_format=fmt, max_tokens=a.doc_max_tokens, temperature=a.temperature,
+                    timeout=a.timeout, api_key=api_key, extra=extra, retries=a.retries)
+
+    return make_generator(call, a.out, concurrency=a.concurrency)
 
 
 def cmd_report(a: argparse.Namespace) -> int:
@@ -79,7 +105,12 @@ def main(argv: list[str] | None = None) -> int:
                    help="send response_format json_schema (grammar-constrained decoding); default unconstrained")
     r.add_argument("--schema-in-prompt", action=argparse.BooleanOptionalAction, default=True,
                    help="unconstrained runs only: append the JSON Schema to the system prompt")
-    r.add_argument("--concurrency", type=int, default=16)
+    r.add_argument("--mode", choices=("e2e", "hybrid"), default="e2e",
+                   help="e2e: one call per case returns the whole JSON (default); hybrid: one call per document, code reconciles")
+    r.add_argument("--extractor", choices=("model", "heuristic"), default="model",
+                   help="hybrid only: heuristic = regex extractor, no model (the code-alone floor; --endpoint is ignored)")
+    r.add_argument("--doc-max-tokens", type=int, default=4096, help="hybrid only: completion cap per document call")
+    r.add_argument("--concurrency", type=int, default=16, help="cases in flight (e2e); requests in flight (hybrid)")
     r.add_argument("--max-tokens", type=int, default=32768, help="completion cap; clipped automatically to what fits the server context")
     r.add_argument("--max-tokens-factor", type=float, help="per-case cap = factor x meta.target_tokens + 1000 (never above --max-tokens); "
                    "stops runaway repetition from holding a server slot for minutes")
