@@ -325,6 +325,25 @@ Paired by case_id; p-value from a centred paired bootstrap (null: zero mean diff
 
 ## Hybrid mode
 
+### Full reconciliation (headline)
+
+Case-level scores of the whole pipeline (per-document model, then the frozen reconciler v3), doc schema v2: ITC invoice exact, match accuracy and composite.
+Simulator test: the 120 frozen test cases (test_iid 60 + test_ood 60), each arm run once.
+Semireal: the 54 real-document cases (clean 9, sim seed 0 9, sim seeds 1-4 36), pooled as a case mean.
+Cells are value (paired delta vs v1 [95% CI]), paired bootstrap of 10,000 case resamples, seed 0.
+
+| run | test ITC exact % | test match % | test composite | semireal ITC exact % | semireal match % | semireal composite |
+|---|---|---|---|---|---|---|
+| pd3g287, GRPO from pd3 (shipped) | 80.0 (-0.1 [-1.5, +1.3]) | 85.0 (-3.8 [-4.8, -2.7]) | 81.6 (-1.1 [-2.0, -0.2]) | 61.1 (+2.6 [-1.4, +6.7]) | 71.5 (+7.4 [+1.4, +13.7]) | 72.9 (+4.3 [+1.7, +7.0]) |
+| student-perdoc-sft v1 | 80.1 | 88.7 | 82.8 | 58.5 | 64.1 | 68.6 |
+| ensemble B (identity vote of v1, pd3a, pd3) | not run | not run | not run | 58.3 (-0.2 [-1.0, +0.8]) | 69.7 (+5.6 [+1.7, +10.2]) | 69.9 (+1.3 [+0.5, +2.4]) |
+| Claude Haiku 5.5 hybrid (same harness) | pending | pending | pending | pending | pending | pending |
+| Claude Sonnet end to end (reference, whole case, not hybrid) | 96.3 | 99.0 | 94.4 | not run | not run | not run |
+
+On the test set pd3g287 ties v1 on ITC invoice exact and matches 3.8 points worse; on the real documents it is ahead on all three, significantly on match and composite.
+Ensemble B was not run on the test set, which is run once per shipped candidate.
+Per-document, per-field, dev and schema-valid numbers are proxies and are reported in the sections below.
+
 In hybrid mode the model reads one document at a time (`DOC_SYSTEM_PROMPT` plus the case header and that one document section) and returns its extraction and two judgments per line (ITC category and purpose).
 Deterministic code (`gst_recon/hybrid/`) then does all the matching to register, GSTR-2B and bank, the rupee arithmetic and the ITC rules, and emits the same ReconOutput, scored by the same scorer as the end-to-end rows above.
 The oracle check (true per-document records through the same code) reproduces target.json exactly on all 132 cases (composite 1.0) under all three reconciler versions, so every point lost below is a reading or judgment error or a linking miss, not a rules error.
@@ -544,6 +563,44 @@ The user's reason is the real-document evidence: on semireal, pooled over 54 cas
 The simulated dev sets are rendered in the simulator's original (`fmt_version` 1) identity formats, which v1 was trained on and the pd3-family adapters were not.
 This is a post-hoc override of a pre-registered rule, made after the dev and real-document results were known, and it is disclosed as such.
 The decision is fixed before the test run: pd3g287 and v1 are each run once on the frozen test set under doc schema v2 and reconciler v3 (paired; v1's second test run, pd3g287's first), and the result is reported below whatever it is.
+
+### Test set under doc schema v2 (run once, after the override above)
+
+Both arms ran once on the frozen test set (132 cases) on 2026-10-25 between 03:30 and 04:15 IST, after the override was committed: v1's second test run, pd3g287's first.
+Both use doc schema v2 and reconciler v3; the only protocol change from the schema-v1 headline is the 16-character cap on invoice numbers, applied to both.
+Served as `base:perdoc-grpo` (pd3g287) and `base:perdoc` (v1) on the same SGLang server; 0 transport errors, 0 context overflows, 2 truncated replies for pd3g287 and none for v1.
+
+| run | n | ITC invoice exact % | Context acc % | ITC overclaim (Rs) | ITC underclaim (Rs) | Match acc % | Field F1 % | Composite |
+|---|---|---|---|---|---|---|---|---|
+| pd3g287 (schema v2) | 120 | 80.0 [77.6, 82.3] | 81.5 [78.3, 84.5] | 52,370 | 202,107 | 85.0 [82.8, 87.1] | 93.1 | 81.6 [80.2, 83.2] |
+| v1 (schema v2) | 120 | 80.1 [77.7, 82.6] | 83.0 [79.6, 86.0] | 26,205 | 197,898 | 88.7 [86.9, 90.5] | 93.8 | 82.8 [81.2, 84.4] |
+| v1 (schema v1, earlier headline) | 120 | 79.9 [77.5, 82.4] | 82.7 [79.3, 85.8] | 27,183 | 203,126 | 88.7 [86.9, 90.6] | 93.8 | 82.7 [81.2, 84.4] |
+
+Paired on the 120 simulator cases (10,000 case resamples, seed 0), pd3g287 minus v1 (schema v2): ITC invoice exact -0.1 [-1.5, +1.3] (p = 0.90), match accuracy -3.8 [-4.8, -2.7] (p < 0.005), composite -1.1 [-2.0, -0.2] (p = 0.02).
+v1 under schema v2 reproduces its schema-v1 headline: ITC -0.1 [-0.5, +0.1], match +0.0, composite -0.0.
+By split, pd3g287 vs v1 ITC invoice exact: test_iid 81.7 vs 82.4, test_ood 78.3 vs 77.7; match accuracy test_iid 89.8 vs 91.8, test_ood 80.1 vs 85.7.
+Share of Claude Sonnet end to end (ITC 96.3 on the same 120 cases): pd3g287 83.1%, v1 83.2%.
+realworld (12 hand-built cases, not in the headline): ITC 79.9 vs 81.9, match 85.1 vs 92.5, composite 84.1 vs 88.5.
+
+Invented identity under the doc reward's INVENTED rule (`scripts/eval_hybrid_compare.py`, 0488b17: `identity_score(...) == INVENTED` in `gst_recon/rewards/doc.py`, a GSTIN, invoice number or date other than the truth where the page does not show the truth, over 3 identity slots per parsed document; proxies):
+
+| run | sim test (2,252 docs) | semireal pooled (234 docs) |
+|---|---|---|
+| pd3g287 | 854 / 6,750 = 12.7% | 68 / 702 = 9.7% |
+| v1 | 1,785 / 6,756 = 26.4% | 141 / 702 = 20.1% |
+| ensemble B | not run | 71 / 702 = 10.1% |
+
+Per-document identity on the 2,252 simulator test documents, with two further definitions (proxies):
+
+| run | unparseable docs | GSTIN exact % | invoice no exact % | date exact % | invented (truth empty) | value absent from page |
+|---|---|---|---|---|---|---|
+| pd3g287 | 2 | 71.4 | 39.2 | 77.7 | 0 of 2,157 | 10.2% of 6,756 |
+| v1 | 0 | 75.4 | 58.3 | 78.3 | 2 of 2,157 (0.09%) | 26.1% of 6,756 |
+
+"Invented (truth empty)", a different definition, is the realinv one: a non-empty value where the truth is "" (GSTIN, number, date, place of supply, original invoice number, line HSN).
+"Value absent from page", a third definition, counts identity values (GSTIN, number, date) other than the truth that the document text does not show either (look-alike folded, any rendered date style); on degraded simulator pages it mixes OCR misreads with inventions.
+pd3g287 leaves far more invoice numbers blank than v1 (its invoice number exact drops from 58.3% to 39.2%), and those blanks cost register and GSTR-2B links: that is the 3.8-point match loss, while the reconciler's fill keeps ITC level.
+Result against the override: the test set does not show the real-document gain; pd3g287 ties v1 on ITC and is worse on match and composite on simulated documents, and it ships per the decision fixed above.
 
 ### GRPO from the per-document SFT (dev only, measured, not shipped)
 
@@ -923,22 +980,6 @@ student-sft hybrid, the same SFT adapter fed one document at a time, is far belo
 
 Paired by case_id over all 132 cases (realworld included).
 Caveat: that end-to-end SFT run used the full constrained grammar, which does not match the compact-form SFT targets (blocked and deferred fill with junk; see Notes above), so it understates the SFT model; it is kept as evidence of that grammar mismatch, and the compact-grammar pairing above replaces it for comparisons.
-
-### Claude Haiku as the per-document model (same harness, only the per-document call differs)
-
-Same per-document messages, doc schema v2, reconciler v3, fill, linker and scorer as the shipped model; the per-document model is Claude Haiku through the local `claude -p` CLI (`scripts/eval_frontier.py --mode hybrid --schema-mode flag`).
-The schema goes through the CLI's `--json-schema` structured output (a forced tool call, system prompt unchanged), which is not grammar-constrained decoding like the XGrammar runs, and the model sees no fine-tuning.
-Both Haikus run at the CLI defaults (thinking on).
-Pooled means are case means; paired bootstrap of run minus reference, 10,000 case resamples, seed 0 (`scripts/eval_hybrid_compare.py`); diagnostics use the INVENTED rule of `gst_recon/rewards/doc.py` over all identity slots (3 per document).
-
-**semireal, 54 cases (clean 9, sim-s0 9, sim-s1to4 36), 234 documents.**
-
-| run | ITC invoice exact % | Match acc % | Composite | vs v1 (ITC / match / composite) | vs pd3g287 (ITC / match / composite) | docs parsed | invented identity | s per doc | CLI cost per doc |
-|---|---|---|---|---|---|---|---|---|---|
-| Claude Haiku 5.5, hybrid | 84.8 | 88.6 | 86.7 | +26.3 [+18.3, +35.0] / +24.5 [+17.0, +32.8] / +18.1 [+13.1, +23.6] | +23.7 [+15.9, +32.2] / +17.1 [+12.8, +21.4] / +13.8 [+9.6, +18.4] | 100.0% | 7.4% (52 of 702) | 11.0 | $0.0015 |
-
-All deltas have p < 0.0005; v1 and pd3g287 are gst-hybrid's stored runs on the same 54 cases (58.5 / 64.1 / 68.6 and 61.1 / 71.5 / 72.9).
-The semireal documents are real client documents; the Haiku runs sent them to the Claude CLI only, and only aggregates are reported here.
 
 ### Throughput
 
