@@ -33,12 +33,18 @@ async function boot() {
   await selectCase(new URLSearchParams(location.search).get("case") || S.cases[0]?.id);
 }
 
+// Footer: which code produced the table. Hybrid runs the code reconciler; end-to-end is the model alone.
+function renderPipelineNote() {
+  const rv = $("reconVer"), rec = S.health && S.health.reconciler;
+  const hy = S.kind === "hybrid";
+  rv.hidden = hy && !rec;
+  rv.textContent = hy ? `reconciler ${rec}` : "end-to-end (model only)";
+}
+
 async function refreshHealth() {
   try { S.health = await api("/api/health"); } catch { S.health = { live: false }; }
   const el = $("srvStatus"), h = S.health;
-  const rv = $("reconVer");
-  rv.hidden = !h.reconciler;
-  rv.textContent = h.reconciler ? `reconciler ${h.reconciler}` : "";
+  renderPipelineNote();
   el.className = "srv " + (h.live ? "up" : "down");
   el.querySelector("span").textContent = h.live
     ? `SGLang up${h.running != null ? ` \u00B7 ${h.running} running` : ""}`
@@ -107,6 +113,7 @@ function syncControls() {
   $("modelSeg").innerHTML = usable.map((m) =>
     `<button data-model="${esc(m.name)}" aria-pressed="${m.name === S.model}" title="${esc(m.name)}">${esc(m.label)}</button>`).join("");
   for (const b of $("kindSeg").children) b.setAttribute("aria-pressed", b.dataset.kind === S.kind);
+  renderPipelineNote();
   for (const b of $("modeSeg").children) b.setAttribute("aria-pressed", b.dataset.mode === S.mode);
   for (const b of $("speedSeg").children) b.setAttribute("aria-pressed", +b.dataset.speed === S.speed);
   for (const b of $("conSeg").children) b.setAttribute("aria-pressed", (b.dataset.con === "1") === S.constrained);
