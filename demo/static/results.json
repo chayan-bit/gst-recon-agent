@@ -1,0 +1,24 @@
+{
+  "metric": "ITC invoice exact (%)",
+  "metric_note": "Share of invoices whose eligible, blocked and deferred amounts are all within Rs 1 of the truth. Held-out cases: n = 60 in-distribution, n = 60 out-of-distribution.",
+  "source": "reports/results.md (python -m gst_recon.eval report). value null = TODO: not measured yet, shown as an empty dashed bar.",
+  "steps": [
+    {"label": "Base Qwen3-4B", "sub": "no training", "iid": null, "ood": null},
+    {"label": "+ SFT", "sub": "LoRA, full-schema grammar", "iid": 8.1, "ood": 13.7, "note": "compact-grammar and hybrid re-runs TODO"},
+    {"label": "+ SFT hybrid", "sub": "model reads, code reconciles", "iid": null, "ood": null},
+    {"label": "+ GRPO", "sub": "rule-checked reward", "iid": null, "ood": null}
+  ],
+  "references": [
+    {"label": "Qwen3-30B teacher", "sub": "open model, constrained", "iid": 55.7, "ood": 63.8},
+    {"label": "Claude Sonnet", "sub": "via Claude Code CLI", "iid": 94.9, "ood": 97.8}
+  ],
+  "decoding": {
+    "title": "Constrained vs unconstrained decoding",
+    "sub": "Qwen3-30B teacher, same 19 cases",
+    "rows": [
+      {"label": "Schema-valid output (%)", "unconstrained": 15.8, "constrained": 94.7},
+      {"label": "ITC invoice exact (%)", "unconstrained": 14.9, "constrained": 68.0}
+    ],
+    "todo": "Student (SFT, GRPO) unconstrained runs TODO"
+  }
+}

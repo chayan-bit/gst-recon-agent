@@ -180,6 +180,11 @@ def view(body: ViewBody) -> dict:
     return build_view(body.text, _case(body.case_id).target, final=body.final, traces=body.traces)
 
 
+@app.get("/results")
+def results() -> FileResponse:
+    return FileResponse(STATIC / "results.html", headers={"Cache-Control": "no-store"})
+
+
 @app.get("/")
 def index() -> FileResponse:
     return FileResponse(STATIC / "index.html", headers={"Cache-Control": "no-store"})

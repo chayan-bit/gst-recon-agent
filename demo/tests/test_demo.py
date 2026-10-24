@@ -90,3 +90,11 @@ def test_adapter_models_get_the_compact_grammar_and_base_the_strict_one():
     # a compact output (zero fields omitted) still renders and validates after expansion
     v = build_view(json.dumps(compact(TARGET)), TARGET, final=True)
     assert v["validity"]["schema"] is True and v["diff"]["wrong_cells"] == 0
+
+
+def test_results_page_and_its_numbers_are_served():
+    c = TestClient(app_mod.app)
+    assert c.get("/results").status_code == 200
+    d = c.get("/static/results.json").json()
+    for s in [*d["steps"], *d["references"]]:
+        assert all(s[k] is None or 0 <= s[k] <= 100 for k in ("iid", "ood"))
