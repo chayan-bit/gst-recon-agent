@@ -29,3 +29,10 @@ def case():
     from gst_recon.sim.world import generate_case
 
     return generate_case(3, "easy", 0)
+
+
+@pytest.fixture(scope="session")
+def tiny_case(case):
+    """Two documents only: keeps the end-to-end render tests to a few seconds (Mac: light tests only)."""
+    inputs = case.inputs.model_copy(update={"invoices": case.inputs.invoices[:2]})
+    return case.model_copy(update={"inputs": inputs})

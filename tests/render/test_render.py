@@ -87,7 +87,8 @@ def test_degradation_is_deterministic_and_changes_pixels(weasy, case):
         assert md5(a) != md5(page)
 
 
-def test_render_case_is_deterministic_by_seed(weasy, has_tesseract, case, tmp_path):
+def test_render_case_is_deterministic_by_seed(weasy, has_tesseract, tiny_case, tmp_path):
+    case = tiny_case
     from gst_recon.render.pipeline import render_case
 
     ocr = has_tesseract
@@ -103,7 +104,8 @@ def test_render_case_is_deterministic_by_seed(weasy, has_tesseract, case, tmp_pa
     assert not list((tmp_path / "a").glob(".*.tmp")) and not (tmp_path / "a" / case.case_id / "images").exists()
 
 
-def test_output_is_target_of_the_truth_and_has_all_sections(weasy, has_tesseract, case, tmp_path):
+def test_output_is_target_of_the_truth_and_has_all_sections(weasy, tiny_case, tmp_path):
+    case = tiny_case
     import json
 
     from gst_recon.render.pipeline import render_case

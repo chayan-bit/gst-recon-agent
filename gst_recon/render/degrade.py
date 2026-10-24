@@ -48,6 +48,23 @@ def _fold(a: np.ndarray, rng: random.Random) -> np.ndarray:
     return np.clip(a * shade[:, None, None], 0, 255).astype(np.uint8)
 
 
+def _fax(a: np.ndarray, rng: random.Random) -> np.ndarray:
+    """Low-resolution 1-bit fax: halve the resolution, hard threshold, a few dead scan lines.
+
+    (Augraphy's Faxify allocated >12 GB on some inputs, so it is not used.)
+    """
+    import cv2
+
+    h, w = a.shape[:2]
+    g = cv2.cvtColor(a, cv2.COLOR_BGR2GRAY)
+    g = cv2.resize(g, (max(1, w // 2), max(1, h // 2)), interpolation=cv2.INTER_AREA)
+    g = np.where(g > rng.randint(110, 170), 255, 0).astype(np.uint8)
+    for _ in range(rng.randint(0, 3)):
+        g[rng.randrange(g.shape[0]), :] = rng.choice((0, 255))
+    g = cv2.resize(g, (w, h), interpolation=cv2.INTER_NEAREST)
+    return cv2.cvtColor(g, cv2.COLOR_GRAY2BGR)
+
+
 def _plan(level: str, rng: random.Random) -> dict:
     """Draw the effect parameters for one document."""
     lv = LEVELS[level]
@@ -76,7 +93,7 @@ def _plan(level: str, rng: random.Random) -> dict:
 def degrade(img: Image.Image, level: str, rng: random.Random) -> tuple[Image.Image, dict]:
     """Return (degraded RGB image, parameter record)."""
     import cv2
-    from augraphy import (BadPhotoCopy, Brightness, DirtyDrum, Faxify, InkBleed, Jpeg, LowInkRandomLines,
+    from augraphy import (BadPhotoCopy, Brightness, DirtyDrum, InkBleed, Jpeg, LowInkRandomLines,
                           NoiseTexturize, ShadowCast, SubtleNoise)
 
     cv2.setNumThreads(1)
@@ -94,13 +111,11 @@ def degrade(img: Image.Image, level: str, rng: random.Random) -> tuple[Image.Ima
         steps.append(InkBleed(intensity_range=(0.3, 0.5), kernel_size=(3, 3), severity=(0.2, 0.4), p=1))
     if plan["noise_texture"]:
         steps.append(NoiseTexturize(sigma_range=(2, 6), turbulence_range=(2, 4), p=1))
-    if plan["fax"]:
-        steps.append(Faxify(scale_range=(1.0, 1.15), monochrome=1, halftone=0, p=1))
     if plan["photocopy"]:
         steps.append(BadPhotoCopy(noise_type=-1, noise_iteration=(1, 1), noise_size=(1, 2), noise_value=(60, 140),
                                   noise_sparsity=(0.2, 0.6), noise_concentration=(0.1, 0.4), p=1))
     if plan["dirty_drum"]:
-        steps.append(DirtyDrum(line_width_range=(1, 3), line_concentration=0.05, noise_intensity=0.4, p=1))
+        steps.append(DirtyDrum(line_width_range=(1, 2), line_concentration=0.02, noise_intensity=0.25, p=1))
     if plan["low_ink_lines"]:
         steps.append(LowInkRandomLines(count_range=(3, 8), use_consistent_lines=False, noise_probability=0.1, p=1))
     if plan["shadow"]:
@@ -110,6 +125,8 @@ def degrade(img: Image.Image, level: str, rng: random.Random) -> tuple[Image.Ima
     for s in steps:
         out = s(a)
         a = out if isinstance(out, np.ndarray) else out["output"] if isinstance(out, dict) else out
+    if plan["fax"]:
+        a = _fax(a, rng2)
     for _ in range(plan["folds"]):
         a = _fold(a, rng2)
     if plan["rescale"] < 1.0:

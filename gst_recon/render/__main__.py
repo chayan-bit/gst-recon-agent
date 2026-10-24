@@ -36,6 +36,18 @@ def _render_one(job: tuple[str, str, str | None, bool, bool]) -> dict:
                                  "prompt_tokens", "target_tokens", "fits_context", "token_method", "wall_s")}
 
 
+def _init_worker(max_gb: float) -> None:
+    """Cap each worker's private memory so a runaway effect fails one case instead of the host."""
+    if max_gb > 0:
+        try:
+            import resource
+
+            lim = int(max_gb * 2**30)
+            resource.setrlimit(resource.RLIMIT_DATA, (lim, lim))  # RLIMIT_AS breaks rust/openblas thread pools
+        except (ImportError, ValueError, OSError):
+            pass  # not enforceable on this platform (macOS)
+
+
 def _warm() -> None:
     """Import the pure-python/numpy libraries once, before forking workers (shared copy-on-write pages).
 
@@ -92,8 +104,12 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--no-ocr", action="store_true", help="skip OCR (debug only; prompts then lack scanned text)")
     ap.add_argument("--force", action="store_true", help="re-render finished cases")
     ap.add_argument("--recycle", type=int, default=25, help="cases per worker process before it is replaced (memory cap)")
+    ap.add_argument("--max-mem-gb", type=float, default=6.0, help="per-worker private-memory cap (Linux), 0 = off")
     ap.add_argument("--stats-only", action="store_true")
     a = ap.parse_args(argv)
+    for var, val in (("TOKENIZERS_PARALLELISM", "false"), ("RAYON_NUM_THREADS", "1"), ("OMP_NUM_THREADS", "1"),
+                     ("OPENBLAS_NUM_THREADS", "1"), ("MALLOC_ARENA_MAX", "2")):
+        os.environ.setdefault(var, val)  # one thread per worker: parallelism comes from --workers
 
     if a.stats_only:
         print(stats(_collect(a.out)))
@@ -108,7 +124,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"{len(files)} truth cases, {len(jobs)} to render, {a.workers} workers", flush=True)
     _warm()
     t0, rows, errors = time.perf_counter(), [], []
-    with mp.get_context("fork").Pool(a.workers, maxtasksperchild=a.recycle) as pool:
+    with mp.get_context("fork").Pool(a.workers, maxtasksperchild=a.recycle, initializer=_init_worker, initargs=(a.max_mem_gb,)) as pool:
         for n, r in enumerate(pool.imap_unordered(_render_one, jobs), 1):
             (errors if "error" in r else rows).append(r)
             if n % 10 == 0 or n == len(jobs):

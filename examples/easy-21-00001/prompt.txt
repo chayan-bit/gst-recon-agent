@@ -1,0 +1,201 @@
+=== CASE ===
+Buyer: Joshi Industries
+Buyer GSTIN: 33XCBFJ7859A1ZT
+Buyer state: Tamil Nadu (33)
+Buyer line of business: trading company - Trader - TVs, ACs, fridges, laptops. Employees: 274.
+Buyer employees: 274
+Return period: 052024 (May 2024)
+Reconciliation date: 2024-06-17
+Documents: 6 invoices/credit notes (D01..D06)
+
+=== INVOICES ===
+
+--- D01 | email body ---
+From: accounts@sahyadridistri.co.in
+Subject: Tax Invoice No.0022 dt 30/05/2024 - Sahyadri Distributors & Co
+
+Dear Sir,
+
+Pls find the tax invoice details below, original copy follows by courier.
+
+Supplier: Sahyadri Distributors & Co, 90, Transport Nagar, Hosur, Tamil Nadu
+GSTIN/UIN: 33CGEFS6271V1ZZ
+Inv No: No.0022   Date: 30/05/2024
+Bill to: Joshi Industries (GSTIN/UIN: 33XCBFJ7859A1ZT)
+POS: Tamil Nadu (33)
+Reverse charge: No
+
+Items:
+1) Godrej single door fridge (rev.1) | HSN/SAC 8418 | 2 Nos x 45547.85 = 91095.70 | GST 18% (CGST 8198.61 + SGST 8198.61)
+
+Taxable Amt: 91095.70
+CGST @ 9%: 8198.61
+SGST @ 9%: 8198.61
+Net Amount: 107492.92
+(Rs. One Lakh Seven Thousand Four Hundred Ninety Two and Ninety Two Paise only)
+
+Kindly arrange payment at the earliest and acknowledge recipt.
+
+Regards,
+Abdul Narain
+Sahyadri Distributors & Co
++91 8207331591
+
+--- D02 | scanned document, OCR text ---
+e  e  e  e  e
+Navkar Distributors Private Limited
+25, Ring Road, Chennai, Tamil Nadu | +91 7357356499 | info@navkardistribu.in
+GSTIN/UIN: 33WWUCN3772W1ZB PAN: WWUCN3772W
+To,  TAX INVOICE
+Joshi Industries  Invoice #: S1000663
+8, GIDC Estate, Hosur, Tamil Nadu  Invoice Date: 22 May 2024
+GSTIN/UIN: 33XCBFJ7859A1ZT  POS: Tamil Nadu (33)
+Reverse Charge: No
+;  HSN/  ;  4  Taxable  CGST  CGST  SGST  SGST
+Sr Particulars  SAC  Quantity  Price  Amt  %  Act  %  Amt
+TE
+| BRUM eS  8443  3Nos 1196452 35893.56  9 3230.42  9 3230.42
+PRINTER
+Taxable Amt  35893.56
+CGST @ 9%  3230.42
+SGST @ 9%  3230.42
+Grand Total  42354.40
+INR Forty Two Thousand Three Hundred Fifty Four and Forty Paise Only E. &O.E.
+Remarks / Purpose: As per PO 4500231
+Bank Details  for Navkar Distributors Private Limited
+Bank: ICICI Bank A/c No.: 897416307994555
+IFSC: IClIC0624155 Branch: Station Road
+A/c Name: Navkar Distributors Private Limited  ps Prive
+: pistribu
+kal  smite
+Tax Rate %  Taxable Value  CGST  SGST  MAL NADY  .
+18  35893.56  3230.42  3230.42  Most REC?  } Anan!
+Authorised Signatory
+Janani Ahuja
+
+--- D03 | scanned document, OCR text ---
+Tax Invoice
+222, GIDC Estate, Solan, Himachal Pradesh  Ro.dz69  more
+GSTIN: O2NGMCH4739J1ZP  Delivery Note  Mode/Terms of Payment
+State Name : Himachal Pradesh, Code : 02  30 Days
+E-Mail : accounts@hegdenetworksp.com
+Buyer's Order No.  Reverse Charge
+ee ee a
+Buyer (Bill to)
+Joshi Industries
+8, GIDC Estate, Hosur, Tamil Nadu
+GSTIN: 33XCBFJ7859A1ZT
+State Name : Tamil Nadu, Code : 33
+Place of Supply: Tamil Nadu - 33
+[# [Sac [Description of Services  [ey] unit [Rate[ Amount] ests] 16st
+  998211 | appearance fees - tribunal  77238.37  77238.37  13902.91
+Taxable Value  77238.37
+IGST @ 18%  13902.91
+Tax payable on Reverse Charge by recipient  13902.91
+  Taxable Value (not included)  :
+  13902.91 | Amount Payable to Supplier  77238.37
+Amount Chargeable (in words)  E.&O.E.
+INR Seventy Seven Thousand Two Hundred Thirty Eight and Thirty Seven Paise Only
+Bank Details
+Bank: State Bank of India A/c No.: 468131377647316
+IFSC: SBIN0983695_ Branch: Industrial Area
+Alc Name: HEGDE NETWORKS PVT LTD
+for HEGDE NETWORKS PVT LTD
+Declaration
+We declare that this invoice shows the actual price of the goods/services
+described and that all particulars are true and correct.  Authorised Signatory
+This is a Computer Generated Invoice
+
+--- D04 | scanned document, OCR text ---
+INVOICE
+Sahyadri Distributors & Co
+90, Transport Nagar, Hosur, Tamil Nadu
+Ph: +91 8207331591 GSTIN/UIN: 33CGEFS6271V1ZZ
+i seensereneneensngucnnetesespeeeeree
+Inv No: No.0023  Date: 15/05/2024
+M/s Joshi Industries, 8, GIDC Estate, Hosur, Tamil Nadu
+GSTIN/UIN: 33XCBFJ7859A1ZT POS: Tamil Nadu - 33
+# Item Description  HSN Code  Quantity Unit  Unit Price  Value  GST%
+ee a
+BD cn lsc: wohtin don. ee: Oe
+CGST;| SGST
+  tas  =n
+Net Amount  70145.81
+INR Seventy Thousand One Hundred Forty Five and Eighty One Paise Only E. & O.E.
+Remarks / Purpose: Ref: quotation dt. 12th
+Goods once sold will not be taken back.  For Sahyadri Distributors & Co
+Subject to local jurisdiction.
+Proprietor
+
+--- D05 | WhatsApp message ---
+namaste sir, bill ka detail below
+
+inv no SI000664 dt 13 May 2024
+Navkar Distributors Private Limited
+GSTIN/UIN 33WWUCN3772W1ZB
+to: Joshi Industries 33XCBFJ7859A1ZT
+pos 33-Tamil Nadu rcm N
+1. Epson EcoTank L3250 - spl hsn 8443 2 Nos @12188.40 = 24376.80 + gst 18% (CGST 2193.91 + SGST 2193.91)
+taxable amt: 24376.80
+cgst @ 9%: 2193.91
+sgst @ 9%: 2193.91
+Grand Total: 28764.62
+remarks / purpose: as per po 4500231
+
+thnx, pls clear dues soon
+
+--- D06 | scanned document, OCR text ---
+222, GIDC Estate, Solan, Himachal Pradesh  meee  orte 2024
+GSTIN: 02NGMCH4739J1ZP  Delivery Note  Mode/Terms of Payment
+State Name : Himachal Pradesh, Code : 02  30 Days
+E-Mail : accounts@hegdenetworksp.com
+Y.
+Buyer (Bill to)
+Joshi Industries
+8, GIDC Estate, Hosur, Tamil Nadu
+GSTIN: 33XCBFJ7859A1ZT
+State Name : Tamil Nadu, Code : 33
+Place of Supply: Tamil Nadu - 33
+[# [Sac [bescrition of Services  Fey] unit [Rate[ Amount] estse[ esr]
+  998211 | LITIGATION FEES (HIGH COURT)  142489.25|  142489.25  25648.07
+Taxable Value  142489.25
+IGST @ 18%  25648.07
+Tax payable on Reverse Charge by recipient  25648.07
+  AA2489.25  25648.07 | Amount Payable to Supplier  142489.25
+Amount Chargeable (in words)  E.&O.E.
+INR One Lakh Forty Two Thousand Four Hundred Eighty Nine and Twenty Five Paise Only
+Bank Details
+Bank: State Bank of India A/c No.: 468131377647316
+IFSC: SBINO983695 Branch: Industrial Area
+Alc Name: HEGDE NETWORKS PVT LTD
+for HEGDE NETWORKS PVT LTD
+Declaration
+We declare that this invoice shows the actual price of the goods/services
+described and that all particulars are true and correct.  Authorised Signatory
+This is a Computer Generated Invoice
+
+=== PURCHASE REGISTER (Tally csv export) ===
+Voucher Date,Party Name,Vch Type,Vch No,Ref No,Ref Date,Party GSTIN,Invoice Value,Assessable Value,Input CGST,Input SGST,Input IGST,RCM
+17-May-24,Navkar Distributors Private Limited,Purchase,PUR/24-25/0001,SI000664,13-May-24,33WWUCN3772W1ZB,28764.62,24376.80,2193.91,2193.91,0.00,No
+18-May-24,Sahyadri Distributors & Co,Purchase,PUR/24-25/0002,No.0023,15-May-24,33CGEFS6271V1ZZ,70145.81,59445.61,5350.10,5350.10,0.00,No
+20-May-24,Hegde Networks Pvt Ltd,Purchase,PUR/24-25/0003,No.0269,19-May-24,02NGMCH4739J1ZP,77238.37,77238.37,0.00,0.00,13902.91,Yes
+26-May-24,Navkar Distributors Private Limited,Purchase,PUR/24-25/0004,SI000663,22-May-24,33WWUCN3772W1ZB,42354.40,35893.56,3230.42,3230.42,0.00,No
+31-May-24,Sahyadri Distributors & Co,Purchase,PUR/24-25/0005,No.0022,30-May-24,33CGEFS6271V1ZZ,107492.92,91095.70,8198.61,8198.61,0.00,No
+31-May-24,Hegde Networks Pvt Ltd,Purchase,PUR/24-25/0006,No.0270,30-May-24,02NGMCH4739J1ZP,142489.25,142489.25,0.00,0.00,25648.07,Yes
+
+=== GSTR-2B period 052024 ===
+{"data":{"gstin":"33XCBFJ7859A1ZT","rtnprd":"052024","version":"1.0","gendt":"14-06-2024","docdata":{"b2b":[{"ctin":"33CGEFS6271V1ZZ","trdnm":"Sahyadri Distributors & Co","supfildt":"08-06-2024","supprd":"052024","inv":[{"inum":"No.0022","typ":"R","dt":"30-05-2024","val":107492.92,"pos":"33","rev":"N","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":18.0,"txval":91095.7,"igst":0.0,"cgst":8198.61,"sgst":8198.61,"cess":0.0}]},{"inum":"No.0023","typ":"R","dt":"15-05-2024","val":70145.81,"pos":"33","rev":"N","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":18.0,"txval":59445.61,"igst":0.0,"cgst":5350.1,"sgst":5350.1,"cess":0.0}]}]},{"ctin":"33WWUCN3772W1ZB","trdnm":"Navkar Distributors Private Limited","supfildt":"02-06-2024","supprd":"052024","inv":[{"inum":"SI000663","typ":"R","dt":"22-05-2024","val":42354.4,"pos":"33","rev":"N","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":18.0,"txval":35893.56,"igst":0.0,"cgst":3230.42,"sgst":3230.42,"cess":0.0}]},{"inum":"SI000664","typ":"R","dt":"13-05-2024","val":28764.62,"pos":"33","rev":"N","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":18.0,"txval":24376.8,"igst":0.0,"cgst":2193.91,"sgst":2193.91,"cess":0.0}]}]},{"ctin":"02NGMCH4739J1ZP","trdnm":"Hegde Networks Pvt Ltd","supfildt":"03-06-2024","supprd":"052024","inv":[{"inum":"No.0269","typ":"R","dt":"19-05-2024","val":77238.37,"pos":"33","rev":"Y","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":18.0,"txval":77238.37,"igst":13902.91,"cgst":0.0,"sgst":0.0,"cess":0.0}]},{"inum":"No.0270","typ":"R","dt":"30-05-2024","val":142489.25,"pos":"33","rev":"Y","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":18.0,"txval":142489.25,"igst":25648.07,"cgst":0.0,"sgst":0.0,"cess":0.0}]}]}],"cdnr":[]}}}
+
+=== BANK STATEMENT (HDFC CSV) ===
+Date,Narration,Chq./Ref.No.,Value Dt,Withdrawal Amt.,Deposit Amt.,Closing Balance
+20/05/24,GST PMT CPIN/235274653,TXN9217268788,20/05/24,44130.63,,2776713.17
+23/05/24,NEFT CR/CUSTOMER RECEIPT/9319,TXN1970539741,23/05/24,,452092.96,3228806.13
+24/05/24,NEFT CR/CUSTOMER RECEIPT/1633,TXN7377738324,24/05/24,,827095.21,4055901.34
+25/05/24,NEFT DR-ICIC0374134-HEGDE NETWORKS PVT-ICICN999452936904-INV No.0269,ICICN999452936904,25/05/24,77238.37,,3978662.97
+25/05/24,SALARY TRANSFER BATCH/561687039,TXN2456678805,25/05/24,1480986.42,,2497676.55
+25/05/24,NEFT CR/CUSTOMER RECEIPT/9839,TXN8528470449,25/05/24,,134423.82,2632100.37
+25/05/24,NEFT CR/CUSTOMER RECEIPT/9852,TXN8663793831,25/05/24,,181605.43,2813705.80
+06/06/24,NEFT CR/CUSTOMER RECEIPT/2825,TXN9784070182,06/06/24,,422306.59,3236012.39
+17/06/24,NEFT CR/CUSTOMER RECEIPT/7675,TXN6822092977,17/06/24,,357865.53,3593877.92
+
+=== END ===

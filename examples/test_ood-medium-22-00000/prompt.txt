@@ -1,0 +1,483 @@
+=== CASE ===
+Buyer: Ganga Agencies
+Buyer GSTIN: 36ECLPG8158D1ZE
+Buyer state: Telangana (36)
+Buyer line of business: auto workshop - Body shop & mechanical repair centre. Employees: 218.
+Buyer employees: 218
+Return period: 102024 (October 2024)
+Reconciliation date: 2025-05-13
+Documents: 13 invoices/credit notes (D01..D13)
+
+=== INVOICES ===
+
+--- D01 | scanned document, OCR text ---
+120, MIDC Industrial Area, Hyderabad, Telangana | +91 6967689741 | info@agarwalsupplie.in
+GSTIN: 361QOCA3890A1ZK PAN: IQOCA3890A
+To,  TAX INVOICE
+Ganga Agencies  Tax Invoice No.: 24-25/52
+78, Link Road, Hyderabad, Telangana  Dated: 26 Oct 2024
+GSTIN: 36ECLPG8158D1ZE  Place of supply: Telangana - 36
+Reverse Charge: N
+item ——*HSN- Quantity Rate(Rs.) TaxableAmount GST% | CGST ——-SGST_—_— Amount
+ggg SQg24£2.aa. gE...
+Valeo clutch kit (std) 8708  23Nos 32,808.95  7,54,605.85  28 1,05,644.82 1,05,644.82 9,65,895.49
+Taxable Amount  7,54,605.85
+CGST @ 14%  1,05,644.82
+SGST @ 14%  1,05,644.82
+Total  9,65,895.49
+Rs. Nine Lakh Sixty Five Thousand Eight Hundred Ninety Five and Forty Nine Paise only E. &O.E.
+Bank Details  for AGARWAL SUPPLIERS PVT LTD
+Bank: Bank of Baroda A/c No.: 607388628409663
+IFSC: BARBO264562 Branch: MIDC Branch
+A/c Name: AGARWAL SUPPLIERS PVT LTD  yppLriers ev
+Ss
+ARWAL 5
+Tax Rate %  Taxable Value  CGST  SGST  y  eLanchnh
+28  7,54,605.85 1,05,644.82 —1,05,644.82  VGst REP  Gau tam
+Authorised Signatory
+Gautam Ramakrishnan
+
+--- D02 | scanned document, OCR text ---
+BILL
+Kulkarni Suppliers
+177, Link Road, Hyderabad, Telangana Ph: +91 9820515191
+GST IN: 36NEEFK444801Z9
+Inv. No.: 24-25/284  Bill Date: 72.70.2024
+M/s Ganga Agencies GST IN: 36ECLPGB1S8D1ZE
+Place of supply:  36-Telangana
+-[ Sevice Design | Service Accounting Cade [Quant] _Unit_[UniePrice [Amount] S12
+1 quest house accommodation  796311  8 Night 3,863.46 30,70 7.68.  12
+| Tax Rate %  |  Taxable Value  C6ST  S6ST  Taxable Amount 30,907.68
+12  30,907.68  1,854.46  1,854.46  CGST @ 6%  1,854.46
+COST @ 6%  1,854.46
+Total  34,616.60
+Re. Thirty Four Thousand Cix Hundred Sixteen and Sixty Paive only
+For Kulkarni Suppliers
+Aahana.
+
+--- D03 | scanned document, OCR text ---
+’, MG Road, Hyderabad, Telangana | +91 6504532340  | sales@menontradingco.co.in
+GSTIN/UIN: 36ZUUFM5552L1ZP PAN: ZUUFM5552L
+To,  D  Tax Invoice
+oe  Bill No.: 24-25/432
+hsk Read, “hyderabad, Telangana  Invoice Date: 10/10/24
+Ve  PUIN-SGECLPG8158D1ZE  POS: Telangana (36)
+Reverse Charge: N
+5 5
+Sr SAC Description  Qty. Unit  Unit Price  —  we  Tr  winie’  i  Line Total
+a
+outdoor brandnig
+d.  BOGS61 shelters)  1 Job 1,02,296.80 1,02,296.80  9 9,206.71  9 9,206.71 1,20,710.22
+15 VPS server rental  1 Month 1,22,521.63 1,22,521.63  9 11,026.95  9 11,026.95 1,44,575.53
+Taxable Amt  2,24,818.43
+CGST @ 9%  20,233.66
+SGST @ 9%  20,233.66
+eee 99.000
+Net Amount  2,65,285.75
+Rs. Two Lakh Sixty Five Thousand Two Hundred Eighty Five and Seventy Five Paise only E. & O.E.
+Remarks / Purpose: against PO
+Bank Details  for MENON TRADING CO LLP
+Bank: State Bank of India A/c No.: 492062700204528
+IFSC: SBINO595854 Branch: Industrial Area  \
+A/c Name: MENON TRADING CO LLP  yo co
+non TRASG ANA
+Tax Rate %  Taxable Value  CGST  SGST  ad  TELAT EGD  Rayaan
+18  2,24,818.43  20,233.66  20,233.66  ~
+Authorised Signatory
+Rayaan Bose
+
+--- D04 | email body ---
+From: info@pragatitrading.co.in
+Subject: Tax Invoice 24-25/848 dt 25/10/2024 - PRAGATI TRADING CO LLP
+
+Dear Sir/Madam,
+
+Please find below the invoice details for the material supplied.
+
+Supplier: PRAGATI TRADING CO LLP, 8, Industrial Estate, Secunderabad, Telangana
+GST IN: 36OOZFP2315U1ZZ
+Bill No.: 24-25/848   Dated: 25/10/2024
+Bill to: Ganga Agencies (GST IN: 36ECLPG8158D1ZE)
+POS: 36-Telangana
+Reverse charge: No
+
+Items:
+1) CPU cabinte with fans | HSN/SAC 8473 | 10 Nos x 3,200.43 = 32,004.30 | GST 18% (CGST 2,880.39 + SGST 2,880.39)
+
+Taxable Value: 32,004.30
+CGST @ 9%: 2,880.39
+SGST @ 9%: 2,880.39
+Grand Total: 37,765.08
+(Rs. Thirty Seven Thousand Seven Hundred Sixty Five and Eight Paise only)
+
+Request you to process the payment within due date. Thanks.
+
+Regards,
+Manthan Suresh
+PRAGATI TRADING CO LLP
++91 8280737860
+
+--- D05 | email body ---
+From: info@agarwalsupplie.in
+Subject: Tax Invoice 24-25/51 dt 26 Oct 2024 - AGARWAL SUPPLIERS PVT LTD
+
+Respected Sir/Madam,
+
+Kindly find enclosed our bill. Summary of the same is given below.
+
+Supplier: AGARWAL SUPPLIERS PVT LTD, 120, MIDC Industrial Area, Hyderabad, Telangana
+GSTIN: 36IQOCA3890A1ZK
+Tax Invoice No.: 24-25/51   Dated: 26 Oct 2024
+Bill to: Ganga Agencies (GSTIN: 36ECLPG8158D1ZE)
+Place of supply: Telangana - 36
+Reverse charge: N
+
+Items:
+1) Valoe clutch kit | HSN/SAC 8708 | 10 Nos x 12,785.79 = 1,27,857.90 | GST 28% (CGST 17,900.11 + SGST 17,900.11)
+
+Taxable Amount: 1,27,857.90
+CGST @ 14%: 17,900.11
+SGST @ 14%: 17,900.11
+Total: 1,63,658.12
+(Rs. One Lakh Sixty Three Thousand Six Hundred Fifty Eight and Twelve Paise only)
+
+Request you to process the payment within due date. Thanks.
+
+Regards,
+Gautam Ramakrishnan
+AGARWAL SUPPLIERS PVT LTD
++91 6967689741
+
+--- D06 | scanned document, OCR text ---
+Balaji Brothers Private  TAX INVOICE
+aaa  Warangal  1 ’ 27 } 252 23
+Telangana  :  oS  Rs. One Lakh Twenty Seven Thousand Two Hundred Fifty Two and Twenty Three Paise
+
+only
+GST IN
+36JTGCB2861F1ZH
+
+SAC  CGST  CGST SGST  SGST
+
+DESCRIPTION QTY. UNIT  PRICE |= AMOUNT
+INV. NO.  CODE  %  AMT %  AMT
+INV/24-25/0186  Legal fee -
+DATED  998211  advocate  1 Job 1,27,252.23 1,27,252.23  9 11,452.70  9 11,452.70
+18-Oct-24
+PLACE OF SUPPLY  Taxable Value  1,27;252.23
+Telangana (36)  CGST @ 9%  11,452.70
+REVERSE CHARGE  SGST @ 9%  11,452.70
+7  Tax payable on Reverse Charge by  22,905.40
+CONSIGNEE (SHIP TO)  recipient (not included)  re
+G  A  ie  .
+et iNGeonae egiereban  Amount Payable to Supplier —1,27,252.23
+Telangana
+GST IN: 36ECLPG8158D1ZE  Tax Rate %  Taxable Value  CGST  SGST
+PAYTO _  18  1,27,252.23  11,452.70  11,452.70
+the Seely ee  E. & O.E. This is a system generated invoice and does not require a signature.
+IFSC KKBK0297421
+CONTACT
+info@balajibrothers.com
++91 7527364029
+7
+a * .
+“ma  4  -
+:  £  i a  wy  .
+4  ?  a  ’ <  a
+¢  4
+
+--- D07 | scanned document, OCR text ---
+TOTA
+3 3,33,187.8
+82,362.60
+25,412.63
+25,412.63
+ 3,33,187.86
+— see  28,412.63  25,412.63
+,  “il  E. & O.E. This is a system g  ed invoict and does not requ @ a signature.
+3604888558868  a
+CONTACT  7
+info@pragatitrading.co.in
++91 8280737860  =
+
+--- D08 | email body ---
+From: accounts@gangabrothersp.co.in
+Subject: Tax Invoice 24-25/464 dt 03/10/24 - Ganga Brothers Private Limited
+
+Dear Team,
+
+Invoice detials are given below for your records and processing.
+
+Supplier: Ganga Brothers Private Limited, 191, Station Road, Warangal, Telangana
+GST IN: 36SKVCG4904X1Z9
+Tax Invoice No.: 24-25/464   Invoice Date: 03/10/24
+Bill to: Ganga Agencies (GST IN: 36ECLPG8158D1ZE)
+POS: Telangana - 36
+Reverse charge: N
+
+Items:
+1) hotel guest soaps... | HSN/SAC 3401 | 1302 Nos x 16.13 = 21001.26 | GST 18% (CGST 1890.11 + SGST 1890.11)
+
+Taxable Value: 21001.26
+CGST @ 9%: 1890.11
+SGST @ 9%: 1890.11
+Total: 24781.48
+(Rs. Twenty Four Thousand Seven Hundred Eighty One and Forty Eight Paise only)
+
+Kindly arrange payment at the earliest and acknowledge recipt.
+
+Regards,
+Fitan Kothari
+Ganga Brothers Private Limited
++91 8724530627
+
+--- D09 | scanned document, OCR text ---
+‘ ’ "4  Invoice No  Inv Date
+ae 4  INV/24-25/0199  24.10.2024
+ %  ‘  Delivery Note  Mode/Terms of Payment  |  "
+Mai  30 Days
+.  Buyer's Order No.  Reverse Charge
+oe  No  al
+&
+mf ty| —Rate(rs.)[ Taxable
+pa’,  ,
+aA  ne 4  a
+rete t  a
+4  “wt.  '  {
+. } oy  ’ <
+o  t,
+az
++  ,  ,-”
+“; BAR  ;
+a* es ’
+_  ‘  % q
+=  " .  p  *  ¥
+>»
+.  «
++,  ee
+a?)  Taxable Amount  re
+ale} GST] iGsT @ 28%
+5.38 |  3,76,427.91] Total
+and Eight Hundred Thirteen and Twenty Nine Paise Only
+bs  =  -  '
+oO  for Desai Agencies LLP
+he
+f ric of the goods/services
+; habe ec  Authorised Signatory
+A  - Thisisa Computer Generated Invoice
+- = 7  id
+
+--- D10 | scanned document, OCR text ---
+77, MG Road, Hyderabad, Telangana | +91 6504532340 | sales@ menontradingco.co:in
+GSTIN/UIN: 36ZUUFM5552L1ZP PAN: ZUUFM5552L
+To,  INVOICE
+Ganga Agencies  Bill No.: 24-25/433
+78, Link Road, Hyderabad, Telangana  Invoice Date: 28/10/24
+bs  GSTIN/UIN: 36ECLPG8158D1ZE  POS: 36-Telangana
+Pa  Reverse Charge: No
+/ C Desc ; F t Qo  Qty. Unit Unit Price Txable  arth  pte  mee  SEST Line Total
+6 pepont ad Sesion * 4 Job 2,27,481.78 2,27,481.78  9 20,473.36  9 20,473.36 2,68,428.50
+  lonth 1,75,005.62 3,50,011.24  9 31,501.01  9 31,501.01 4,13,013.26
+ara e,
+ee ‘Taxable Amt  5,77,493.02
+oe  CGST @ 9%  51,974.37
+i cial rs ae  SGST @ 9%  51,974.37
+—" s  a,  .  .  a
+ 8  Net Amount  6,81,441.76
+sighty  T: Thousand Four Hundred Forty One and Seventy Six Paise only E. & O.E.
+ -: Bank Details © ay  Sth  for MENON TRADING CO LLP
+_ Bank: State Bank of India A/c No.: 492062700204528
+_ IFSC: SBIN0595854 Branch: Industrial Area  \
+A/c Name: MENON TRADING CO LLP  yoo? Ww
+"we, Oa Fed  ;  enon TRACE NA
+Tax Rate %  Taxable Value  CGST  SGST  mes ee RESP  Rayaan
+18  5,77,493.02  51,974.37  51,974.37
+
+Authorised Signatory
+Rayaan Bose
+
+--- D11 | scanned document, OCR text ---
+Desai Brothers LLP  INVOICE
+101, Link Road, Warangal,
+Telangana  70,328.03
+alle  INR Seventy Thousand Three Hundred Twenty Eight and Three Paise Only
+36WIXFD0947H1ZY  aavhin eee
+BikELNO:  SL PARTICULARS  HSN QTY. UNIT  RATE  AMT  %  CGST  SGST
+INV/24-25/0833  fecal,  an
+ont bumper Swift -
+
+DATED  1  regular  8708 3 Nos 18,314.59 54,943.77 28 7,692.13 7,692.13
+30.10.2024
+rea £ Saat  Taxable Amt  54,943.77
+
+i  CGST @ 14%  7,692.13
+aan CHARGE  SGST @ 14%  7,692.13
+Sei ejauee eae  Total Amount  70,328.03
+Ganga Agencies
+78, Link Road, Hyderabad,  Tax Rate %  Taxable Value  CGST  SGST
+Telangana  28  54,943.77  7,692.13  7,692.13
+GST IN: 36ECLPG8158D1ZE
+
+E. & O.E. This is a system generated invoice and does not require a signature.
+
+PAY TO
+ICICI Bank
+Alc 710053188608197
+IFSC ICIC0273798
+CONTACT
+info@desaibrothersl.com
++91 6118148418
+
+--- D12 | scanned document, OCR text ---
+PRAGATI TRADING CO  TAX INVOICE
+gehen Estate  4,42, 169 22
+Secunderabad, Telangana  a Four Lakh Forty Two Thousand One Hundred Sixty Nine and Twenty Two Paise
+GST IN
+3600ZFP2315U1ZZ
+S.NO PARTICULARS HSN QUANTITY  pk:  bear  cst cGst —SGST  TOTA
+BILL NO.  :
+24-25/846
+DDR5 RAM
+DATED  1  16GB mdoule  8473  Q9Nos 41,635.52 3,74,719.68 18 33,724.77  33,724.77 4,42,169.2
+10/10/2024
+POS  Taxable Value  3,74,719.68
+Telangana (36)  CGST @ 9%  33,724.77
+REVERSE CHARGE  SGST @ 9%  33,724.77
+N
+Grand Total  4,42,169.22
+CUSTOMER
+Ganga Agencies
+78, Link Road, Hyderabad,  Tax Rate %  Taxable Value  CGST  SGST
+Telangana  18  3,74,719.68  33,724.77  33,724.77
+GST IN: 36ECLPG8158D1ZE  —  _  —_  _  —  -  "
+Axis Bank
+Alc 883604888558868
+IFSC UTIBO710998
+CONTACT
+info@pragatitrading.co.in
++91 8280737860
+
+--- D13 | scanned document, OCR text ---
+Balaji Agencies  INVOICE
+
+120, Civil Lines, Secunderabad,
+
+Telangana  22 ] 234.55
+
+Kati  INR Twenty Two Thousand Two Hundred Thirty Four and Fifty Five Paise Only
+36LEHFB8293B1ZX
+
+SAC CODE DESCRIPTION  QTY PRICE TAXABLE VALUE GST% CGST  SGST
+
+INV NO
+
+B-0577  996331 F&B bill  33 Plate 641.69  21,175.77  5 529.39 529.39
+DATE
+
+26/10/2024  Taxable Value  24;175.77
+POS  CGST @ 2.5%  529.39
+Telangana - 36  SGST @ 2.5%  529.39
+REVERSE CHARGE  Total  22,234.55
+N
+
+CONSIGNEE (SHIP TO)  Tax Rate %  Taxable Value  CGST  SGST
+
+Ganga Agencies  5  21,175.77  529.39  529.39
+
+78, Link Road, Hyderabad,
+
+Telangana  Remarks / Purpose: against PO
+
+GST IN: 36ECLPG8158D1ZE
+
+E. & O.E. This is a system generated invoice and does not require a signature.
+
+PAY TO
+
+Punjab National Bank
+Alc 6283193758203
+
+IFSC PUNB0876720
+CONTACT
+billing@balajiagencies.in
++91 9590529878
+
+=== PURCHASE REGISTER (Tally csv export) ===
+Date,Particulars,Voucher Type,Voucher No.,Supplier Inv. No.,Supplier Inv. Date,GSTIN/UIN,Gross Total,Taxable Value,CGST,SGST,IGST,Reverse Charge
+05/10/2024,Ganga Brothers Private Limited,Purchase,PUR/24-25/0001,24-25/464,03/10/2024,36SKVCG4904X1Z9,"24,781.48","21,001.26","1,890.11","1,890.11",0.00,No
+12/10/2024,Menon Trading Co LLP,Purchase,PUR/24-25/0002,24-25/432,10/10/2024,36ZUUFM5552L1ZP,"2,65,285.75","2,24,818.43","20,233.66","20,233.66",0.00,No
+10/10/2024,Pragati Trading Co LLP,Purchase,PUR/24-25/0003,24-25/846,10/10/2024,36OOZFP2315U1ZZ,"4,42,169.22","3,74,719.68","33,724.77","33,724.77",0.00,No
+15/10/2024,Kulkarni Suppliers,Purchase,PUR/24-25/0004,24-25/284,12/10/2024,36NEEFK4448O1Z9,"34,616.60","30,907.68","1,854.46","1,854.46",0.00,No
+20/10/2024,Balaji Brothers Private Limited,Purchase,PUR/24-25/0005,INV/24-25/0186,18/10/2024,36JTGCB2861F1ZH,"1,27,252.23","1,27,252.23","11,452.70","11,452.70",0.00,Yes
+23/10/2024,Pragati Trading Co LLP,Purchase,PUR/24-25/0006,24-25/848,19/10/2024,36OOZFP2315U1ZZ,"3,33,187.86","2,82,362.60","25,412.63","25,412.63",0.00,No
+27/10/2024,Desai Agencies LLP,Purchase,PUR/24-25/0007,INV/64-25/0199,24/10/2024,19HDYFD7436B1ZP,"17,20,813.29","13,44,385.38",0.00,0.00,"3,76,427.91",No
+29/10/2024,Pragati Trading Co LLP,Purchase,PUR/24-25/0008,24-25/848,25/10/2024,36OOZFP2315M1ZZ,"37,765.08","32,004.30","2,880.39","2,880.39",0.00,No
+28/10/2024,Agarwal Suppliers Pvt Ltd,Purchase,PUR/24-25/0009,24-25/52,26/10/2024,36IQOCA3890A1ZK,"9,65,895.49","7,54,605.85","1,05,644.82","1,05,644.82",0.00,No
+26/10/2024,Agarwal Suppliers Pvt Ltd,Purchase,PUR/24-25/0010,24-25/51,26/10/2024,36IQOCA3890A1ZK,"1,63,658.12","1,27,857.90","17,900.11","17,900.11",0.00,No
+28/10/2024,Balaji Agencies,Purchase,PUR/24-25/0011,B-0577,26/10/2024,36LTHFB8293B1ZX,"22,234.55","21,175.77",529.39,529.39,0.00,No
+28/10/2024,Menon Trading Co LLP,Purchase,PUR/24-25/0012,24-25/433,28/10/2024,36ZUUFM5552L1ZP,"6,81,441.76","5,77,493.02","51,974.37","51,974.37",0.00,No
+31/10/2024,Desai Brothers LLP,Purchase,PUR/24-25/0013,INV/24-25/0833,30/10/2024,36WIXFD0947H1ZY,"70,328.03","54,943.77","7,692.13","7,692.13",0.00,No
+
+=== GSTR-2B period 102024 ===
+{"data":{"gstin":"36ECLPG8158D1ZE","rtnprd":"102024","version":"1.0","gendt":"14-11-2024","docdata":{"b2b":[{"ctin":"36IQOCA3890A1ZK","trdnm":"Agarwal Suppliers Pvt Ltd","supfildt":"10-11-2024","supprd":"102024","inv":[{"inum":"24-25/52","typ":"R","dt":"26-10-2024","val":965895.49,"pos":"36","rev":"N","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":28.0,"txval":754605.85,"igst":0.0,"cgst":105644.82,"sgst":105644.82,"cess":0.0}]},{"inum":"24-25/51","typ":"R","dt":"26-10-2024","val":163658.12,"pos":"36","rev":"N","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":28.0,"txval":127857.9,"igst":0.0,"cgst":17900.11,"sgst":17900.11,"cess":0.0}]}]},{"ctin":"36NEEFK4448O1Z9","trdnm":"Kulkarni Suppliers","supfildt":"09-11-2024","supprd":"102024","inv":[{"inum":"24-25/284","typ":"R","dt":"12-10-2024","val":34616.6,"pos":"36","rev":"N","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":12.0,"txval":30907.68,"igst":0.0,"cgst":1854.46,"sgst":1854.46,"cess":0.0}]}]},{"ctin":"36ZUUFM5552L1ZP","trdnm":"Menon Trading Co LLP","supfildt":"07-11-2024","supprd":"102024","inv":[{"inum":"24-25/432","typ":"R","dt":"10-10-2024","val":265285.75,"pos":"36","rev":"N","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":18.0,"txval":224818.43,"igst":0.0,"cgst":20233.66,"sgst":20233.66,"cess":0.0}]},{"inum":"24-25/433","typ":"R","dt":"28-10-2024","val":681441.76,"pos":"36","rev":"N","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":18.0,"txval":577493.02,"igst":0.0,"cgst":51974.37,"sgst":51974.37,"cess":0.0}]}]},{"ctin":"36OOZFP2315U1ZZ","trdnm":"Pragati Trading Co LLP","supfildt":"09-11-2024","supprd":"102024","inv":[{"inum":"24-25/848","typ":"R","dt":"25-10-2024","val":37765.08,"pos":"36","rev":"N","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":18.0,"txval":32004.3,"igst":0.0,"cgst":2880.39,"sgst":2880.39,"cess":0.0}]},{"inum":"24-25/847","typ":"R","dt":"19-10-2024","val":333187.86,"pos":"36","rev":"N","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":18.0,"txval":282362.6,"igst":0.0,"cgst":25412.63,"sgst":25412.63,"cess":0.0}]}]},{"ctin":"36JTGCB2861F1ZH","trdnm":"Balaji Brothers Private Limited","supfildt":"11-11-2024","supprd":"102024","inv":[{"inum":"INV/24-25/0186","typ":"R","dt":"18-10-2024","val":127252.23,"pos":"36","rev":"Y","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":18.0,"txval":127252.23,"igst":0.0,"cgst":11452.7,"sgst":11452.7,"cess":0.0}]}]},{"ctin":"36SKVCG4904X1Z9","trdnm":"Ganga Brothers Private Limited","supfildt":"04-11-2024","supprd":"102024","inv":[{"inum":"24-25/464","typ":"R","dt":"03-10-2024","val":24781.48,"pos":"36","rev":"N","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":18.0,"txval":21001.26,"igst":0.0,"cgst":1890.11,"sgst":1890.11,"cess":0.0}]}]},{"ctin":"19HDYFD7436B1ZP","trdnm":"Desai Agencies LLP","supfildt":"04-11-2024","supprd":"102024","inv":[{"inum":"INV/24-25/0199","typ":"R","dt":"24-10-2024","val":1720813.29,"pos":"36","rev":"N","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":28.0,"txval":1344385.38,"igst":376427.91,"cgst":0.0,"sgst":0.0,"cess":0.0}]}]},{"ctin":"36WIXFD0947H1ZY","trdnm":"Desai Brothers LLP","supfildt":"01-11-2024","supprd":"102024","inv":[{"inum":"INV/24-25/0833","typ":"R","dt":"30-10-2024","val":70328.03,"pos":"36","rev":"N","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":28.0,"txval":54943.77,"igst":0.0,"cgst":7692.13,"sgst":7692.13,"cess":0.0}]}]},{"ctin":"22OOZFP2315U1Z8","trdnm":"Pragati Trading Co LLP","supfildt":"08-11-2024","supprd":"102024","inv":[{"inum":"24-25/846","typ":"R","dt":"10-10-2024","val":442169.22,"pos":"36","rev":"N","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":18.0,"txval":374719.68,"igst":0.0,"cgst":33724.77,"sgst":33724.77,"cess":0.0}]}]},{"ctin":"36LEHFB8293B1ZX","trdnm":"Balaji Agencies","supfildt":"04-11-2024","supprd":"102024","inv":[{"inum":"B-0577","typ":"R","dt":"26-10-2024","val":22234.55,"pos":"36","rev":"N","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":5.0,"txval":21175.77,"igst":0.0,"cgst":529.39,"sgst":529.39,"cess":0.0}]}]}],"cdnr":[]}}}
+
+=== GSTR-2B period 112024 ===
+{"data":{"gstin":"36ECLPG8158D1ZE","rtnprd":"112024","version":"1.0","gendt":"14-12-2024","docdata":{"b2b":[],"cdnr":[]}}}
+
+=== BANK STATEMENT (SBI CSV) ===
+Txn Date,Value Date,Description,Ref No./Cheque No.,Debit,Credit,Balance
+7 Oct 2024,7 Oct 2024,NEFT CR/CUSTOMER RECEIPT/2041,TXN4129136238,,391807.14,12409562.51
+12 Oct 2024,12 Oct 2024,NEFT CR/CUSTOMER RECEIPT/9055,TXN3772669550,,805519.38,13215081.89
+18 Oct 2024,18 Oct 2024,TO TRANSFER-INB RTGS UTR NO: SBINN355333581420-PRAGATI TRADING CO LLP-INV 24-25/846,SBINN355333581420,442169.22,,12772912.67
+20 Oct 2024,20 Oct 2024,GST PMT CPIN/911427870,TXN9637698191,76630.15,,12696282.52
+21 Oct 2024,21 Oct 2024,NEFT CR/CUSTOMER RECEIPT/6889,TXN4753688237,,674615.14,13370897.66
+25 Oct 2024,25 Oct 2024,SALARY TRANSFER BATCH/631465668,TXN3568338626,765698.57,,12605199.09
+2 Nov 2024,2 Nov 2024,NEFT CR/CUSTOMER RECEIPT/9770,TXN1958211454,,135142.75,12740341.84
+2 Nov 2024,2 Nov 2024,NEFT CR/CUSTOMER RECEIPT/7909,TXN7518988622,,490721.65,13231063.49
+3 Nov 2024,3 Nov 2024,BY TRANSFER-NEFT*HDFC0266927*HDFCN946723636256*BALAJI AGENCIES,HDFCN946723636256,22234.55,,13208828.94
+9 Nov 2024,9 Nov 2024,NEFT CR/CUSTOMER RECEIPT/9071,TXN2413027161,,463530.41,13672359.35
+14 Nov 2024,14 Nov 2024,BY TRANSFER-NEFT*SBIN0184452*SBINN389045039180*AGARWAL SUPPLIERS PVT LTD,SBINN389045039180,163658.12,,13508701.23
+18 Nov 2024,18 Nov 2024,BY TRANSFER-NEFT*SBIN0656605*SBINN289266613153*GANGA BROTHERS PRIVATE LIMIT,SBINN289266613153,15428.38,,13493272.85
+19 Nov 2024,19 Nov 2024,TO TRANSFER-INB NEFT UTR NO: HDFCN880200718307-KULKARNI SUPPLIERS-INV 24-25/284,HDFCN880200718307,34616.60,,13458656.25
+20 Nov 2024,20 Nov 2024,GST PMT CPIN/624387045,TXN5698425042,141555.69,,13317100.56
+22 Nov 2024,22 Nov 2024,TO TRANSFER-INB RTGS UTR NO: HDFCN763648744385-DESAI AGENCIES LLP,HDFCN763648744385,1720813.29,,11596287.27
+24 Nov 2024,24 Nov 2024,TO TRANSFER-IMPS KKBKN905267833347 PRAGATI TRADING CO,KKBKN905267833347,37765.08,,11558522.19
+25 Nov 2024,25 Nov 2024,SALARY TRANSFER BATCH/548266957,TXN3476007144,425141.96,,11133380.23
+26 Nov 2024,26 Nov 2024,NEFT CR/CUSTOMER RECEIPT/6609,TXN9442935761,,92126.72,11225506.95
+30 Nov 2024,30 Nov 2024,TO TRANSFER-INB RTGS UTR NO: ICICN285606665987-MENON TRADING CO L-INV 24-25/433,ICICN285606665987,681441.76,,10544065.19
+1 Dec 2024,1 Dec 2024,BY TRANSFER-RTGS*SBIN0784742*SBINN709853170372*MENON TRADING CO LLP-INV 24-25/432,SBINN709853170372,265285.75,,10278779.44
+1 Dec 2024,1 Dec 2024,TO TRANSFER-INB NEFT UTR NO: UTIBN464974104187-BALAJI BROTHERS PR-INV INV/24-25/0186,UTIBN464974104187,127252.23,,10151527.21
+2 Dec 2024,2 Dec 2024,NEFT CR/CUSTOMER RECEIPT/8134,TXN4406481669,,805752.75,10957279.96
+4 Dec 2024,4 Dec 2024,TO TRANSFER-UPI HDFCN714570344468 DESAI BROTHERS LLP-INV INV/24-25/0833,HDFCN714570344468,70328.03,,10886951.93
+7 Dec 2024,7 Dec 2024,NEFT CR/CUSTOMER RECEIPT/5222,TXN4804359549,,202906.88,11089858.81
+9 Dec 2024,9 Dec 2024,TO TRANSFER-INB RTGS UTR NO: SBINN981731783371-PRAGATI TRADING CO LLP-INV 24-25/847,SBINN981731783371,333187.86,,10756670.95
+15 Dec 2024,15 Dec 2024,NEFT CR/CUSTOMER RECEIPT/4097,TXN8285736158,,709443.44,11466114.39
+18 Dec 2024,18 Dec 2024,NEFT CR/CUSTOMER RECEIPT/9381,TXN6192930018,,81731.83,11547846.22
+20 Dec 2024,20 Dec 2024,GST PMT CPIN/390739849,TXN7700716450,179581.91,,11368264.31
+25 Dec 2024,25 Dec 2024,SALARY TRANSFER BATCH/846585307,TXN2550864230,309438.06,,11058826.25
+11 Jan 2025,11 Jan 2025,NEFT CR/CUSTOMER RECEIPT/3740,TXN3937277733,,686032.66,11744858.91
+20 Jan 2025,20 Jan 2025,NEFT CR/CUSTOMER RECEIPT/8287,TXN1428379502,,160325.76,11905184.67
+20 Jan 2025,20 Jan 2025,GST PMT CPIN/756546995,TXN8705607301,26229.79,,11878954.88
+23 Jan 2025,23 Jan 2025,NEFT CR/CUSTOMER RECEIPT/4676,TXN6369371651,,323733.09,12202687.97
+25 Jan 2025,25 Jan 2025,SALARY TRANSFER BATCH/490970164,TXN1087991821,1437923.90,,10764764.07
+1 Feb 2025,1 Feb 2025,NEFT CR/CUSTOMER RECEIPT/9237,TXN1274399434,,536401.65,11301165.72
+17 Feb 2025,17 Feb 2025,NEFT CR/CUSTOMER RECEIPT/2817,TXN5551416253,,363975.77,11665141.49
+20 Feb 2025,20 Feb 2025,GST PMT CPIN/481364535,TXN3997465285,121553.09,,11543588.40
+23 Feb 2025,23 Feb 2025,NEFT CR/CUSTOMER RECEIPT/5059,TXN2581583580,,765539.44,12309127.84
+24 Feb 2025,24 Feb 2025,NEFT CR/CUSTOMER RECEIPT/2689,TXN1092951579,,173985.39,12483113.23
+25 Feb 2025,25 Feb 2025,SALARY TRANSFER BATCH/559098497,TXN2001583788,780472.78,,11702640.45
+19 Mar 2025,19 Mar 2025,NEFT CR/CUSTOMER RECEIPT/3341,TXN5957348792,,400992.99,12103633.44
+19 Mar 2025,19 Mar 2025,NEFT CR/CUSTOMER RECEIPT/5830,TXN9081782438,,699925.30,12803558.74
+20 Mar 2025,20 Mar 2025,GST PMT CPIN/654854322,TXN8947796145,193544.34,,12610014.40
+25 Mar 2025,25 Mar 2025,SALARY TRANSFER BATCH/357654528,TXN1094787067,1060113.89,,11549900.51
+13 Apr 2025,13 Apr 2025,NEFT CR/CUSTOMER RECEIPT/9904,TXN3111609524,,853518.58,12403419.09
+17 Apr 2025,17 Apr 2025,NEFT CR/CUSTOMER RECEIPT/1235,TXN8529640766,,248472.52,12651891.61
+20 Apr 2025,20 Apr 2025,NEFT CR/CUSTOMER RECEIPT/6471,TXN3809612550,,789690.04,13441581.65
+20 Apr 2025,20 Apr 2025,GST PMT CPIN/111221499,TXN8140358874,255733.07,,13185848.58
+25 Apr 2025,25 Apr 2025,SALARY TRANSFER BATCH/394769524,TXN1008044623,1369876.36,,11815972.22
+27 Apr 2025,27 Apr 2025,NEFT CR/CUSTOMER RECEIPT/4166,TXN8639694955,,432730.16,12248702.38
+4 May 2025,4 May 2025,NEFT CR/CUSTOMER RECEIPT/6296,TXN1067427061,,198205.40,12446907.78
+13 May 2025,13 May 2025,NEFT CR/CUSTOMER RECEIPT/5517,TXN2196705829,,67144.49,12514052.27
+13 May 2025,13 May 2025,NEFT CR/CUSTOMER RECEIPT/2866,TXN9096826767,,824178.44,13338230.71
+
+=== END ===

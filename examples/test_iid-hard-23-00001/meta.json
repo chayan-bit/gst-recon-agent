@@ -1,0 +1,797 @@
+{
+ "case_id": "test_iid-hard-23-00001",
+ "seed": 23,
+ "difficulty": "hard",
+ "split": "test_iid",
+ "render_version": "1",
+ "ocr_engine": "tesseract 5.5.0",
+ "documents": [
+  {
+   "doc_id": "D01",
+   "layout": "whatsapp_text",
+   "supplier_layout": "tally_tax_invoice",
+   "delivery": "whatsapp_text",
+   "date_fmt": "DD-MM-YYYY",
+   "num_fmt": "indian"
+  },
+  {
+   "doc_id": "D02",
+   "layout": "service_invoice_sac",
+   "supplier_layout": "service_invoice_sac",
+   "delivery": "scan",
+   "date_fmt": "DD-MM-YYYY",
+   "num_fmt": "indian",
+   "pages": 1,
+   "degrade": [
+    {
+     "level": "hard",
+     "rotate": 0.37,
+     "blur_sigma": 0.01,
+     "rescale": 0.89,
+     "jpeg": 43,
+     "brightness": 0.81,
+     "ink_bleed": true,
+     "noise_texture": false,
+     "subtle_noise": 8,
+     "shadow": false,
+     "folds": 0,
+     "photocopy": false,
+     "fax": true,
+     "dirty_drum": true,
+     "low_ink_lines": false,
+     "stamp": "VERIFIED",
+     "seed": 314841707,
+     "stamp_xy": [
+      1056,
+      389
+     ]
+    }
+   ]
+  },
+  {
+   "doc_id": "D03",
+   "layout": "service_invoice_sac",
+   "supplier_layout": "service_invoice_sac",
+   "delivery": "scan",
+   "date_fmt": "DD/MM/YYYY",
+   "num_fmt": "plain",
+   "pages": 1,
+   "degrade": [
+    {
+     "level": "hard",
+     "rotate": -2.48,
+     "blur_sigma": 0.67,
+     "rescale": 0.75,
+     "jpeg": 45,
+     "brightness": 0.99,
+     "ink_bleed": true,
+     "noise_texture": false,
+     "subtle_noise": 16,
+     "shadow": false,
+     "folds": 1,
+     "photocopy": true,
+     "fax": false,
+     "dirty_drum": false,
+     "low_ink_lines": false,
+     "stamp": "CHECKED",
+     "seed": 1597697119,
+     "stamp_xy": [
+      547,
+      97
+     ]
+    }
+   ]
+  },
+  {
+   "doc_id": "D04",
+   "layout": "service_invoice_sac",
+   "supplier_layout": "service_invoice_sac",
+   "delivery": "scan",
+   "date_fmt": "DD/MM/YYYY",
+   "num_fmt": "indian",
+   "pages": 1,
+   "degrade": [
+    {
+     "level": "hard",
+     "rotate": 1.42,
+     "blur_sigma": 0.81,
+     "rescale": 0.7,
+     "jpeg": 55,
+     "brightness": 1.02,
+     "ink_bleed": true,
+     "noise_texture": true,
+     "subtle_noise": 12,
+     "shadow": false,
+     "folds": 1,
+     "photocopy": true,
+     "fax": false,
+     "dirty_drum": false,
+     "low_ink_lines": true,
+     "stamp": false,
+     "seed": 183425647
+    }
+   ]
+  },
+  {
+   "doc_id": "D05",
+   "layout": "tally_tax_invoice",
+   "supplier_layout": "tally_tax_invoice",
+   "delivery": "scan",
+   "date_fmt": "D Mon YYYY",
+   "num_fmt": "indian",
+   "pages": 1,
+   "degrade": [
+    {
+     "level": "hard",
+     "rotate": 1.33,
+     "blur_sigma": 0.32,
+     "rescale": 0.85,
+     "jpeg": 49,
+     "brightness": 0.79,
+     "ink_bleed": false,
+     "noise_texture": true,
+     "subtle_noise": 12,
+     "shadow": true,
+     "folds": 2,
+     "photocopy": true,
+     "fax": false,
+     "dirty_drum": true,
+     "low_ink_lines": false,
+     "stamp": "ORIGINAL",
+     "seed": 1659124909,
+     "stamp_xy": [
+      466,
+      1527
+     ]
+    }
+   ]
+  },
+  {
+   "doc_id": "D06",
+   "layout": "service_invoice_sac",
+   "supplier_layout": "service_invoice_sac",
+   "delivery": "scan",
+   "date_fmt": "DD/MM/YYYY",
+   "num_fmt": "indian",
+   "pages": 1,
+   "degrade": [
+    {
+     "level": "hard",
+     "rotate": 1.11,
+     "blur_sigma": 0.97,
+     "rescale": 0.65,
+     "jpeg": 60,
+     "brightness": 0.91,
+     "ink_bleed": true,
+     "noise_texture": false,
+     "subtle_noise": 6,
+     "shadow": false,
+     "folds": 2,
+     "photocopy": false,
+     "fax": false,
+     "dirty_drum": false,
+     "low_ink_lines": false,
+     "stamp": false,
+     "seed": 1417906999
+    }
+   ]
+  },
+  {
+   "doc_id": "D07",
+   "layout": "service_invoice_sac",
+   "supplier_layout": "service_invoice_sac",
+   "delivery": "scan",
+   "date_fmt": "DD/MM/YYYY",
+   "num_fmt": "indian",
+   "pages": 1,
+   "degrade": [
+    {
+     "level": "hard",
+     "rotate": 1.89,
+     "blur_sigma": 0.84,
+     "rescale": 0.61,
+     "jpeg": 33,
+     "brightness": 1.04,
+     "ink_bleed": true,
+     "noise_texture": true,
+     "subtle_noise": 12,
+     "shadow": true,
+     "folds": 0,
+     "photocopy": false,
+     "fax": false,
+     "dirty_drum": true,
+     "low_ink_lines": false,
+     "stamp": false,
+     "seed": 271223354
+    }
+   ]
+  },
+  {
+   "doc_id": "D08",
+   "layout": "tally_tax_invoice",
+   "supplier_layout": "tally_tax_invoice",
+   "delivery": "scan",
+   "date_fmt": "DD/MM/YY",
+   "num_fmt": "indian",
+   "pages": 1,
+   "degrade": [
+    {
+     "level": "hard",
+     "rotate": -2.5,
+     "blur_sigma": 1.06,
+     "rescale": 0.71,
+     "jpeg": 46,
+     "brightness": 0.94,
+     "ink_bleed": true,
+     "noise_texture": false,
+     "subtle_noise": 16,
+     "shadow": false,
+     "folds": 2,
+     "photocopy": false,
+     "fax": false,
+     "dirty_drum": false,
+     "low_ink_lines": true,
+     "stamp": false,
+     "seed": 1803875145
+    }
+   ]
+  },
+  {
+   "doc_id": "D09",
+   "layout": "tally_tax_invoice",
+   "supplier_layout": "tally_tax_invoice",
+   "delivery": "scan",
+   "date_fmt": "DD/MM/YYYY",
+   "num_fmt": "indian",
+   "pages": 1,
+   "degrade": [
+    {
+     "level": "hard",
+     "rotate": -1.63,
+     "blur_sigma": 0.79,
+     "rescale": 0.61,
+     "jpeg": 60,
+     "brightness": 0.9,
+     "ink_bleed": false,
+     "noise_texture": false,
+     "subtle_noise": 16,
+     "shadow": false,
+     "folds": 1,
+     "photocopy": true,
+     "fax": false,
+     "dirty_drum": true,
+     "low_ink_lines": false,
+     "stamp": "ACCOUNTS",
+     "seed": 1266451130,
+     "stamp_xy": [
+      704,
+      781
+     ]
+    }
+   ]
+  },
+  {
+   "doc_id": "D10",
+   "layout": "tally_tax_invoice",
+   "supplier_layout": "tally_tax_invoice",
+   "delivery": "scan",
+   "date_fmt": "DD/MM/YYYY",
+   "num_fmt": "indian",
+   "pages": 1,
+   "degrade": [
+    {
+     "level": "hard",
+     "rotate": -1.38,
+     "blur_sigma": 0.79,
+     "rescale": 0.85,
+     "jpeg": 35,
+     "brightness": 1.15,
+     "ink_bleed": true,
+     "noise_texture": false,
+     "subtle_noise": 10,
+     "shadow": true,
+     "folds": 1,
+     "photocopy": false,
+     "fax": false,
+     "dirty_drum": false,
+     "low_ink_lines": true,
+     "stamp": false,
+     "seed": 781096300
+    }
+   ]
+  },
+  {
+   "doc_id": "D11",
+   "layout": "letterhead_stamp",
+   "supplier_layout": "letterhead_stamp",
+   "delivery": "scan",
+   "date_fmt": "DD/MM/YYYY",
+   "num_fmt": "indian",
+   "pages": 1,
+   "degrade": [
+    {
+     "level": "hard",
+     "rotate": 0.5,
+     "blur_sigma": 0.6,
+     "rescale": 0.75,
+     "jpeg": 46,
+     "brightness": 0.72,
+     "ink_bleed": false,
+     "noise_texture": false,
+     "subtle_noise": 8,
+     "shadow": true,
+     "folds": 0,
+     "photocopy": false,
+     "fax": false,
+     "dirty_drum": false,
+     "low_ink_lines": true,
+     "stamp": "PAID",
+     "seed": 1628174171,
+     "stamp_xy": [
+      370,
+      600
+     ]
+    }
+   ]
+  },
+  {
+   "doc_id": "D12",
+   "layout": "service_invoice_sac",
+   "supplier_layout": "service_invoice_sac",
+   "delivery": "scan",
+   "date_fmt": "DD/MM/YYYY",
+   "num_fmt": "indian",
+   "pages": 1,
+   "degrade": [
+    {
+     "level": "hard",
+     "rotate": -2.11,
+     "blur_sigma": 0.9,
+     "rescale": 0.68,
+     "jpeg": 36,
+     "brightness": 0.86,
+     "ink_bleed": true,
+     "noise_texture": true,
+     "subtle_noise": 6,
+     "shadow": true,
+     "folds": 1,
+     "photocopy": true,
+     "fax": false,
+     "dirty_drum": true,
+     "low_ink_lines": true,
+     "stamp": false,
+     "seed": 292434215
+    }
+   ]
+  },
+  {
+   "doc_id": "D13",
+   "layout": "tally_tax_invoice",
+   "supplier_layout": "tally_tax_invoice",
+   "delivery": "scan",
+   "date_fmt": "DD-MM-YYYY",
+   "num_fmt": "indian",
+   "pages": 1,
+   "degrade": [
+    {
+     "level": "hard",
+     "rotate": -0.68,
+     "blur_sigma": 0.19,
+     "rescale": 0.9,
+     "jpeg": 31,
+     "brightness": 0.81,
+     "ink_bleed": true,
+     "noise_texture": false,
+     "subtle_noise": 14,
+     "shadow": false,
+     "folds": 1,
+     "photocopy": true,
+     "fax": false,
+     "dirty_drum": false,
+     "low_ink_lines": true,
+     "stamp": false,
+     "seed": 2027030488
+    }
+   ]
+  },
+  {
+   "doc_id": "D14",
+   "layout": "tally_tax_invoice",
+   "supplier_layout": "tally_tax_invoice",
+   "delivery": "scan",
+   "date_fmt": "DD/MM/YYYY",
+   "num_fmt": "plain",
+   "pages": 1,
+   "degrade": [
+    {
+     "level": "hard",
+     "rotate": 1.4,
+     "blur_sigma": 0.22,
+     "rescale": 0.84,
+     "jpeg": 32,
+     "brightness": 0.72,
+     "ink_bleed": true,
+     "noise_texture": true,
+     "subtle_noise": 16,
+     "shadow": false,
+     "folds": 0,
+     "photocopy": true,
+     "fax": false,
+     "dirty_drum": false,
+     "low_ink_lines": false,
+     "stamp": false,
+     "seed": 919180994
+    }
+   ]
+  },
+  {
+   "doc_id": "D15",
+   "layout": "letterhead_stamp",
+   "supplier_layout": "letterhead_stamp",
+   "delivery": "scan",
+   "date_fmt": "DD/MM/YYYY",
+   "num_fmt": "indian",
+   "pages": 1,
+   "degrade": [
+    {
+     "level": "hard",
+     "rotate": -0.22,
+     "blur_sigma": 0.4,
+     "rescale": 0.91,
+     "jpeg": 57,
+     "brightness": 0.73,
+     "ink_bleed": true,
+     "noise_texture": false,
+     "subtle_noise": 8,
+     "shadow": false,
+     "folds": 1,
+     "photocopy": true,
+     "fax": false,
+     "dirty_drum": false,
+     "low_ink_lines": false,
+     "stamp": false,
+     "seed": 1565883945
+    }
+   ]
+  },
+  {
+   "doc_id": "D16",
+   "layout": "email_text",
+   "supplier_layout": "tally_tax_invoice",
+   "delivery": "email_text",
+   "date_fmt": "DD/MM/YYYY",
+   "num_fmt": "indian"
+  },
+  {
+   "doc_id": "D17",
+   "layout": "small_trader_bill",
+   "supplier_layout": "small_trader_bill",
+   "delivery": "scan",
+   "date_fmt": "D Mon YYYY",
+   "num_fmt": "western",
+   "pages": 1,
+   "degrade": [
+    {
+     "level": "hard",
+     "rotate": -1.3,
+     "blur_sigma": 1.01,
+     "rescale": 0.95,
+     "jpeg": 56,
+     "brightness": 0.91,
+     "ink_bleed": true,
+     "noise_texture": true,
+     "subtle_noise": 12,
+     "shadow": true,
+     "folds": 2,
+     "photocopy": true,
+     "fax": false,
+     "dirty_drum": false,
+     "low_ink_lines": true,
+     "stamp": false,
+     "seed": 718952829
+    }
+   ]
+  },
+  {
+   "doc_id": "D18",
+   "layout": "tally_tax_invoice",
+   "supplier_layout": "tally_tax_invoice",
+   "delivery": "scan",
+   "date_fmt": "DD-MM-YYYY",
+   "num_fmt": "indian",
+   "pages": 1,
+   "degrade": [
+    {
+     "level": "hard",
+     "rotate": -2.73,
+     "blur_sigma": 0.09,
+     "rescale": 0.98,
+     "jpeg": 35,
+     "brightness": 0.93,
+     "ink_bleed": true,
+     "noise_texture": true,
+     "subtle_noise": 14,
+     "shadow": false,
+     "folds": 2,
+     "photocopy": false,
+     "fax": true,
+     "dirty_drum": false,
+     "low_ink_lines": false,
+     "stamp": false,
+     "seed": 1213194335
+    }
+   ]
+  },
+  {
+   "doc_id": "D19",
+   "layout": "tally_tax_invoice",
+   "supplier_layout": "tally_tax_invoice",
+   "delivery": "scan",
+   "date_fmt": "DD/MM/YYYY",
+   "num_fmt": "indian",
+   "pages": 1,
+   "degrade": [
+    {
+     "level": "hard",
+     "rotate": -1.33,
+     "blur_sigma": 0.36,
+     "rescale": 0.8,
+     "jpeg": 31,
+     "brightness": 0.81,
+     "ink_bleed": false,
+     "noise_texture": false,
+     "subtle_noise": 12,
+     "shadow": false,
+     "folds": 1,
+     "photocopy": true,
+     "fax": true,
+     "dirty_drum": false,
+     "low_ink_lines": false,
+     "stamp": false,
+     "seed": 1358387398
+    }
+   ]
+  },
+  {
+   "doc_id": "D20",
+   "layout": "tally_tax_invoice",
+   "supplier_layout": "tally_tax_invoice",
+   "delivery": "scan",
+   "date_fmt": "DD/MM/YYYY",
+   "num_fmt": "indian",
+   "pages": 1,
+   "degrade": [
+    {
+     "level": "hard",
+     "rotate": 0.34,
+     "blur_sigma": 0.27,
+     "rescale": 0.66,
+     "jpeg": 38,
+     "brightness": 1.09,
+     "ink_bleed": true,
+     "noise_texture": true,
+     "subtle_noise": 8,
+     "shadow": true,
+     "folds": 2,
+     "photocopy": false,
+     "fax": true,
+     "dirty_drum": false,
+     "low_ink_lines": false,
+     "stamp": "ORIGINAL",
+     "seed": 1664053015,
+     "stamp_xy": [
+      121,
+      1683
+     ]
+    }
+   ]
+  },
+  {
+   "doc_id": "D21",
+   "layout": "tally_tax_invoice",
+   "supplier_layout": "tally_tax_invoice",
+   "delivery": "scan",
+   "date_fmt": "DD/MM/YYYY",
+   "num_fmt": "indian",
+   "pages": 1,
+   "degrade": [
+    {
+     "level": "hard",
+     "rotate": 1.16,
+     "blur_sigma": 0.13,
+     "rescale": 0.93,
+     "jpeg": 50,
+     "brightness": 1.04,
+     "ink_bleed": true,
+     "noise_texture": true,
+     "subtle_noise": 12,
+     "shadow": false,
+     "folds": 2,
+     "photocopy": false,
+     "fax": false,
+     "dirty_drum": false,
+     "low_ink_lines": false,
+     "stamp": false,
+     "seed": 1489132731
+    }
+   ]
+  },
+  {
+   "doc_id": "D22",
+   "layout": "tally_tax_invoice",
+   "supplier_layout": "tally_tax_invoice",
+   "delivery": "scan",
+   "date_fmt": "DD/MM/YY",
+   "num_fmt": "indian",
+   "pages": 1,
+   "degrade": [
+    {
+     "level": "hard",
+     "rotate": -1.73,
+     "blur_sigma": 0.4,
+     "rescale": 0.9,
+     "jpeg": 43,
+     "brightness": 0.84,
+     "ink_bleed": false,
+     "noise_texture": false,
+     "subtle_noise": 10,
+     "shadow": false,
+     "folds": 2,
+     "photocopy": true,
+     "fax": false,
+     "dirty_drum": false,
+     "low_ink_lines": true,
+     "stamp": false,
+     "seed": 1741054741
+    }
+   ]
+  },
+  {
+   "doc_id": "D23",
+   "layout": "tally_tax_invoice",
+   "supplier_layout": "tally_tax_invoice",
+   "delivery": "scan",
+   "date_fmt": "DD/MM/YY",
+   "num_fmt": "indian",
+   "pages": 1,
+   "degrade": [
+    {
+     "level": "hard",
+     "rotate": 2.66,
+     "blur_sigma": 1.02,
+     "rescale": 0.74,
+     "jpeg": 35,
+     "brightness": 1.05,
+     "ink_bleed": false,
+     "noise_texture": true,
+     "subtle_noise": 14,
+     "shadow": true,
+     "folds": 1,
+     "photocopy": true,
+     "fax": false,
+     "dirty_drum": true,
+     "low_ink_lines": true,
+     "stamp": "VERIFIED",
+     "seed": 27064038,
+     "stamp_xy": [
+      264,
+      1528
+     ]
+    }
+   ]
+  }
+ ],
+ "register": {
+  "style": "csv",
+  "date_fmt": "DD/MM/YYYY",
+  "num_fmt": "plain",
+  "header_set": 1
+ },
+ "bank": {
+  "bank_style": "sbi"
+ },
+ "prompt_chars": 44572,
+ "prompt_tokens": 24214,
+ "target_tokens": 11111,
+ "token_method": "qwen3",
+ "fits_context": false,
+ "ocr_recall": 0.7699,
+ "ocr_recall_scanned": 0.7465,
+ "doc_recall": {
+  "D01": 1.0,
+  "D02": 0.692,
+  "D03": 0.8,
+  "D04": 0.778,
+  "D05": 0.889,
+  "D06": 0.778,
+  "D07": 0.889,
+  "D08": 0.6,
+  "D09": 0.667,
+  "D10": 0.6,
+  "D11": 1.0,
+  "D12": 0.778,
+  "D13": 0.857,
+  "D14": 0.818,
+  "D15": 0.889,
+  "D16": 1.0,
+  "D17": 0.75,
+  "D18": 0.643,
+  "D19": 0.444,
+  "D20": 0.538,
+  "D21": 0.909,
+  "D22": 0.9,
+  "D23": 0.556
+ },
+ "unrecoverable": [
+  {
+   "doc_id": "D02",
+   "facts": [
+    "line1_taxable",
+    "line2_taxable"
+   ]
+  },
+  {
+   "doc_id": "D08",
+   "facts": [
+    "line0_hsn"
+   ]
+  },
+  {
+   "doc_id": "D10",
+   "facts": [
+    "total",
+    "line0_hsn"
+   ]
+  },
+  {
+   "doc_id": "D12",
+   "facts": [
+    "line0_hsn"
+   ]
+  },
+  {
+   "doc_id": "D14",
+   "facts": [
+    "line0_hsn",
+    "line1_hsn"
+   ]
+  },
+  {
+   "doc_id": "D18",
+   "facts": [
+    "taxable_value",
+    "line0_taxable",
+    "line2_hsn",
+    "line2_taxable"
+   ]
+  },
+  {
+   "doc_id": "D19",
+   "facts": [
+    "total",
+    "line0_hsn"
+   ]
+  },
+  {
+   "doc_id": "D20",
+   "facts": [
+    "cgst",
+    "sgst",
+    "line1_hsn",
+    "line2_hsn"
+   ]
+  },
+  {
+   "doc_id": "D23",
+   "facts": [
+    "line0_hsn"
+   ]
+  }
+ ],
+ "has_unrecoverable": true,
+ "timing_s": {
+  "render": 12.648,
+  "degrade": 48.077,
+  "ocr": 89.54
+ }
+}

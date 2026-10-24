@@ -1,0 +1,768 @@
+=== CASE ===
+Buyer: Hegde Vyapar LLP
+Buyer GSTIN: 06IFLFH9643N1Z6
+Buyer state: Haryana (06)
+Buyer line of business: construction contractor - Design & build contractor. Employees: 125.
+Buyer employees: 125
+Return period: 072026 (July 2026)
+Reconciliation date: 2027-02-07
+Documents: 23 invoices/credit notes (D01..D23)
+
+=== INVOICES ===
+
+--- D01 | WhatsApp message ---
+good morning sir. bill attached, details
+
+inv no SI000042 dt 07-07-2026
+Shree Global
+GSTIN No. 06DZLFS3328U1ZV
+to: Hegde Vyapar LLP 06IFLFH9643N1Z6
+pos 06-Haryana rcm No
+1. Taj Mahal tea hsn 0902 48 Kg @705.80 = 33,878.40 + gst 5% (CGST 846.96 + SGST 846.96)
+2. Uttam sugar (Lot 2) hsn 1701 20 Qtl @4,019.51 = 80,390.20 + gst 5% (CGST 2,009.76 + SGST 2,009.76)
+taxable amt: 1,14,268.60
+cgst @ 2.5%: 2,856.72
+sgst @ 2.5%: 2,856.72
+Total Amount: 1,19,982.04
+remarks / purpose: annual day celebration
+
+pls confirm n pay asap
+
+--- D02 | scanned document, OCR text ---
+TAX INVOICE  ie  spit
+Date  18-07-2026
+Chawla Networks  POS  Haryana (06)
+250, MG Road, Faridabad, Haryana  Reverse Charge  N
+GSTIN: O6XJYPCSLOSIUZE ~=PAN: XJYPC51091
+info@chawanetworks.co.in | +91 6383800659
+Bill To
+Hegde Vyapar LLP
+99, Phase  ndustrial Area  aridahand, Haryana
+GSTIN: O6IFLFH9643N1Z6  N\
+fs |tem Description  HSN  Quantity  Rate  Taxable Value GST %  CAsT  SC oT
+1 PORCELAIN TILES MATT FINISH  6907 352 Box  728.00  2,56,256.00  18  Wa gio
+2 Jaquar wall-hung WC  6910  16Nos 7,434.22  1,18,947.62  25 "40,705.28
+.« . 3 SARIA 10 MM (TMT)  7214. 17MT 62,639.83 10,65,89%  Ee  $20.74 95,930.74
+oo  ja  sae  Taxable Value  de NY  ., 2441,100.63 |
+,  .  CGST @ 9%  1,29,699.06
+,  SGST @ 9%  1,29,699.06
+Grand Total  17,00,498.75
+Amount in words: Rs. Seventeen Lakh Four Hundred Ninety Eight and Seventy Five Paise only &. & O.E.
+Bank Details
+Bank: HDFC Bank - A‘c No.: 832617803317  Tax Rate% Taxable Value  CGST  SGST
+(FSC: HOFC0814677 Branch: Sector 18  18  14,41,100.63  1,29,699.08  1,23,699.06
+Alc Name: Chtaia-Netwaorks  :  a  te  .  =  oe
+Payment terms: within 40 days. Interest @18% p.a. on delayed  for Chawla Networks
+payment Subject to jurisdiction of courts at Faridabad.  ;
+Authorised Signatory
+
+--- D03 | scanned document, OCR text ---
+- TAX INVOICE  we  ey cena
+,  Invoice Date  22/07/2026  :
+Chawla Enterprises LLP  POS  Haryana (06)
+224, GIDC Estate, Manesar, Haryana  erse Charge  No
+GSTIN No.: O6ZUIFC29580124 PAN: ZUIFC25586
+Sales@chawlaenterpri.co.in | +91 9875932788
+Customer
+Hegde Vyapar LLP
+99, Phase I! Industrial Area, Faridabad, Haryana
+GSTIN No.: O6IFLFH9643N126
+S.No Service Description  SAC Code  Qty  Rate Taxable Amt  CGST% CGST Amt SGST%  SGST Amt
+1 _ interior fit-out worsk  995468 1 Job  1540217.45 1540217.45  9 138619.57  9 138619.57
+Taxable Amt  1540217.45
+CGST @ 9%  138619.57
+SGST @ 9%  138619.57
+Total Amount  1817456.59
+Amount in words: Rs. Eighteen Lakh Seventeen Thousand Four Hundred Fifty Six and Fifty Nine Paise only E.&O.E.
+Remarks / Purpose: for onward supply
+Bank: HDFC Bank Alc No.: 222858750533969  Tax Rate %  Taxable Value  CGST  SGST
+IFSC: HDFC0286155  Branch: MIDC Branch  18  1540217.45  138619.57  138619.57
+A/c Name: Chawla Enterprises LLP
+Payment terms: within 30 days. interest @18% p.a. on delayed  for Chawla Enterprises LLP
+Payment. Subject to jurisdiction of courts at Manesar.
+ninct  Authorised Signatory
+
+--- D04 | scanned document, OCR text ---
+TAX INVOICE  ig  eigen
+Date  2210712026
+Arora Traders Pvt Ltd  POS  Haryana (06)
+166, industrial Estate, Gurugram, Haryana  Reverse Charge  No
+GSTIN No.: O6SYYCA9404S1ZS PAN: SYYCA9404S
+accounts@aroratraderspv.in | +91 7487093252
+Customer
+Hegde Vyapar LLP
+99, Phase |! Industrial Area, Faridabad, Haryana
+GSTIN No.: O6IFLFH9643N1Z6
+OUTSOURCED STAFF -5 PAX 998513 1  Month 2,37,728.56  2,37,728.56  18 21,395.57 21,395.57 2,80,519.70
+Taxable Value  2,37,728.56
+CGST @ 9%  21,395.57
+SGST @ 9%  21,395.57
+Grand Total  2,80,519.70
+Amount in words: Rupees Two Lakh Eighty Thousand Five Hundred Nineteen and Seventy Paise Only E. &O.E.
+Bank: State Bank of India A/c No.: 884918498721109  Tax Rate %  Taxable Value  cGST  SGST
+IFSC: SBINO578503 Branch: Sector 18  18  2,37,728.56  21,395.57  21,395.57
+Alc Name: Arora Traders Pvt Ltd
+Payment terms: within 30 days. Interest @18% p.a. on delayed  for Arora Traders Pvt Ltd
+payment. Subject to jurisdiction of courts at Gurugram.  :  L
+Authorised Signatory
+
+--- D05 | scanned document, OCR text ---
+*  >  *  >  -  ?  7  7  7  .  ae
+°
+94, GIDC Estate, Faridabad, Haryana  S750  eae zee
+GSTIN: O6OQAFA850611ZD  Delivery Note  Mode/Terms of Payment
+State Name : Haryana, Code : 06  30 Days
+E-Mail : info@aroraindustrie.com
+Buyer's Order No.  Reverse Charge
+Customer
+Hegde Vyapar LLP  "
+99.  Mhase |  ndustral Area, Faridabad, nal) ana  ’  .
+*  k POS:sHaryana (06) #  so «  fk Ss  e *  <  w ose F  4  rea
+ren coas [nm Desctpion [ey] Ra] Awoue] _esre] cost] sosr[___Anourt
+2710  Gulf turbine oil...  322 Ltr] 303.97] 97,878.34  8,809.05| 8,809.05  1,15,496.44
+  ,  i
+&s  e  + te Re  = ¢  2% % 309.059) *
+[18  5| 8.8  .  1,15,496.44
+Amount Charg  i
+INR One Lakt
+IFSC: BARBI  a
+Alc Name: Arc  j  :
+4  a  for Arora Industries & Co
+Decliaratio  f
+We declare th:  P.
+described mn  dn  Authorised Signatory
+-  w
+<  i i
+
+--- D06 | scanned document, OCR text ---
+TAX INVOICE  nites  oe
+Date  08/07/2026
+Sahyadri Marketing & Co  POS  Haryana (06)
+23, MIDC industrial Area, Manesar, Haryana  Reverse Charge  N
+info@sahyadrimarket.com | +91 9451916888
+Customer
+Hegde Vyapar LLP
+99, Phase I! Industrial Area, Faridabad, Haryana
+GSTIN/UIN: O6IFLFH9643N1Z6
+health club
+1 999723  membrshp - spl  3 Year 58,945.68 1,76,837.04  2.5 4,420.93  2.5 4,420.93 1,85,678.90
+.  CGST@25%  4,420.93
+SGST @ 2.5%  4,420.93
+Total Amount  1,85,678.90
+Amount in words: Rupees One Lakh Eighty Five Thousand Six Hundred Seventy Eight and Ninety Paise Only  E.&0.E.
+Bank Details
+Bank: Bank of Baroda A/c No.: 183268277510286  Tax Rate %  Taxable Value  cGST  SGST
+IFSC: BARBO608616 Branch: Industrial Area  5  1,76,837.04  4,420.93  4,420.93
+Alc Name: Sahyadri Marketing & Co
+Payment terms: within 30 days. interest @18% p.a. on delayed  for Sahyadri Marketing & Co
+payment. Subject to jurisdiction of courts at Manesar.  ;  :
+Authorised Signatory
+
+--- D07 | scanned document, OCR text ---
+TAX INVOICE  “races  meer
+Date  21/07/2026
+Das Enterprises Pvt Ltd  Place of Supply  Haryana - 06
+72. industrial Estate, Gurugram, Haryana  Reverse Charge  Yes
+GSTIN/UIN: O6EDNCD7998Z1ZK PAN: EDNCD7998Z
+billing@dasenterprises.in | +91 7654184763
+Bill To  ’  .
+Hegde Vyapar LLP
+99, Phase Ii Industrial Area, Faridabad, Haryana
+GSTIN/UIN: O6IFLFH9643N1Z6
+1 Security Svcs  998525  1 Month 99,087.60  99,087.60  9  8,917.88  9  8,917.88
+Taxable Value  99,087.60
+CGST @ 9%  8,917.88
+SGST @ 9%  8,917.88
+Tax payable on Reverse Charge by recipient (not included)  17,835.76
+Amount Payable to Supplier  99,087.60
+Amount in words: Rupees Ninety Nine Thousand Eighty Seven and Sixty Paise Only &.&0.E.  :  os
+Bank: Kotak Mahindra Bank A/c No.: 236029130528708  Tax Rate %  Taxable Value ~ eGst  eo See
+IFSC: KKBK0517307 Branch: Sector 18  18  99,087.60 8,917.88  891788
+Alc Name: Das Enterprises Pvt Ltd  | ee  oe
+. Payment terms: within 30 days, Interest @18% p.a. on delayed  :  4  for Das Enterprises Pyt Lid  +
+payment. Subject to jurisdiction of courts at Gurugram.  ee
+gh te 2
+
+--- D08 | scanned document, OCR text ---
+Saxena Global  a oaion Hn  a
+12 ia Poe, Cangza, Hyer
+:  1Z  Mode/Terms
+Ste Ne“ Hayna Code  "Se
+eran  SS
+Bil To
+Hegde Vyapar LLP
+89. Phase II industrial Area, Faridabad, Haryana
+GSTIN/UIN: O6IFLFH9643N1276
+State Name : Haryana, Code : 06
+POS: Haryana (06)
+a
+—_e en sme alo
+Taxable Value  22,74,627.06
+CGST @ 9%  2,04,716.44
+Tos Rate [Taxable ae | ~~ east | sear SGST @ 9%  2,04,716.44
+CS EEE Net Amount  26,84,059.94
+Amount Chargeable (in words)  E.aOe.
+Ms: Twenty Six Lakh Eighty Four Thousand Fifty Nine and Ninety Four Paise only
+Remarks / Purpose: delivery challan attached
+oe Alc No.: 194571163880850
+IFSC: PUNBO763419 Branch: MIDC Branch
+Alc Name: Saxena Global
+for Saxena Global
+descrincn® inat this invoice shows the actual price of the goods/services
+Gescribed and that all particulars are true and conect  Authorised Signatory
+This is a Computer Generated invoice
+
+--- D09 | scanned document, OCR text ---
+SAI COMMERCIAL PVT LTD  Tax invoice No  aw Oske
+141, Transport Nagar, Guwahati, Assam  BILL00228  2910712026
+GSTIN/UIN: 18NOZCS0577K1iZ9  Delivery Note  Mode/Terms of Payment
+State Name : Assam, Code : 18  30 Days
+E-Mail : billing@saicommercialp.com
+Buyer's Order No  Reverse Charge
+hence |e aOR
+’  Custorter  :  °  :  ‘> £  fed  = 2-4  e  '  g  s 3  >
+Hegde Vyapar LLP
+99, Phase II Industrial Area, Faridabad, Haryana
+GSTIN/UIN: O6IFLFH9643N126
+State Name : Haryana, Code : 06
+Place of Supply: 06-Haryana
+[S.No [Description of Services  puswsac | @y[ Rate] TeuableAmt] ests] 1057
+1  Windows 11 Pro...  997331  33 Nos  42,361.73  13,97,937.09  18  2,51,628.68
+2  technical training fees - regular  999293  1 Job  1,47,831.01  1,47,831.01  18  26,609.58
+3  OUTSOURCED STAFF - 5 PAX  998513  1 Month  1,76,277.85  1,76,277.85  18  31,730.01
+Taxable Amt  17,22,045.95
+
+--- D10 | scanned document, OCR text ---
+118, Station Road, Gurugram, Haryana  cnroes  3110712026
+GST No.: O600AFJ568811ZV  Delivery Note  Mode/Terms of Payment
+State Name : Haryana, Code : 06  30 Days
+E-Mail : billing@joshisales.in  anaes  a  Geverse Chaga
+26-27-INV-00425  No
+99, Phase II Industrial Area, Faridabad, Haryana
+GST No.: O6IFLFH9643N1Z6
+State Name : Haryana, Code : 06
+POS: 06-Haryana
+So[Paneuers____ [si Gode [Quantiy] unt price] —amoun [ 6st] cost] S657
+a Maruti Super Carry - Q3 - rate difference / return lade 8,34,789.40 | 8,34,789.40 75,131.05 | 75,131.05
+  a  Taxable Value  8,34,789.40
+A  CGST @ 9%  75,131.05
+[TaxRate% | _‘Taxable Value |  __scst] sG  y  75,131.05
+Amount Chargeable (in words)  _
+INR Nine Lakh Eighty Five Thou:  id
+Bank Details  P
+Bank: Kotak Mahindra Bank A/¢ No.:.
+IFSC: KKBK0682826 Branch: Main
+A/c Name: Joshi Sales
+for Joshi Sales
+Declaration
+We declare that this invoice:
+
+--- D11 | scanned document, OCR text ---
+Das Ventures Pvt Ltd
+87, Ring Road, Dibrugarh, Assam | +91 9195800677 |  sales@dasventurespvt.in
+GSTIN No.: 18KEKCD1519Q1ZN PAN: KEKCD15190
+To,  TAX INVOICE
+Hegde Vyapar LLP  Invoice #: No.0433
+99, Phase II Industrial Area, Faridabad, Haryana  Invoice Date: 18/07/2026
+GSTIN No.: O6IFLFH9643N1Z6  Place of Supply: Haryana (06)
+Reverse Charge: No
+Item Description  HSN  Qty  Unit Price  Taxable Amt  IGST %  IGST Amt  Amount
+eae SSS
+Notebook computer 14in  8471  6 Nos  43,073.09  2,58,438.54  18  46,518.94  3,04,957.48
+Taxable Amt  2,58,438.54
+IGST @ 18%  46,518.94
+:  Invoice Total  3,04,957.48
+: Lakh Four Thousand Nine Hundred Fifty Seven and Forty Eight Paise Only E.&O.E.
+| | Purpose: delivery challan attached
+etails  for Das Ventures Pvt Ltd
+!  FSC: UTIB0671370 Branch: MIDC Branch
+Alc Name: Das Ventures Pvt Ltd  ow ud
+venture”
+3  pas *” sc AM  ;
+x Rate %  Taxable Value |  IGST  pe pec  Vihaan
+c  {68  2,58,438.54  46,518.94
+Authorised Signatory
+Vihaan Sahota
+
+--- D12 | scanned document, OCR text ---
+»  an
+ic  a
+INVOICE  ae  Invoice #  BILL0O186
+*,  Date  31/07/2026
+Das Enterprises Pvt Ltd  a  Place of Supply  Haryana (06)
+72. Industrial Estate, Gurugram, Haryana  3  +  Reverse Charge  Yes
+GSTIN/UIN: O6EDNCD7998717K  PAN: EDNCD7998z  :  si
+billing@dasenterprises.in | +91 7654184763  3
+Bill To
+Hegde Vyapar LLP  ;
+99, Phase Ii Industrial Area, Faridabad, Haryana
+GSTIN/UIN: O6IFLFH9643N1Z6
+:  ,  security quards - 4 sh  is  96525  1 Month 9  POL. ee  4,251 9.  “  8 482.6  $  B 482.6
+;  t  x  .
+  Taxable Value  :  94,251.94
+CGST @ 9%  8,482.67
+SGST @9%  8,482.67
+Tax payable on Reverse Charge by recipient (not included)  16,965.34
+Amount Payable to Supplier  94,251.94
+Amount in words: Rupees Ninety Four Thousand Two Hundred'Fity One and Ninety Four Paise Only  E.&O.E.
+Bank Details  "s
+Bank: Kotak Mahindra Bank A/c No.: 236029130528708  P  Tax Rate %  Taxable Value  CGST  SGST
+IFSC: KKBK0517307  Branch: Sector 18  ;  18  94,251.94  8,482.67  8,482.67
+Alc Name: Das Enterprises Pvt Ltd
+Payment terms: within 30 days. interest @18% pP.a.ondelayed ¢ ©  for Das Enterprises Pvt Ltd
+.  }  to juri  of courts at  am.  '
+
+--- D13 | scanned document, OCR text ---
+— 7.  nv. No.  inv Date
+ei  rrhy,  $1000043  13-07-2026
+3328U1ZV_  Delivery Note  Mode/Terms of Payment
+na, Code : 06  30 Days
+:  ar i?  r  Buyer's Order No.  Reverse Charge
+| State Name : Haryana, Code : 06
+Place of Supply: Haryana - 06
+|  Particulars | Hswisac | Quantity | unit | Unit Price| Taxable Amt] CGST%| CGSTAm#] SGST%] SGSTAmt|
+PARLE-G BISCUITS CARTON  1905  123 | Box  544.48  66,971.04  1,674.28  1,674.28
+Red Label tea (A grade)  0902  33] Kg  428.01  14,124.33  353.11  353.11
+Uttam sugar - regular  1701  19} Qt  4,363.96  82,915.24  2,072.88  2,072.88
+Taxable Amt  1,64,010.61
+CGST @ 2.5%  4,100.27
+[TaxRate% | TaxableValue[—sCGST[_—«SGST|_SGST@25%  4,100.27
+[s_T 6401061 [4,10027[ 4.10027] “Total Amount  1,72,211.15
+Amount Chargeable (in words)  E. &O.E.
+INR One Lakh Seventy Two Thousand Two Hundred Eleven and Fifteen Paise Only
+Remarks / Purpose: team dinner - project closure
+Bank Details
+Bank: HDFC Bank A/c No.: 212527708166055
+IFSC: HDFC0476664 Branch: Industrial Area
+A/c Name: Shree Global
+for Shree Global
+Declaration
+We declare that this invoice shows the actual price of the goods/services
+described and that all particulars are true and correct.  Authorised Signatory
+This is a Computer Generated Invoice
+
+--- D14 | scanned document, OCR text ---
+Tax Invoice
+198, Ring Road, Faridabad, Haryana  BILL00297  05/07/2026
+GSTIN: O6ORQFA1143Y1ZC  Delivery Note  Mode/Terms of Payment
+State Name : Haryana, Code:06 _  30 Days
+N
+Buyer (Bill to)
+Hegde Vyapar LLP
+99, Phase I! Industrial Area, Faridabad, Haryana
+GSTIN: O6IFLFH9643N1Z6
+State Name : Haryana, Code : 06
+Place of Supply: Haryana - 06
+sem Descipuon [Wan Gade | Quantiy [ont] Unrrice| Amount] cost] cost Am] sesrs| S6st Am
+Pantene shampoo - Sr. 4  1181  116.44} 137515.64  3437.89  25  3437.89
+Colgate toothpaste 200g - local  554  116.76] 64685.04  1617.13  25  1617.13
+Taxable Value  202200.68
+CGST @ 2.5%  5055.02
+faxRate% [Taxable Vaue[ cst] __SGST| SGST @ 2.5%  5055.02
+is | __ 2020.68 [5056.02] __ 5055.02] “Net Amount  212310.72
+Amount Chargeable (in words)  ;  E.& O.E.
+INR Two Lakh Twelve Thousand Three Hundred Ten and Seventy Two Paise Only
+Bank Details
+Bank: Kotak Mahindra Bank A/c No.: 792013039369492
+IFSC: KKBK0562716 Branch: Station Road
+A/c Name: Annapurna  r&Co
+vee  for Annapurna Vyapar & Co
+Declaration
+We declare that this invoice shows the actual price of the goods/services
+described and that all particulars are true and correct.  Authorised Signatory
+This is a Computer Generated Invoice
+
+--- D15 | scanned document, OCR text ---
+Joshi Sales
+118, Station Road, Gurugram, Haryana | +91 6258624520 | billing@joshisales.in
+GST No.: O60O0AFJ568811ZV PAN: OOAFJ5688!I
+ee se Vasari?  TAX INVOICE
+ap  Inv No: 26-27-INV-00425
+99, Phase I! Industrial Area, Faridabad, Haryana  dl Date: 31/07/2026
+GST No.: O6IFLFH9643N1Z6  POS: Haryana - 06
+Reverse Charge: No
+1 = Maruti Super Carry - Q3  8704  1Nos 33,39,157.61 33,39,157.61  18 3,00,524.18 3,00,524.18
+Taxable Value  33,39,157.61
+CGST @ 9%  3,00,524.18
+SGST @ 9%  3,00,524.18
+Grand Total  39,40,205.97
+INR Thirty Nine Lakh Forty Thousand Two Hundred Five and Ninety Seven Paise Only E. & O.E.
+Bank Details  for Joshi Sales
+Bank: Kotak Mahindra Bank A/c No.: 406589066238253
+IFSC: KKBK0682826 Branch: Main Branch
+A/c Name: Joshi Sales  gales
+jos  ph
+AN
+Tax Rate %  Taxable Value  CGST  SGST  HAT RESP  Naksh
+18  33,39,157.61  3,00,524.18  3,00,524.18
+“Authorised Signatory
+  Naksh Andra
+
+--- D16 | email body ---
+From: billing@saicommercialp.com
+Subject: Tax Invoice BILL00227 dt 26/07/2026 - SAI COMMERCIAL PVT LTD
+
+Dear Sir/Madam,
+
+Please find below the invoice details for the material supplied.
+
+Supplier: SAI COMMERCIAL PVT LTD, 141, Transport Nagar, Guwahati, Assam
+GSTIN/UIN: 18NOZCS0577K1Z9
+Tax Invoice No.: BILL00227   Inv Date: 26/07/2026
+Bill to: Hegde Vyapar LLP (GSTIN/UIN: 06IFLFH9643N1Z6)
+Place of Supply: Haryana (06)
+Reverse charge: N
+
+Items:
+1) SolidWorks annaul licence | HSN/SAC 997331 | 15 Nos x 4,455.97 = 66,839.55 | GST 18% (IGST 12,031.12)
+2) corporate training - Excel | HSN/SAC 999293 | 1 Job x 2,16,160.00 = 2,16,160.00 | GST 18% (IGST 38,908.80)
+
+Taxable Amt: 2,82,999.55
+IGST @ 18%: 50,939.92
+Grand Total: 3,33,939.47
+(INR Three Lakh Thirty Three Thousand Nine Hundred Thirty Nine and Forty Seven Paise Only)
+
+Kindly confirm recipt of this mail.
+
+Regards,
+Balhaar Wagle
+SAI COMMERCIAL PVT LTD
++91 9162172106
+
+--- D17 | scanned document, OCR text ---
+TAX INVOICE  sp
+Patel Distributors Pvt Ltd  B  si
+216, MIDC Industrial Area, Chennai, Tamil Nadu  2
+Ph: +91 8476850398 GSTIN No.: 33YDHCP4960P1Z1  al  .
+Inv. No.: 00537  a a
+M/s Hegde Vyapar LLP, 99, Phase I! Industrial Area, Faridabad, Haryana  —
+GSTIN No.: O6IFLFH9643N1Z6 POS: Haryana - 06  sila,
+2
+S.No Particulars  HSN  Qty  Unit Price  falue
+1  BAJAJ JUICER MIXER GRINDER  8509  3 Nos  6,971.43  0,
+TaxRate | Taxable]. |  Taxable Amt —
+IGST  -
+E  2 “ar  IGST @ 18%
+18  20,914.29 | 3,764.57 |  a
+Goods once sold will not be taken back.  ‘
+Subject to local jurisdiction.
+a
+a
+> Bs
+
+--- D18 | scanned document, OCR text ---
+Shree Ventures Private Limited  Tae Invowce No  mvoice Deae
+29, Phase II Industrial Area, Gurugram, Haryana  S652  28-07-2026
+GSTIN No.: O6UXPCS2893178  Oelvery Nowe  ModeTerms of Payment
+State Name ‘ Haryana, Code : 06  30 Days
+N
+Buyer (Bill to)
+Hegde Vyapar LLP
+99, Phase |! Industrial Area, Faridabad, Haryana
+GSTIN No.: OBIFL FH9643N1Z6
+State Name : Haryana, Code - 06
+POS: 06-Haryana
+oe a a ee ee oe
+1  7113  Gold pednant 18k  34,258.47  $.13,877,05  3] 7,708.16  7, 708,16
+2  9102  Titan Raga ladies watch {rev.1)  6,690.34  1,40,077.82  18} 12,607.00  12,607.00
+Faxable Value  6,689,129. 37
+ewe | reable vai | east sea) CGST  21,590.86
+ST 5387705 | F086 aR SGST  21,590.86
+ES EE Total Amount  7,11,311.03
+Amount Chargeable {in words)  E.&Ge.
+Rs, Seven Lakh Efeven Thousand Three Hundred Eleven and Three Paise only
+Remarks / Purpose: gifts for employees . long service awards
+Bank Details
+Bank; ICICI Bank  Ale No.: 676612002281971
+IFSC: ICIC0257948  Branch: Station Road
+Alc Name: Shree Ventures Private Limited  ;  _—
+for Shree Ventures Private Limited
+Ceclaration
+We declare that this invoice Shows the actual price of the goods/senaces
+described and that all particulars are true and correct.  Authonsed Signatory
+Ths is a Computer Grnerajed Invace
+
+--- D19 | scanned document, OCR text ---
+ie eA a Ue  Fe a) ok eg! oi Pay oN te Pg peas, Fay a eyes Shy Ne ene  ane  pen PG 4k EE Sts, re  ‘  ery  Tey ae  Satie  Rae  Mts  Let Ee
+oA See ae Se.  SRAM eas ee a Pe tg Ze  SS St te ee ae  PRS NS LU ENN Tosnate &  he ee  . ie  Ss Mena: kere
+bey eo Seca Tint Ge aaa eae  Bui soeestc sae
+wot A Se A gee tes  PE MAR TED att A a Sih Sk RE eee ses Matinee one ray ae eT ety  cs ee
+Sat seca a ees a Ik eR gts pray Ge Caer Minar SU ee
+pack. Sf “ital sith 7 ERROR ER AN ety cere re Pal niet fet icmatek aay ee ee SSO Sarr EA Curse aay Seen
+Fag  erat  iat  eee  “.  oe,  .  y  .  See ote gett, GURY segs rd Me tga ae ee  Steals  By Sy cis? WM Ret ae Sere tos ree be  pact sy
+ees! "DAS ‘ASSociates Private Limited 600) 02> Coen ae ny NO as RSA RS ULE an aah NEL Esa | sees
+Kaeuyeas |, SST.No,: OEDSYCO0232V1Z0  Delivery Note  -  Mode/Terms of Payment. ~>j-5p(9) Seeees
+Best ad rotate Name : Haryana, Code : 06  30 Days  ; ge Kina
+A ak 2—-Maal : billing@dasassociatesp.in  —  GARE
+eas ok, BRN E. : .  Buyer's Order No.  Reverse Charge  ,  “Sig nd fe ees
+ay ed A ie  “ive  . RS eee
+Wate iii  S90aSd4aSfides6lotcs4ehce1c9besa4er75374013c5000e882d0378337ae7Ba  N  . ae eg ae
+Acmpaltegde Vyapar LLP enc. | ioe eS
+ee beie ei 99;Phase I Industral Area, Fardabad, Haryana  es Ree mci
+Sepreaage | OST.No.: O6IFLFH9643N176  Ee a
+skoume State Name : Haryana, Code - 06  epee Sd fo
+ema /POS: Haryana - 06  ~ SEER See
+geree|S*|Particulars TSN Code | Quantity unt] Rate | Twabe Ami Cost %| cost amt] sost | SGsT anit igi
+anon sd ERPS ‘Panyware counter top basin  24  16,106.07 3,86,545.68  34,789.11  34,789.11: [Vere
+Ry ern Sav’  mae eae
+igang |  gh aie
+ESS  a Rae
+. {Kea  mae  PSEA FF
+Vetta ONG %?  ae att  fad fe)
+ees er a  : Be Kee
+Sa tatiee| on  x, “EE gpa
+Mee fs  haat ees
+stl es 4 Sees  rsey ey  nhs |
+selBytit| oe  PEER ARG by Se
+ae  Be
+Begone  Taxable Amt  3.86,545 687] Geen
+hearee| 0) Tax Rate %  Taxable Value  CGST  SGST| SGST@9™%  34,789,11% Sa paaenas
+th dies:  3,86,545.68  34,789.11  34,789.11] Net Amount  4,56,123.903|eeeeea
+RSeaE | SA ricuint Chargeable {in words)  E&OE pricks aa
+ihraget iRupees Four Lakh Fifty Six Thousand One Hundred Twenty Three and Ninety Paise Only  Bea ys ais
+ee eae Aank Details  _ Sy Bes
+aieagee |e Bank: Kotak Mahindra Bank A/c No.: 10782444134252  Beg ASL
+Gees.  IFSC: KKBKO074086 Branch: Station Road  a ee ee | es  * ae tee
+Beware fic Ac Name Das Associates Prrvate eS  oer el Dae ae Me ae  for Dees  ;  Pr  Li * By Pera
+POMBE TAS ES tity ae cy nah Sergey iri: wat neg ou ican eeiet ety Ridder. tt ws = = 2. for Das Associates  rivate Limited 72 5ap ae
+Bt ao Seat Settaies bet ted see ae wie ist a i Brent
+ats pave declare that this invoice shows the CtUal:price Ol the gaods/senaces Ke q Bere thet. eet pitta ty ie pe ete ies Mins its
+RAY  descrihed's,  4,  eee.  gwen Me o yy, eee pase  Sho athe tno Fe  SPE an, % {>  tthe CT Ve ptt Gey Rowing Ree are -  (QE PR t  4  SS  2.
+Fe oH ic cco sia aa a ace oo cE BRE ONS is a auincided sonata
+
+--- D20 | scanned document, OCR text ---
+141, Sector 18, Gurugtam, Heryann  FAXI0416/26-27  22/07/2026
+GST No.: O6NSYCIN2732V170  By lie PRaayamin. i
+State Name: Haryana. Code 96  39 Days
+E-Maul : diling@®dasassocialesp.n  ;
+IRN:  Buyer's ier Ne  Foeye bt heuyes
+eS0asd4adtuI9GlClc4ehcel cObedadce7$374013c5000e882003 7839 7ae 78a  N
+Cusiaertet
+Hegde Vyapar LLP
+99, Phase Il lidusinal Area. Faridabad, Haryana
+
+SIT No: Ob  nYo4 af  z
+State Name = Haryana. Code . 06
+POS: Haryana (06)
+
+Ter[raniculers [Wow Gade | Queniiy[ uni] Rate] Taxable Amu] COST] GOST Ams] SGST | SOSTAM
+OPC 43 grade (rev.1)  2523  54] Bag  34615  18,692.10  9  1,682 29  4  2,682.29
+anti-skid parkiny tles (new)  690 /  377) Box| 1348.97] 5.08,56169  9] 45.77055  9} 45.770.55
+KAMDHENU TMT SMM  771A  7| MT | 6206782) 4,34,474.74  9) 329102.73  Oo} 29,102.73
+
+Taxable Amt  9.61,728.53
+CCS1 @ OM  86,555 Sf
+  Taxable Value  CGST  SGST| SGST @ 9%.  86,555.5/
+Cae  9.61,72853} 86,555 57 Net Amount  11,34,839.67
+ee een
+Rupees Eleven Lakh Thirty Four Thousand Eight Hundred Thirty Nine and Sixty Seven Paise Only  —
+Bank Details
+Rank: Kotak Mabunlra Rauk Alc Wk: 10782444134257
+aa  ROD  Oe  Fro. Stan ort RU
+Adc Name Das Associates Private Lirnited  -  :  _
+for Mas Associates Private | imitec
+Decfaration
+We declare chat Dis invoice shows ine actual price al the gacus!serv.ces
+described and that of particulara ara truc and correcs.  Authorised Signatory
+Se UA ste eet Dee ot
+
+--- D21 | scanned document, OCR text ---
+141, Sector 18, Gurugram, Haryana  L  15126-27  01/07/2026
+GST No.: O6&DSYCD0232V1ZQ  Delivery Note  Mode/Terms of Payment
+State Name : Haryana, Code : 06  30 Days
+E-Mail : billing@dasassociatesp.in  .
+IRN:  Buyer's Order No.  Reverse Charge
+e90a3d4adftd996t0tc4ebce1c9be8a4cc75374013c5000e882d0378337ae78a  No
+Customer
+Hegde Vyapar LLP
+99, Phase I! Industrial Area, Faridabad, Haryana
+GST No.: O6IFLFH9643N1Z6
+State Name : Haryana, Code : 06
+POS: Haryana - 06
+sr] parieuars [Wow Code [ Quanty [unit] Rate] Toxable Amt] COST oe] COST Amt] SOS %6| SST Am
+1 | saria 10 mm (TMT) - batch 07  7214  7| MT | 62,688.05] 4,38,816.35  39,493.47  39,493.47
+2 | Parryware counter top basin  6910  25 | Nos | 20,899.25] 5,22,481.25  47,023.31  47,023.31
+Taxable Amt  9,61,297.60
+CGST @ 9%  86,516.78
+TTaxRaie% | Taxablevae| _—cGst| _—SGST|_SGST @ 9%  86,516.78
+ Net Amount  11,34,331.16
+Amount Chargeable (in words)  E. & O.E.
+Rupees Eleven Lakh Thirty Four Thousand Three Hundred Thirty One and Sixteen Paise Only
+Bank Details
+Bank: Kotak Mahindra Bank A/c No.: 10782444134252
+IFSC: KKBK0074086_ Branch: Station Road
+Alc Name: Das Associates Private Limited  oi
+for Das Associates Private Limited
+Declaration
+We declare that this invoice shows the actual price of the goods/services
+described and that all particulars are true and correct.  Authorised Signatory
+This is a Computer Generated Invoice
+
+--- D22 | scanned document, OCR text ---
+Saxena Global  Tax Invoice No.  inv Date
+126, Industrial Estate, Gurugram, Haryana  GST-0516  06/07/26
+GSTIN/UIN: O6BNFPS0902P1Z0  Delivery Note  Mode/Terms of Payment
+State Name : Haryana, Code : 06  30 Days
+E-Mail : info@saxenaglobal.com
+Buyer's Order No.  Reverse Charge
+= ee
+Bill To
+Hegde Vyapar LLP
+99, Phase II Industrial Area, Faridabad, Haryana
+GSTIN/UIN: O6IFLFH9643N1Z6
+State Name : Haryana, Code : 06
+POS: Haryana - 06
+Description of Services  Ac code | @ty| __Rate| “Amount | casts6] costamt] Sest%] SGSTAm
+CONSTRN WORK - RABILL NO. 5  995414  7,35,325.70| 7,35,325.70 jie  66,179.31 ae  66,179.31
+Taxable Value  7,35,325.70
+CGST @ 9%  66,179.31
+  TaxableValue| cGsT|—_—«SGST]_sGsT@o%  66,179.31
+SS OE et.
+eT 7.35,325:70[ _se.a7e.at | seaveat] Net Amount  8,67,684.32
+Amount Chargeable (in words)  E.&O.E.
+Rs. Eight Lakh Sixty Seven Thousand Six Hundred Eighty Four and Thirty Two Paise only
+Remarks / Purpose: delivery challan attached
+Bank Details
+Bank: Punjab National Bank A/c No.: 194571163880850
+IFSC: PUNB0763419 Branch: MIDC Branch
+Alc Name: Saxena Global
+for Saxena Global
+Declaration
+We declare that this invoice shows the actual price of the goods/services
+described and that all particulars are true and correct.  Authorised Signatory
+This is a Computer Generated Invoice
+
+--- D23 | scanned document, OCR text ---
+"2 .  ss  s & 2  >“ @  bd  =
+© 4 &#@ €  ¥ ©  —
+iy  4
+Saxena Global  =  x ;  28/07/26  |  ms
+, | Gst  O6BNFI $0902P;  a  ie  ~~  30
+E-Mail : into@saxenaglobal.co *,  aed  vt  — Ravers Charge
+Lt a  ”  4  =  —  : a 4  ;  5  i
+99, Phase I! Industrial Area, F  , Haryana  on rie’
+GSTIN/UIN: O6IFLFH9643N12  Pe
+State Name : Haryana, Code -  ae
+POS: 06-Haryana
+‘Description of Services |  gag.come | eu] me een  -césTe] cost Am] sosTy] _SOST Amt
+“  7  1,83,997.07
+i  99!  20,43,411.92 20,43,411.92  1,83,907.0  83,
+=  «
+4  2
+@  ,
+a  +
+x  ’
+.  ®  2  *  ‘
+»  |
+Taxable Value  20,43,41}.92
+Mw  CGST @ 9%  1,83,907.07
+Se Sl ad  SGST @ 9%  1,83,907.07
+rx fete 1. —“poaaans.so| _sesso7o7 | 18390707] Net Amount  74,11,226.06
+E. & OE.
+Amount Chargeable (in words)  ;
+f vs yy. :  *)  4  '
+as, foscerta eee tata  Authorised Signatory
+ah’ x,  , ,  Uh ee) COS ae he “This is’ a Computer Generated Invoice
+  ~ Geis  \*  a  .  ¢  ;  >  y
+
+=== PURCHASE REGISTER (Tally csv export) ===
+Voucher Date,Party Name,Vch Type,Vch No,Ref No,Ref Date,Party GSTIN,Invoice Value,Assessable Value,Input CGST,Input SGST,Input IGST,RCM
+01/07/2026,Das Associates Private Limited,Purchase,PUR/26-27/0001,TAX/0415/26-27,01/07/2026,06DSYCD0232V1ZQ,1134331.16,961297.60,86516.78,86516.78,0.00,No
+04/07/2026,Das Associates Private Limited,Purchase,PUR/26-27/0002,TAX/0417/26-27,04/07/2026,06DSYCD0232V1ZQ,456132.90,386554.68,34789.11,34789.11,0.00,No
+08/07/2026,Annapurna Vyapar & Co,Purchase,PUR/26-27/0003,BILL00297,05/07/2026,06ORQFA1143Y1ZC,212310.72,202200.68,5055.02,5055.02,0.00,No
+08/07/2026,Saxena Global,Purchase,PUR/26-27/0004,GST-0516,06/07/2026,06BNFPS0902P1ZQ,885684.32,753325.70,66179.31,66179.31,0.00,No
+07/07/2026,Shree Global,Purchase,PUR/26-27/0005,SI000042,07/07/2026,06DZLFS3328U1ZV,120342.04,114628.60,2856.72,2856.72,0.00,No
+08/07/2026,Sahyadri Marketing & Co,Purchase,PUR/26-27/0006,S/569,08/07/2026,06WJRFS0119R1ZH,185678.90,176837.04,4420.93,4420.93,0.00,No
+13/07/2026,Arora Industries & Co,Purchase,PUR/26-27/0007,S/750,09/07/2026,06OQAFA8506I1ZD,115496.44,97878.34,8809.05,8809.05,0.00,No
+10/07/2026,Saxena Global,Purchase,PUR/26-27/0008,GST-0515,10/07/2026,06BNFPS0902P1ZQ,2684059.94,2274627.06,204716.44,204716.44,0.00,No
+13/07/2026,Shree Global,Purchase,PUR/26-27/0009,SI000043,13/07/2026,06DZLFS3328U1ZV,172211.15,164010.61,4100.27,4100.27,0.00,No
+18/07/2026,Patel Distributors Pvt Ltd,Purchase,PUR/26-27/0010,00537,17/07/2026,33YDHCP4960P1Z1,24678.86,20914.29,0.00,0.00,3764.57,No
+19/07/2026,Chawla Networks,Purchase,PUR/26-27/0011,00496,18/07/2026,06XJYPC5109I1ZE,1700498.75,1441100.63,129699.06,129699.06,0.00,No
+20/07/2026,Das Ventures Pvt Ltd,Purchase,PUR/26-27/0012,No.0433,18/07/2026,18KEKCD1519Q1ZN,304957.48,258438.54,0.00,0.00,46518.94,No
+21/07/2026,Das Enterprises Pvt Ltd,Purchase,PUR/26-27/0013,BILL00185,21/07/2026,06EDNCD7998Z1ZK,99087.60,99087.60,8917.88,8917.88,0.00,Yes
+22/07/2026,Chawla Enterprises LLP,Purchase,PUR/26-27/0014,S/341,22/07/2026,06ZUIFC2958O1Z4,1817456.59,1540217.45,138619.57,138619.57,0.00,No
+23/07/2026,Arora Traders Pvt Ltd,Purchase,PUR/26-27/0015,26-27-INV-00338,22/07/2026,06SYYCA9404S1ZS,280519.70,237728.56,21395.57,21395.57,0.00,No
+25/07/2026,Das Associates Private Limited,Purchase,PUR/26-27/0016,TAX/0416/26-27,22/07/2026,06DSYCD0232V1ZQ,1134839.67,961728.53,86555.57,86555.57,0.00,No
+27/07/2026,Sai Commercial Pvt Ltd,Purchase,PUR/26-27/0017,BILL00227,26/07/2026,18NOZ5S0577K1Z9,333939.47,282999.55,0.00,0.00,50939.92,No
+30/07/2026,Shree Ventures Private Limited,Purchase,PUR/26-27/0018,8/652,28/07/2026,06UXPCS2893U1Z8,711311.03,668129.31,21590.86,21590.86,0.00,No
+30/07/2026,Saxena Global,Purchase,PUR/26-27/0019,GST-0517,28/07/2026,06BNFPS0902P1ZQ,2411226.06,2043411.92,183907.07,183907.07,0.00,No
+31/07/2026,Sai Commercial Pvt Ltd,Purchase,PUR/26-27/0020,BILL00228,29/07/2026,18NOZCS0577J1Z9,2032014.22,1722045.95,0.00,0.00,309968.27,No
+31/07/2026,Joshi Sales,Debit Note,DN/26-27/0001,CN/089,31/07/2026,06OOAFJ5688I1ZV,985051.50,834789.40,75131.05,75131.05,0.00,No
+31/07/2026,Das Enterprises Pvt Ltd,Purchase,PUR/26-27/0021,BILL00186,31/07/2026,06EDNCD7998Z1ZK,94251.94,94251.94,8482.67,8482.67,0.00,Yes
+31/07/2026,Joshi Sales,Purchase,PUR/26-27/0022,26-27-INV-00425,31/07/2026,06OOAFJ5688I1ZV,3940205.97,3339157.61,300524.18,300524.18,0.00,No
+
+=== GSTR-2B period 072026 ===
+{"data":{"gstin":"06IFLFH9643N1Z6","rtnprd":"072026","version":"1.0","gendt":"14-08-2026","docdata":{"b2b":[{"ctin":"06DZLFS3328U1ZV","trdnm":"Shree Global","supfildt":"07-08-2026","supprd":"072026","inv":[{"inum":"SI000042","typ":"R","dt":"07-07-2026","val":119982.04,"pos":"06","rev":"N","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":5.0,"txval":114268.6,"igst":0.0,"cgst":2856.72,"sgst":2856.72,"cess":0.0}]},{"inum":"SI000043","typ":"R","dt":"13-07-2026","val":172211.15,"pos":"06","rev":"N","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":5.0,"txval":164010.61,"igst":0.0,"cgst":4100.27,"sgst":4100.27,"cess":0.0}]}]},{"ctin":"06XJYPC5109I1ZE","trdnm":"Chawla Networks","supfildt":"04-08-2026","supprd":"072026","inv":[{"inum":"00496","typ":"R","dt":"18-07-2026","val":1700498.75,"pos":"06","rev":"N","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":18.0,"txval":1441100.63,"igst":0.0,"cgst":129699.06,"sgst":129699.06,"cess":0.0}]}]},{"ctin":"06ZUIFC2958O1Z4","trdnm":"Chawla Enterprises LLP","supfildt":"01-08-2026","supprd":"072026","inv":[{"inum":"S/341","typ":"R","dt":"22-07-2026","val":1817456.59,"pos":"06","rev":"N","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":18.0,"txval":1540217.45,"igst":0.0,"cgst":138619.57,"sgst":138619.57,"cess":0.0}]}]},{"ctin":"06SYYCA9404S1ZS","trdnm":"Arora Traders Pvt Ltd","supfildt":"09-08-2026","supprd":"072026","inv":[{"inum":"26-27-INV-00338","typ":"R","dt":"22-07-2026","val":280519.7,"pos":"06","rev":"N","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":18.0,"txval":237728.56,"igst":0.0,"cgst":21395.57,"sgst":21395.57,"cess":0.0}]}]},{"ctin":"06OQAFA8506I1ZD","trdnm":"Arora Industries & Co","supfildt":"01-08-2026","supprd":"072026","inv":[{"inum":"S/750","typ":"R","dt":"09-07-2026","val":115496.44,"pos":"06","rev":"N","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":18.0,"txval":97878.34,"igst":0.0,"cgst":8809.05,"sgst":8809.05,"cess":0.0}]}]},{"ctin":"06WJRFS0119R1ZH","trdnm":"Sahyadri Marketing & Co","supfildt":"05-08-2026","supprd":"072026","inv":[{"inum":"S/569","typ":"R","dt":"08-07-2026","val":185678.9,"pos":"06","rev":"N","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":5.0,"txval":176837.04,"igst":0.0,"cgst":4420.93,"sgst":4420.93,"cess":0.0}]}]},{"ctin":"06EDNCD7998Z1ZK","trdnm":"Das Enterprises Pvt Ltd","supfildt":"03-08-2026","supprd":"072026","inv":[{"inum":"BILL00185","typ":"R","dt":"21-07-2026","val":99087.6,"pos":"06","rev":"Y","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":18.0,"txval":99087.6,"igst":0.0,"cgst":8917.88,"sgst":8917.88,"cess":0.0}]},{"inum":"BILL00186","typ":"R","dt":"31-07-2026","val":94251.94,"pos":"06","rev":"Y","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":18.0,"txval":94251.94,"igst":0.0,"cgst":8482.67,"sgst":8482.67,"cess":0.0}]}]},{"ctin":"06BNFPS0902P1ZQ","trdnm":"Saxena Global","supfildt":"09-08-2026","supprd":"072026","inv":[{"inum":"GST-0515","typ":"R","dt":"10-07-2026","val":2684059.94,"pos":"06","rev":"N","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":18.0,"txval":2274627.06,"igst":0.0,"cgst":204716.44,"sgst":204716.44,"cess":0.0}]},{"inum":"GST-0516","typ":"R","dt":"06-07-2026","val":867684.32,"pos":"06","rev":"N","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":18.0,"txval":735325.7,"igst":0.0,"cgst":66179.31,"sgst":66179.31,"cess":0.0}]},{"inum":"GST-0517","typ":"R","dt":"28-07-2026","val":2411226.06,"pos":"06","rev":"N","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":18.0,"txval":2043411.92,"igst":0.0,"cgst":183907.07,"sgst":183907.07,"cess":0.0}]}]},{"ctin":"18NOZCS0577K1Z9","trdnm":"Sai Commercial Pvt Ltd","supfildt":"06-08-2026","supprd":"072026","inv":[{"inum":"BILL00228","typ":"R","dt":"29-07-2026","val":2032014.22,"pos":"06","rev":"N","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":18.0,"txval":1722045.95,"igst":309968.27,"cgst":0.0,"sgst":0.0,"cess":0.0}]},{"inum":"BILL00227","typ":"R","dt":"26-07-2026","val":333939.47,"pos":"06","rev":"N","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":18.0,"txval":282999.55,"igst":50939.92,"cgst":0.0,"sgst":0.0,"cess":0.0}]}]},{"ctin":"06ORQFA1143Y1ZC","trdnm":"Annapurna Vyapar & Co","supfildt":"05-08-2026","supprd":"072026","inv":[{"inum":"BILL00297","typ":"R","dt":"05-07-2026","val":212310.72,"pos":"06","rev":"N","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":5.0,"txval":202200.68,"igst":0.0,"cgst":5055.02,"sgst":5055.02,"cess":0.0}]}]},{"ctin":"06OOAFJ5688I1ZV","trdnm":"Joshi Sales","supfildt":"05-08-2026","supprd":"072026","inv":[{"inum":"26-27-INV-00425","typ":"R","dt":"31-07-2026","val":3940205.97,"pos":"06","rev":"N","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":18.0,"txval":3339157.61,"igst":0.0,"cgst":300524.18,"sgst":300524.18,"cess":0.0}]}]},{"ctin":"33YDHCP4960P1Z1","trdnm":"Patel Distributors Pvt Ltd","supfildt":"04-08-2026","supprd":"072026","inv":[{"inum":"00537","typ":"R","dt":"17-07-2026","val":24678.86,"pos":"06","rev":"N","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":18.0,"txval":20914.29,"igst":3764.57,"cgst":0.0,"sgst":0.0,"cess":0.0}]}]},{"ctin":"06UXPCS2893U1Z8","trdnm":"Shree Ventures Private Limited","supfildt":"03-08-2026","supprd":"072026","inv":[{"inum":"S/652","typ":"R","dt":"28-07-2026","val":711311.03,"pos":"06","rev":"N","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":3.0,"txval":513877.05,"igst":0.0,"cgst":7708.16,"sgst":7708.16,"cess":0.0},{"num":2,"rt":18.0,"txval":154252.26,"igst":0.0,"cgst":13882.7,"sgst":13882.7,"cess":0.0}]}]},{"ctin":"06DSYCD0232V1ZQ","trdnm":"Das Associates Private Limited","supfildt":"09-08-2026","supprd":"072026","inv":[{"inum":"TAX/0417/26-27","typ":"R","dt":"04-07-2026","val":456123.9,"pos":"06","rev":"N","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":18.0,"txval":386545.68,"igst":0.0,"cgst":34789.11,"sgst":34789.11,"cess":0.0}]},{"inum":"TAX/0415/26-27","typ":"R","dt":"01-07-2026","val":1134331.16,"pos":"06","rev":"N","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":18.0,"txval":961297.6,"igst":0.0,"cgst":86516.78,"sgst":86516.78,"cess":0.0}]}]}],"cdnr":[{"ctin":"06OOAFJ5688I1ZV","trdnm":"Joshi Sales","supfildt":"10-08-2026","supprd":"072026","nt":[{"ntnum":"CN/089","typ":"C","suptyp":"R","dt":"31-07-2026","val":985051.5,"pos":"06","rev":"N","itcavl":"Y","rsn":"","diffprcnt":1.0,"srctyp":"","irn":"","irngendate":"","items":[{"num":1,"rt":18.0,"txval":834789.4,"igst":0.0,"cgst":75131.05,"sgst":75131.05,"cess":0.0}]}]}]}}}
+
+=== GSTR-2B period 082026 ===
+{"data":{"gstin":"06IFLFH9643N1Z6","rtnprd":"082026","version":"1.0","gendt":"14-09-2026","docdata":{"b2b":[],"cdnr":[]}}}
+
+=== BANK STATEMENT (SBI CSV) ===
+Txn Date,Value Date,Description,Ref No./Cheque No.,Debit,Credit,Balance
+4 Jul 2026,4 Jul 2026,NEFT CR/CUSTOMER RECEIPT/4284,TXN9798373504,,761988.51,28285329.10
+12 Jul 2026,12 Jul 2026,NEFT CR/CUSTOMER RECEIPT/5562,TXN9464556372,,718118.90,29003448.00
+20 Jul 2026,20 Jul 2026,GST PMT CPIN/491111582,TXN6392638499,293683.80,,28709764.20
+22 Jul 2026,22 Jul 2026,NEFT CR/CUSTOMER RECEIPT/7917,TXN4226045231,,731131.50,29440895.70
+22 Jul 2026,22 Jul 2026,NEFT CR/CUSTOMER RECEIPT/4128,TXN8167911275,,639031.97,30079927.67
+24 Jul 2026,24 Jul 2026,BY TRANSFER-NEFT*ICIC0810172*ICICN756947131577*PATEL DISTRIBUTORS PVT,ICICN756947131577,10677.46,,30069250.21
+25 Jul 2026,25 Jul 2026,SALARY TRANSFER BATCH/623569971,TXN4512239256,1226888.53,,28842361.68
+31 Jul 2026,31 Jul 2026,BY TRANSFER-NEFT*SBIN0296076*SBINN168379977264*ARORA TRADERS PVT,SBINN168379977264,109967.15,,28732394.53
+1 Aug 2026,1 Aug 2026,NEFT CR/CUSTOMER RECEIPT/1056,TXN3585465576,,747414.81,29479809.34
+1 Aug 2026,1 Aug 2026,BY TRANSFER-NEFT*UTIB0724697*UTIBN603421795668*SHREE GLOBAL,UTIBN603421795668,119982.04,,29359827.30
+2 Aug 2026,2 Aug 2026,BY TRANSFER-NEFT*SBIN0525517*SBINN119262714336*SHREE GLOBAL-INV SI000043,SBINN119262714336,172211.15,,29187616.15
+2 Aug 2026,2 Aug 2026,NEFT CR/CUSTOMER RECEIPT/4383,TXN5027259694,,552465.26,29740081.41
+6 Aug 2026,6 Aug 2026,BY TRANSFER-RTGS*UTIB0159186*UTIBN256756005283*DAS ASSOCIATES PRIVATE LIMIT,UTIBN256756005283,1134839.67,,28605241.74
+9 Aug 2026,9 Aug 2026,NEFT CR/CUSTOMER RECEIPT/5696,TXN2713363127,,858217.84,29463459.58
+10 Aug 2026,10 Aug 2026,BY TRANSFER-RTGS*UTIB0242005*UTIBN390620141398*SAXENA GLOBAL,UTIBN390620141398,867684.32,,28595775.26
+11 Aug 2026,11 Aug 2026,BY TRANSFER-RTGS*ICIC0569532*ICICN291087081224*DAS VENTURES PVT LTD,ICICN291087081224,304957.48,,28290817.78
+13 Aug 2026,13 Aug 2026,BY TRANSFER-NEFT*SBIN0875427*SBINN735894354453*SAHYADRI MARKETING,SBINN735894354453,185678.90,,28105138.88
+16 Aug 2026,16 Aug 2026,TO TRANSFER-INB NEFT UTR NO: HDFCN607165202716-ARORA INDUSTRIES & CO-INV S/750,HDFCN607165202716,115496.44,,27989642.44
+18 Aug 2026,18 Aug 2026,TO TRANSFER-INB RTGS UTR NO: ICICN107254663201-ANNAPURNA VYAPAR &-INV BILL00297,ICICN107254663201,212310.72,,27777331.72
+18 Aug 2026,18 Aug 2026,BY TRANSFER-RTGS*UTIB0648239*UTIBN526002509591*CHAWLA ENTERPRISES LLP-INV S/341,UTIBN526002509591,1817456.59,,25959875.13
+19 Aug 2026,19 Aug 2026,BY TRANSFER-RTGS*KKBK0163048*KKBKN186588339565*SHREE VENTURES PRI-INV S/652,KKBKN186588339565,711311.03,,25248564.10
+20 Aug 2026,20 Aug 2026,NEFT CR/CUSTOMER RECEIPT/5966,TXN5627000202,,95541.99,25344106.09
+20 Aug 2026,20 Aug 2026,GST PMT CPIN/525468270,TXN7504103778,116888.19,,25227217.90
+21 Aug 2026,21 Aug 2026,BY TRANSFER-RTGS*SBIN0852848*SBINN652067176724*DAS ASSOCIATES PRI-INV TAX/0417/26-27,SBINN652067176724,456123.90,,24771094.00
+24 Aug 2026,24 Aug 2026,NEFT CR/CUSTOMER RECEIPT/3217,TXN4486041246,,227492.26,24998586.26
+25 Aug 2026,25 Aug 2026,SALARY TRANSFER BATCH/614274940,TXN6157079865,1492104.85,,23506481.41
+29 Aug 2026,29 Aug 2026,TO TRANSFER-INB RTGS UTR NO: SBINN466719886458-SAI COMMERCIAL PVT LTD,SBINN466719886458,333939.47,,23172541.94
+2 Sep 2026,2 Sep 2026,BY TRANSFER-NEFT*HDFC0883176*HDFCN524716086856*DAS ENTERPRISES PVT LTD,HDFCN524716086856,99087.60,,23073454.34
+4 Sep 2026,4 Sep 2026,NEFT CR/CUSTOMER RECEIPT/2216,TXN9085668419,,599817.09,23673271.43
+5 Sep 2026,5 Sep 2026,TO TRANSFER-INB RTGS UTR NO: SBINN168402361071-SAXENA GLOBAL,SBINN168402361071,2411226.06,,21262045.37
+6 Sep 2026,6 Sep 2026,NEFT CR/CUSTOMER RECEIPT/3442,TXN8129656272,,489276.35,21751321.72
+7 Sep 2026,7 Sep 2026,NEFT CR/CUSTOMER RECEIPT/5553,TXN2846730607,,371578.82,22122900.54
+7 Sep 2026,7 Sep 2026,NEFT CR/CUSTOMER RECEIPT/5474,TXN8473858678,,67320.75,22190221.29
+17 Sep 2026,17 Sep 2026,NEFT CR/CUSTOMER RECEIPT/5695,TXN9980180691,,85863.06,22276084.35
+18 Sep 2026,18 Sep 2026,TO TRANSFER-INB RTGS UTR NO: HDFCN494120847704-SAI COMMERCIAL PVT LTD,HDFCN494120847704,2032014.22,,20244070.13
+20 Sep 2026,20 Sep 2026,GST PMT CPIN/555534805,TXN9751118786,252038.31,,19992031.82
+21 Sep 2026,21 Sep 2026,TO TRANSFER-IMPS KKBKN712377662988 DAS ENTERPRISES PVT LTD,KKBKN712377662988,94251.94,,19897779.88
+25 Sep 2026,25 Sep 2026,SALARY TRANSFER BATCH/278065042,TXN4997388881,874157.09,,19023622.79
+29 Sep 2026,29 Sep 2026,BY TRANSFER-RTGS*HDFC0472118*HDFCN586399675171*JOSHI SALES-INV 26-27-INV-00425,HDFCN586399675171,2955154.47,,16068468.32
+14 Oct 2026,14 Oct 2026,NEFT CR/CUSTOMER RECEIPT/5464,TXN1958115094,,717638.64,16786106.96
+15 Oct 2026,15 Oct 2026,NEFT CR/CUSTOMER RECEIPT/5202,TXN4312084023,,792458.76,17578565.72
+20 Oct 2026,20 Oct 2026,GST PMT CPIN/774830010,TXN9869526634,276615.64,,17301950.08
+22 Oct 2026,22 Oct 2026,NEFT CR/CUSTOMER RECEIPT/4760,TXN4582321514,,526415.72,17828365.80
+25 Oct 2026,25 Oct 2026,SALARY TRANSFER BATCH/421959568,TXN3869989103,411712.55,,17416653.25
+11 Nov 2026,11 Nov 2026,NEFT CR/CUSTOMER RECEIPT/6022,TXN9374599344,,271726.65,17688379.90
+20 Nov 2026,20 Nov 2026,GST PMT CPIN/286825382,TXN6647603529,249070.23,,17439309.67
+24 Nov 2026,24 Nov 2026,NEFT CR/CUSTOMER RECEIPT/2719,TXN9455588449,,622427.90,18061737.57
+25 Nov 2026,25 Nov 2026,SALARY TRANSFER BATCH/781677931,TXN1539979166,993659.89,,17068077.68
+25 Nov 2026,25 Nov 2026,NEFT CR/CUSTOMER RECEIPT/5283,TXN3829426095,,606642.15,17674719.83
+17 Dec 2026,17 Dec 2026,NEFT CR/CUSTOMER RECEIPT/1754,TXN5968561278,,607974.09,18282693.92
+20 Dec 2026,20 Dec 2026,GST PMT CPIN/809981061,TXN8079130120,141999.80,,18140694.12
+23 Dec 2026,23 Dec 2026,NEFT CR/CUSTOMER RECEIPT/5171,TXN3241941885,,758437.97,18899132.09
+25 Dec 2026,25 Dec 2026,SALARY TRANSFER BATCH/175189197,TXN9135519430,901540.77,,17997591.32
+27 Dec 2026,27 Dec 2026,NEFT CR/CUSTOMER RECEIPT/1892,TXN4197524264,,866325.59,18863916.91
+27 Dec 2026,27 Dec 2026,NEFT CR/CUSTOMER RECEIPT/9464,TXN8713899403,,792179.43,19656096.34
+7 Jan 2027,7 Jan 2027,NEFT CR/CUSTOMER RECEIPT/3595,TXN5457477347,,702078.58,20358174.92
+11 Jan 2027,11 Jan 2027,NEFT CR/CUSTOMER RECEIPT/7489,TXN1854311826,,721192.55,21079367.47
+20 Jan 2027,20 Jan 2027,GST PMT CPIN/650631116,TXN2069020879,119558.72,,20959808.75
+21 Jan 2027,21 Jan 2027,TO TRANSFER-INB RTGS UTR NO: ICICN890096780869-DAS ASSOCIATES PRI,ICICN890096780869,1134331.16,,19825477.59
+25 Jan 2027,25 Jan 2027,SALARY TRANSFER BATCH/299155072,TXN1225321562,1341540.01,,18483937.58
+26 Jan 2027,26 Jan 2027,BY TRANSFER-RTGS*KKBK0524607*KKBKN149420224061*SAXENA GLOBAL,KKBKN149420224061,2684059.94,,15799877.64
+27 Jan 2027,27 Jan 2027,NEFT CR/CUSTOMER RECEIPT/3912,TXN5986078087,,796784.78,16596662.42
+1 Feb 2027,1 Feb 2027,NEFT CR/CUSTOMER RECEIPT/2901,TXN6251009768,,479350.77,17076013.19
+7 Feb 2027,7 Feb 2027,NEFT CR/CUSTOMER RECEIPT/7521,TXN1716082165,,604062.81,17680076.00
+7 Feb 2027,7 Feb 2027,NEFT CR/CUSTOMER RECEIPT/6962,TXN4532388135,,297024.99,17977100.99
+
+=== END ===
