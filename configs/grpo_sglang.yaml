@@ -41,7 +41,7 @@ model:
   lora_target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
 
 datasets:
-  - name: data/train/curated/grpo  # directory with train.jsonl (columns: prompt messages, reference = truth JSON)
+  - name: data/train/curated/grpo-merged  # 194 teacher-paraphrased + 474 rs-lab unparaphrased rows; directory with train.jsonl (columns: prompt messages, reference = truth JSON)
     split: train
 
 rewards:
