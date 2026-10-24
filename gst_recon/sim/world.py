@@ -44,7 +44,7 @@ DIFFICULTY = {
 # total and GRPO a 6k prompt + 3k completion (Qwen3 tokenizer). Every other difficulty knob is
 # unchanged; eval splits keep the DIFFICULTY sizes, so length generalisation is a measured axis.
 TRAIN_SIZES = {
-    "sft": {"easy": (3, 5), "medium": (4, 6), "hard": (5, 7)},
+    "sft": {"easy": (3, 5), "medium": (4, 6), "hard": (4, 6)},  # hard 5-7 put half its cases over 12k
     "grpo": {"easy": (2, 3), "medium": (2, 4), "hard": (3, 4)},
 }
 

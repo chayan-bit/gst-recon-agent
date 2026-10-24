@@ -90,7 +90,7 @@ Conservative simplifications:
 
 `tests/test_splits.py` asserts that no description, concept, remark, header, profile, state or name token of a test split occurs in train.
 
-**Training sizes:** `--size sft|grpo` (train split only) swaps the invoice-count range for `world.TRAIN_SIZES` (SFT 3-7, GRPO 2-4 by difficulty) and keeps every other knob, so a rendered SFT case fits 12k tokens in total and a GRPO case a 6k prompt plus a 3k completion (Qwen3 tokenizer).
+**Training sizes:** `--size sft|grpo` (train split only) swaps the invoice-count range for `world.TRAIN_SIZES` (SFT 3-6, GRPO 2-4 by difficulty) and keeps every other knob, so a rendered SFT case fits 12k tokens in total and a GRPO case a 6k prompt plus a 3k completion (Qwen3 tokenizer).
 Such cases use their own rng stream and a `sft-` or `grpo-` case_id prefix, which also assigns them to that training stage.
 The eval splits keep the full difficulty sizes, so length generalisation is a measured axis.
 
