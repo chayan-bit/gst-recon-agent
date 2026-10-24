@@ -132,7 +132,7 @@ def report_md(runs: list[dict], baselines: dict[str, dict[str, dict]] | None = N
              "Headline metrics are ITC invoice exact and context accuracy; the composite (the weighted reward) is secondary because "
              "its floor is high (trivial baselines score about 80). ITC overclaim is the rupees of credit the model would have wrongly "
              "claimed (per invoice, sum of max(0, predicted eligible - true eligible)); underclaim is the mirror; net abs err is the "
-             "absolute error of the claimed eligible total, where invoices can cancel. Cells are percentages unless stated; "
+             "absolute error of the claimed eligible total, where invoices can cancel; all three are rupees per case (mean). Cells are percentages unless stated; "
              "[lo, hi] is a bootstrap 95% CI over cases. Trivial baselines are handed the true extraction and links "
              "(they isolate the decisions): their field F1 and match accuracy are oracle values and their composite already "
              "includes full credit for extraction, schema and arithmetic, so compare them on ITC invoice exact, context accuracy and ITC error only.", "",
@@ -168,7 +168,7 @@ def _vs_ref(ref: dict, others: list[dict]) -> str:
     for r in others:
         for name in ("itc_invoice", "context_acc", "composite"):
             d = paired_delta(ra, _records(r), name)
-            if "delta" in d:
+            if "delta" in d and (d["delta"] or d["ci_lo"] or d["ci_hi"]):  # all-zero = the same predictions (e.g. a subset view of ref)
                 rows.append([r["label"], name, f"{int(d['n'])}", f"{d['delta'] * 100:+.1f} [{d['ci_lo'] * 100:+.1f}, {d['ci_hi'] * 100:+.1f}]", f"{d['p_value']:.4f}"])
     return "\n".join([f"## Paired difference vs {ref['label']}", "",
                       _table(["run", "metric", "paired n", "delta pts [95% CI]", "bootstrap p"], rows),
@@ -181,6 +181,8 @@ def chart(runs: list[dict], baselines: dict[str, dict[str, dict]], out_png: Path
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
+    full = max((r["n_cases"] for r in runs), default=0)
+    runs = [r for r in runs if r["n_cases"] == full]  # partial runs (stopped early, subsets) are not comparable bars
     splits = [s for s in ("test_iid", "test_ood") if any(s in r["breakdowns"]["split"] for r in runs)] or ["all"]
     colors = ("#0072B2", "#E69F00", "#009E73", "#CC79A7")  # Okabe-Ito, colour-blind safe
     fig, axes = plt.subplots(1, len(splits), figsize=(max(6, 1.1 * len(runs) + 4) * len(splits) / 1.6, 5), sharey=True, squeeze=False)
@@ -196,7 +198,7 @@ def chart(runs: list[dict], baselines: dict[str, dict[str, dict]], out_png: Path
             vals = [e[1].get(key) for e in entries]
             bars = ax.bar([i + j * w for i in range(len(entries))], [v if v is not None else 0 for v in vals], w, label=name, color=colors[j])
             for bar, (label, _) in zip(bars, entries):
-                if label.endswith("(baseline)"):
+                if label.endswith("(baseline)") or "(oracle" in label:
                     bar.set_hatch("//")
                     bar.set_alpha(0.55)
         ax.set_xticks([i + 0.4 - w / 2 for i in range(len(entries))])
@@ -208,7 +210,7 @@ def chart(runs: list[dict], baselines: dict[str, dict[str, dict]], out_png: Path
     axes[0][0].set_ylabel("score (0-1)")
     handles, labels = axes[0][0].get_legend_handles_labels()
     fig.legend(handles, labels, fontsize=8, frameon=False, loc="upper center", ncol=len(labels))
-    fig.text(0.5, 0.005, "hatched = trivial baseline given the true extraction and links (oracle field F1 and match accuracy)",
+    fig.text(0.5, 0.005, "hatched = trivial baseline given the true extraction and links (oracle match accuracy); runs on fewer cases are omitted",
              ha="center", fontsize=7, color="#555555")
     fig.tight_layout(rect=(0, 0.02, 1, 0.94))
     out_png.parent.mkdir(parents=True, exist_ok=True)

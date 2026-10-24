@@ -163,6 +163,8 @@ Regenerate the manifest with `python -m gst_recon.eval.manifest write --rendered
   The prompt hash of each run is in its `config.json`.
 - Teacher unconstrained was stopped early at the coordinator's request (the teacher GPU was needed for training), so it is reported as a subset with `n` stated, next to the same subset of the constrained run.
 - Sonnet: `scripts/eval_frontier.py` over both splits, concurrency 2 on the Mac, output only under `runs/eval/frontier`.
+  The first 62 completed cases ran under the earlier task prompt and the last 58 under the current one (the process was relaunched after the prompt commit); the run is resumable and `config.json` holds only the last launch's prompt hash.
+- Stopped or partial runs are rescored on the cases they finished with `scripts/eval_rescore_subset.py RUN_DIR --cases ... --truth-dir ...`, which keeps the recorded config; the same script rescored all runs when the ITC overclaim and underclaim metrics were added.
 - The `--gpu-hour-usd` and `--api-*-per-mtok` flags are illustrative inputs for the cost column, not measured prices.
   The Sonnet cost is the `total_cost_usd` reported by the CLI.
 
