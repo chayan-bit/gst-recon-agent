@@ -36,7 +36,11 @@ GRPO samples several answers to the same case and rewards the outcome we care ab
 The hypothesis is that this helps most where imitation is weak: context-dependent blocked credits and exact amounts.
 The measured effect on ITC-exact out-of-distribution is {{GRPO_DELTA_VS_SFT_ITCEXACT_OOD}} points (95% CI {{GRPO_VS_SFT_CI}}, p = {{GRPO_VS_SFT_P}} from a paired bootstrap), and on context accuracy it is 33.2% (the full-grammar SFT run, a format mismatch) -> {{GRPO_CTX_OOD}}.
 If that interval includes zero we say GRPO did not help on that metric, and we show where it did.
-Two limits we know about: our GRPO cases are short (2 to 4 invoices, prompts up to 6,144 tokens), and AlignTune's unsloth SFT path computes the loss over the prompt as well as the answer.
+One limit we know about: our GRPO cases are short (2 to 4 invoices, prompts up to 6,144 tokens).
+One thing we checked rather than assumed: both SFT runs used completion-only loss, with every prompt token labelled -100 so the model is trained on its reply only.
+The end-to-end run used unsloth's responses-only masking, verified on the first curated row with the real Qwen3 tokenizer before launch.
+The per-document run uses TRL's prompt/completion masking, and its runner aborts before step 1 unless the prompt is a fully masked prefix (first row: 1,235 prompt tokens masked, 224 reply tokens trained).
+That check caught an earlier attempt in which AlignTune's data normaliser had turned the rows into full-sequence messages, so no full-sequence step was trained.
 
 ## 5. What breaks on real scans?
 
@@ -83,7 +87,7 @@ The SGLang rollout backend for GRPO exists as AlignTune pull request #32 (open) 
 Our only GRPO config (`configs/grpo_sglang.yaml`) uses the TRL backend with `rollout_backend: sglang`, and the GRPO runner refuses to start without it, so a GRPO run cannot silently fall back to Hugging Face generation.
 That the final run did generate its rollouts on SGLang is confirmed by `{{GRPO_ROLLOUT_BACKEND_ACTUALLY_USED}}` in its training log; until that run exists we present the backend as a contribution with its measured benchmark, not as how this model was trained.
 The backend was developed against SGLang 0.5.22, and the training host runs SGLang 0.5.10.post1 because of its CUDA driver, so compatibility on that version is a separate check (result: {{SGLANG_0510_COMPAT}}).
-On merging: they are open pull requests (AuditKIT #9, #10, #11, CuratorKIT #34, #35, #36, AlignTune #32), none merged at the time of writing, and the AlignTune bug write-ups are drafts, not filed.
+On merging: they are open pull requests (AuditKIT #9, #10, #11, CuratorKIT #34, #35, #36, AlignTune #32, #33, #34, #35), ten in all and none merged at the time of writing.
 
 ## 10. Your test cases are much longer than your training cases. Why should it work?
 

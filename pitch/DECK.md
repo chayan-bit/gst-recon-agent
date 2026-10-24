@@ -54,7 +54,7 @@ A small table of the reward components and weights (composite and GRPO reward in
 ## Slide 5 - Built so the model cannot memorise its way to a score
 
 - The buyer's profile changes the right answer: the same tea and sugar is blocked for a construction contractor's "annual day celebration" and can be eligible for a caterer, so the model has to read the context, not the item name.
-- 84 item concepts, each with 8 hand-written core phrases expanded into at least 32 distinct forms (so at least 2,688 phrasings; exact count {{N_PHRASINGS}}): typos, abbreviations, Hinglish, vendor jargon. No phrase states the use.
+- 84 item concepts, each with 8 hand-written core phrases expanded into at least 32 distinct forms (exactly 2,688 distinct case-folded phrasings: 84 concepts x 8 core phrases x 4 distinct forms each, counted by `scripts/count_phrasings.py`): typos, abbreviations, Hinglish, vendor jargon. No phrase states the use.
 - Held-out out-of-distribution test set: 20 of the 84 concepts never seen in training, two unseen invoice layouts (SaaS two-column, handwritten bill), unseen buyer profiles (driving school, caterer, auto workshop), unseen states and number formats, held-out date formats.
 - A shortcut audit scores trivial baselines (majority, no-anomaly, keyword lookup, context-blind rules engine) so you can see how much of the task a shortcut solves: best baseline ITC-exact 82.3% on out-of-distribution cases (the context-blind rules engine, handed the true extraction and links; 82.7% overall), but only 46.8% context accuracy. <!-- reports/results.md, "context-blind rules (oracle extraction and links)", test_ood and Overall rows -->
 - A small real-world sanity set from public sample invoice formats (36 documents, 12 cases) is a separate, clearly labelled check.
@@ -77,7 +77,7 @@ If GRPO shows no significant gain on some metric, the slide says so and shows th
 ## Slide 7 - Not claiming to beat frontier models: how close, at what cost
 
 - Claim: the 4B student reaches {{Y_PCT_OF_SONNET_ACCURACY}}% of Claude Sonnet's ITC-exact accuracy at {{Z_COST_PCT}}% of the cost per 1,000 cases, fully local.
-- Latency: p50 {{STUDENT_P50_LATENCY_S}} s on SGLang versus {{SONNET_P50_LATENCY_S}} s for Sonnet, with the caveat on the slide that the Sonnet number is measured through a CLI and is not a clean API latency.
+- Latency: p50 {{STUDENT_P50_LATENCY_S}} s on SGLang versus 67.9 s for Sonnet (<!-- reports/results.md throughput table, "Claude Sonnet (via Claude Code CLI)" p50 latency -->), with the caveat on the slide that the Sonnet number is measured through a CLI and is not a clean API latency.
 - Open-model reference: Qwen3-30B-A3B (the teacher, served on SGLang with a 64k context) scores 55.7 / 63.8 ITC-exact (in-distribution / out-of-distribution; Claude Sonnet 94.9 / 97.8). <!-- reports/results.md, teacher-30B constrained and Claude Sonnet rows, test_iid and test_ood -->
 - Constrained versus unconstrained decoding on the student (XGrammar): schema-valid {{GRPO_SCHEMA_VALID_UNCON}}% -> {{GRPO_SCHEMA_VALID_CON}}%, ITC-exact {{GRPO_ITCEXACT_UNCON}} -> {{GRPO_ITCEXACT_CON}}.
 
@@ -94,10 +94,10 @@ Next to it, a two-bar chart of the constrained versus unconstrained student.
 Upstream PRs, all open at the time of writing:
 - AuditKIT PRs: #9 https://github.com/Lexsi-Labs/AuditKIT/pull/9, #10 https://github.com/Lexsi-Labs/AuditKIT/pull/10, #11 https://github.com/Lexsi-Labs/AuditKIT/pull/11.
 - CuratorKIT PRs: #34 https://github.com/Lexsi-Labs/CuratorKIT/pull/34, #35 https://github.com/Lexsi-Labs/CuratorKIT/pull/35, #36 https://github.com/Lexsi-Labs/CuratorKIT/pull/36.
-- AlignTune PR: #32 https://github.com/Lexsi-Labs/AlignTune/pull/32.
+- AlignTune PRs: #32 https://github.com/Lexsi-Labs/AlignTune/pull/32 (SGLang rollout backend for GRPO), #33 https://github.com/Lexsi-Labs/aligntune/pull/33 (unsloth SFT fingerprint pickles the model into host RAM), #34 https://github.com/Lexsi-Labs/aligntune/pull/34 (config values replaced by factory defaults), #35 https://github.com/Lexsi-Labs/aligntune/pull/35 (train keys dropped by the parser).
 
-Visual: a four-tile grid, one tile per toolkit, each with a one-line before/after and a link to the branch or issue draft.
-The status of each (fork branch, draft, upstream PR) is shown honestly in a corner badge: "7 pull requests open upstream, none merged; AlignTune bug write-ups are drafts, not filed".
+Visual: a four-tile grid, one tile per toolkit, each with a one-line before/after and a link to the upstream pull request.
+The status of each (upstream PR, open or merged) is shown honestly in a corner badge: "10 pull requests open upstream, none merged".
 
 ## Slide 9 - How SGLang is used, feature by feature
 
@@ -105,7 +105,7 @@ The status of each (fork branch, draft, upstream PR) is shown honestly in a corn
 - RadixAttention prefix sharing: GRPO samples n completions of one long prompt (up to 6,144 prompt tokens of invoices in our GRPO config), and the shared prefix is prefilled once; measured 1216 of 1216 prompt tokens served from cache on the repeated samples, against 0 without `n`.
 - Weight updates from disk during RL: the policy is exported and the server reloads it with `update_weights_from_disk`, which also flushes the prefix cache, so rollouts always come from the current policy.
 - Long context: the 30B teacher is served with a 65,536-token context (a 58,751-token prompt answered in 3.8 s), because real month-end cases are tens of thousands of tokens.
-- Multi-LoRA serving: include this bullet only if the demo serves base, SFT and GRPO adapters side by side (`{{MULTI_LORA_USED}}`); otherwise delete it.
+- Multi-LoRA serving: one SGLang server serves base, base:sft and base:perdoc as LoRA adapters on a single base model, switched per request (the server is launched with enable_lora and max_loras_per_batch 3). No throughput claim is made for it.
 
 Visual: a table with columns "SGLang feature", "what it does for us", "evidence" (a log line, a metric or a chart), one row per bullet.
 Only rows with evidence stay on the slide.
