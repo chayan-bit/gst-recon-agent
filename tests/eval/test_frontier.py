@@ -87,3 +87,39 @@ print(json.dumps({{"is_error": False, "result": "", "structured_output": {{"sche
     exe.chmod(exe.stat().st_mode | stat.S_IEXEC)
     r = mod.claude_cli("p", "claude-haiku-5-5", 30, 0, tmp_path, cmd_prefix=[str(exe)], system="s", json_schema={"type": "object"})
     assert r["error"] is None and json.loads(r["text"]) == {"schema": {"type": "object"}} and r["cost_usd"] == 0.01
+
+
+def _fake_codex(tmp_path: Path, mode: str) -> Path:
+    """Fake `codex`: ok writes -o <file> and a turn.completed event; fail emits turn.failed and exits 1."""
+    exe = tmp_path / f"codex-{mode}"
+    exe.write_text(f"""#!{sys.executable}
+import json, sys
+a = sys.argv[1:]
+prompt = sys.stdin.read()
+if {mode!r} == "fail":
+    print(json.dumps({{"type": "turn.failed", "error": {{"message": "rate limit"}}}})); sys.exit(1)
+cfg = [a[i + 1] for i, x in enumerate(a) if x == "-c" and a[i + 1].startswith("model_instructions_file=")][0]
+sysmsg = open(cfg.split("=", 1)[1].strip('"')).read()
+schema = json.load(open(a[a.index("--output-schema") + 1]))
+open(a[a.index("-o") + 1], "w").write(json.dumps({{"echo": prompt, "system": sysmsg, "schema": schema, "ignore": "--ignore-user-config" in a}}))
+print(json.dumps({{"type": "turn.completed", "usage": {{"input_tokens": 7, "output_tokens": 3}}}}))
+""")
+    exe.chmod(exe.stat().st_mode | stat.S_IEXEC)
+    return exe
+
+
+def test_codex_cli_passes_system_schema_and_clean_flags_and_parses_the_last_message(tmp_path):
+    mod = _load()
+    r = mod.codex_cli("doc text", "gpt-6-luna", 30, 0, tmp_path, cmd_prefix=[str(_fake_codex(tmp_path, "ok"))], system="SYS",
+                      json_schema={"type": "object"})
+    out = json.loads(r["text"])
+    assert r["error"] is None and r["prompt_tokens"] == 7 and r["completion_tokens"] == 3
+    assert out == {"echo": "doc text", "system": "SYS", "schema": {"type": "object"}, "ignore": True}
+    assert list(tmp_path.glob("tmp*")) == []  # per-call temp dir is removed
+
+
+def test_codex_cli_maps_failures_to_the_error_field_after_retries(tmp_path, monkeypatch):
+    mod = _load()
+    monkeypatch.setattr(mod.time, "sleep", lambda s: None)
+    r = mod.codex_cli("p", "gpt-6-luna", 30, 2, tmp_path, cmd_prefix=[str(_fake_codex(tmp_path, "fail"))], system="s")
+    assert r["text"] == "" and "rate limit" in r["error"]

@@ -11,8 +11,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -59,6 +61,60 @@ def claude_cli(prompt: str, model: str, timeout: float, retries: int, cwd: Path,
                 time.sleep(2 * (attempt + 1))
     return {"text": "", "latency_s": None, "finish_reason": None, "prompt_tokens": None, "completion_tokens": None, "error": err}
 
+# Clean `codex exec` call for hybrid per-document runs: no tools, skills, hooks, plugins, project docs or user config; the system
+# message replaces the built-in instructions (model_instructions_file); the schema is --output-schema. About 6k tokens of
+# harness-injected developer messages remain. CODEX_HOME must hold only auth.json (user config and AGENTS.md are never read).
+CODEX_CLEAN = ["--skip-git-repo-check", "--ephemeral", "--ignore-user-config", "--ignore-rules", "--json", "-s", "read-only",
+               "-c", 'approval_policy="never"', "-c", "project_doc_max_bytes=0", "-c", 'web_search="disabled"',
+               "-c", "skills.include_instructions=false", "-c", "skills.bundled.enabled=false",
+               *[a for f in ("shell_tool", "unified_exec", "multi_agent", "apps", "plugins", "skill_search", "view_image", "image_generation",
+                             "computer_use", "browser_use", "browser_use_external", "goals", "hooks", "sleep_tool", "tool_suggest",
+                             "shell_snapshot", "fast_mode") for a in ("-c", f"features.{f}=false")]]
+
+
+def codex_cli(prompt: str, model: str, timeout: float, retries: int, cwd: Path, cmd_prefix: list[str] | None = None,
+              system: str | None = None, json_schema: dict | None = None, effort: str = "medium", codex_home: str | None = None) -> dict:
+    """One `codex exec` call. Never raises; retries with exponential backoff (rate limits included). Tokens are the turn's input
+    tokens (cached included); there is no cost field."""
+    err = ""
+    env = {**os.environ, **({"CODEX_HOME": codex_home} if codex_home else {})}
+    for attempt in range(retries + 1):
+        t0 = time.perf_counter()
+        stderr = ""
+        try:
+            with tempfile.TemporaryDirectory(dir=cwd) as td:
+                td = Path(td)
+                (td / "system.txt").write_text(system or "")
+                cmd = [*(cmd_prefix or ["codex"]), "exec", "-m", model, *CODEX_CLEAN, "-c", f'model_reasoning_effort="{effort}"',
+                       "-c", f'model_instructions_file="{td / "system.txt"}"', "-o", str(td / "last.txt")]
+                if json_schema is not None:
+                    (td / "schema.json").write_text(json.dumps(json_schema))
+                    cmd += ["--output-schema", str(td / "schema.json")]
+                p = subprocess.run([*cmd, "-"], input=prompt, capture_output=True, text=True, timeout=timeout, cwd=cwd, env=env)
+                stderr = p.stderr[-200:]
+                events = [e for e in (_jsonl(line) for line in p.stdout.splitlines()) if e]
+                done = next((e for e in reversed(events) if e.get("type") == "turn.completed"), None)
+                failed = next((e for e in reversed(events) if e.get("type") in ("turn.failed", "error")), None)
+                text = (td / "last.txt").read_text() if (td / "last.txt").exists() else ""
+                if done is None or not text.strip():
+                    raise RuntimeError(f"exit {p.returncode}: {json.dumps(failed)[:300] if failed else 'no completed turn or empty reply'}")
+            u = done.get("usage") or {}
+            return {"text": text, "latency_s": time.perf_counter() - t0, "finish_reason": "stop", "prompt_tokens": u.get("input_tokens"),
+                    "completion_tokens": u.get("output_tokens"), "cost_usd": None, "error": None}
+        except (subprocess.SubprocessError, OSError, ValueError, RuntimeError) as e:
+            err = f"{type(e).__name__}: {e} {stderr}".strip()
+            if attempt < retries:
+                time.sleep(5 * 2 ** attempt)
+    return {"text": "", "latency_s": None, "finish_reason": None, "prompt_tokens": None, "completion_tokens": None, "error": err}
+
+
+def _jsonl(line: str) -> dict | None:
+    try:
+        obj = json.loads(line)
+    except ValueError:
+        return None
+    return obj if isinstance(obj, dict) else None
+
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -75,6 +131,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--schema-mode", choices=("prompt", "flag"), default="prompt",
                     help="hybrid only: prompt = doc schema appended to the system prompt (the Sonnet hybrid run); "
                          "flag = the CLI's --json-schema structured output, system prompt unchanged")
+    ap.add_argument("--backend", choices=("claude", "codex"), default="claude",
+                    help="codex: `codex exec` per document (hybrid only; CODEX_HOME must hold only auth.json), schema via --output-schema")
+    ap.add_argument("--effort", default="medium", help="codex reasoning effort")
     ap.add_argument("--mode", choices=("e2e", "hybrid"), default="e2e",
                     help="hybrid: one CLI call per document (DOC_SYSTEM_PROMPT + doc schema), code reconciles; "
                          "--out must then be a subdirectory of runs/eval/frontier")
@@ -85,8 +144,10 @@ def main(argv: list[str] | None = None) -> int:
     if (a.mode == "e2e" and not sibling) or (a.mode == "hybrid" and not under):
         ap.error("--out must be runs/eval/frontier[-name] (hybrid: a subdirectory of runs/eval/frontier); "
                  "frontier outputs must never leave runs/eval/")
-    if a.concurrency > 4:
-        ap.error("concurrency is capped at 4 on the Mac")
+    if a.backend == "codex" and a.mode != "hybrid":
+        ap.error("--backend codex needs --mode hybrid")
+    if a.concurrency > (6 if a.backend == "codex" else 4):
+        ap.error(f"concurrency is capped at {6 if a.backend == 'codex' else 4} on the Mac")
     work = a.out.resolve() / "cwd"  # neutral cwd: no project files or CLAUDE.md picked up
     work.mkdir(parents=True, exist_ok=True)
     cases = load_cases(a.cases, truth_dir=a.truth_dir if a.truth_dir.exists() else None, n_per_dir=a.n_per_dir, seed=a.seed)
@@ -100,11 +161,17 @@ def main(argv: list[str] | None = None) -> int:
 
         doc_system = lambda m: f"{m}\n\nThe JSON must conform to this JSON Schema:\n{json.dumps(doc_json_schema(), separators=(',', ':'))}"  # noqa: E731
         flag = a.schema_mode == "flag"
-        gen = make_generator(lambda msgs: claude_cli(msgs[1]["content"], a.model, a.timeout, a.retries, work,
-                                                     system=msgs[0]["content"] if flag else doc_system(msgs[0]["content"]),
-                                                     json_schema=doc_json_schema() if flag else None),
-                             a.out, concurrency=a.concurrency)
-        config |= {"label": f"{a.label} hybrid", "mode": "hybrid", "schema_mode": a.schema_mode}
+        if a.backend == "codex":
+            call = lambda msgs: codex_cli(msgs[1]["content"], a.model, a.timeout, a.retries, work, system=msgs[0]["content"],  # noqa: E731
+                                          json_schema=doc_json_schema(), effort=a.effort)
+            config |= {"model": f"{a.model} via `codex exec` (effort {a.effort})", "endpoint": "codex exec", "invocation": CODEX_CLEAN,
+                       "schema_in_prompt": False}
+        else:
+            call = lambda msgs: claude_cli(msgs[1]["content"], a.model, a.timeout, a.retries, work,  # noqa: E731
+                                           system=msgs[0]["content"] if flag else doc_system(msgs[0]["content"]),
+                                           json_schema=doc_json_schema() if flag else None)
+        gen = make_generator(call, a.out, concurrency=a.concurrency)
+        config |= {"label": f"{a.label} hybrid", "mode": "hybrid", "schema_mode": "output-schema" if a.backend == "codex" else a.schema_mode}
     agg = run_eval(cases, gen, a.out, config,
                    concurrency=a.concurrency, progress=lambda d, n: print(f"\r{d}/{n}", end="", file=sys.stderr, flush=True))
     print(file=sys.stderr)
