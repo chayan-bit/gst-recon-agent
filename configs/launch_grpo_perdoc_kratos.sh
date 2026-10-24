@@ -17,7 +17,8 @@ SGL=$HOME/sglang-rl/venv-sglang  # sglang 0.5.22 (the fork's adapter sync was te
 CU=$SGL/lib/python3.12/site-packages/nvidia/cu13
 PY=$ROOT/.venv-grpo/bin/python
 ALIGN_REF=5e987f3c89a144d7f96da6cdf6d90d95ef35b47d
-PORT=30001; MEMFRAC=0.45; KV_TOKENS=12288
+# KV 8192 tokens (1.1 GB): 12288 left the trainer 183 MiB and it OOMed in backward at step 13 (2026-10-24)
+PORT=30001; MEMFRAC=0.45; KV_TOKENS=${KV_TOKENS:-8192}
 MODE=${1:-run}; STOP_AT=${STOP_AT:-00:30}
 DATA=data/train/curated/grpo-perdoc; INIT=runs/grpo-perdoc-init
 cd "$ROOT" || exit 1
@@ -91,7 +92,7 @@ left=$((end - $(date +%s)))
 hours=$(awk -v s="$left" 'BEGIN { printf "%.3f", (s - 900) / 3600 }')
 log "trainer until $STOP_AT: save-then-stop after ${hours} h, hard stop in $(( (left - 120) / 60 )) min"
 timeout -s TERM $((left - 120)) env KRATOS_GPU=1 KRATOS_GPU_MIN_FREE_MIB=6000 KRATOS_HEAVY_TIMEOUT=$((left - 60))s ~/bin/heavy-run env \
-  HF_HOME=$HF PYTHONPATH=$ROOT PYTHON=$PY MODEL=$BASE UNSLOTH_RETURN_LOGITS=1 GST_MAX_HOURS=$hours CAP_GB=10 DUMP_GB=8 \
+  HF_HOME=$HF PYTHONPATH=$ROOT PYTHON=$PY MODEL=$BASE UNSLOTH_RETURN_LOGITS=1 PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True GST_MAX_HOURS=$hours CAP_GB=10 DUMP_GB=8 \
   MIN_AVAIL_GB=12 bash configs/run_guarded.sh "$CONFIG" >> "$LOG" 2>&1
 rc=$?
 
