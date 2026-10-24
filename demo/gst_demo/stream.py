@@ -16,7 +16,7 @@ from typing import Any
 
 import httpx
 
-from gst_recon.eval.client import chat_url, json_schema_format
+from gst_recon.eval.client import chat_url, compact_json_schema, json_schema_format
 from gst_recon.eval.prompts import build_messages
 
 
@@ -27,7 +27,9 @@ def request_body(prompt: str, model: str, constrained: bool, max_tokens: int) ->
                             "max_tokens": max_tokens, "temperature": 0.0, "stream": True,
                             "stream_options": {"include_usage": True}}
     if constrained:
-        body["response_format"] = json_schema_format()
+        # LoRA students (`base:<adapter>`) were trained on compact targets (zero fields omitted): the strict grammar
+        # forces them to fill blocked/deferred with junk, so they get the grammar the eval harness's --compact-schema uses.
+        body["response_format"] = json_schema_format(compact_json_schema() if ":" in model else None)
     return body
 
 

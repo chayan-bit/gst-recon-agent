@@ -77,3 +77,16 @@ def test_replay_streams_recording_and_view_matches(client, tmp_path):
     assert "".join(e["t"] for e in ev if e["type"] == "tok") == text
     assert client.get("/api/health").json()["live"] is False
     assert client.post("/api/run", json={"case_id": CASE.name, "mode": "replay"}).status_code == 200
+
+
+def test_adapter_models_get_the_compact_grammar_and_base_the_strict_one():
+    from gst_demo.stream import request_body
+    from gst_recon.rewards import compact
+
+    def n_required(model):
+        return json.dumps(request_body("p", model, True, 10)["response_format"]).count('"required"')
+
+    assert n_required("base:sft") < n_required("base")
+    # a compact output (zero fields omitted) still renders and validates after expansion
+    v = build_view(json.dumps(compact(TARGET)), TARGET, final=True)
+    assert v["validity"]["schema"] is True and v["diff"]["wrong_cells"] == 0

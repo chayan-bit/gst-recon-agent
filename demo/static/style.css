@@ -185,6 +185,8 @@ table.recon { width: 100%; border-collapse: separate; border-spacing: 0; font-si
 .inv .id { font: 600 11.5px var(--mono); color: var(--dim); flex: none; }
 .inv > span:not(.id) { min-width: 0; flex: 1; }
 .inv .nm { display: block; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.inv .bad-cell, .inv-sub.bad-cell { padding: 3px 8px; margin: 1px -8px 1px -8px; }
+.inv-sub.bad-cell { margin-left: 30px; padding-left: 8px; }
 .inv-sub { color: var(--muted); font-size: 12px; padding-left: 4px; margin-left: 38px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px; }
 .inv-sub.credit::before { content: "CREDIT NOTE"; margin-right: 8px; font-size: 9.5px; font-weight: 700; letter-spacing: .06em; color: var(--accent); }
 .pills { display: flex; gap: 4px; padding-top: 2px; }
