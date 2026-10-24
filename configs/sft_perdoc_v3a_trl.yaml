@@ -1,0 +1,57 @@
+# Per-document SFT v3a on rs-lab: configs/sft_perdoc_v3_trl.yaml unchanged except the data and the output. Rows =
+# sft-perdoc-v3-pc with every identity field (supplier_gstin, invoice_no, invoice_date) the document page does not show
+# set to "" (rewards.doc.visible, the per-document GRPO reward's abstention rule): 1483 invoice numbers, 932 dates and
+# 695 GSTINs blanked of 4746 rows. v1 and v3 train on targets the page does not show (37% / 31% of invoice numbers),
+# which teaches inventing them.
+#   configs/launch_sft_perdoc_rslab.ps1 -Config configs\sft_perdoc_v3a_trl.yaml -Name sft_perdoc_v3a -Data sft-perdoc-v3a-pc
+algo: sft
+backend: trl
+
+model:
+  name_or_path: Qwen/Qwen3-4B-Instruct-2507
+  precision: bf16
+  max_seq_length: 4096  # longest curated row is 3785 tokens
+  use_peft: true
+  lora_r: 32
+  lora_alpha: 64
+  lora_dropout: 0.0
+  lora_target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+
+datasets:
+  - name: data/train/curated/sft-perdoc-v3a-pc  # directory with train.jsonl (columns: prompt, completion)
+    split: train
+    task_type: sft
+
+train:
+  epochs: 1
+  max_steps: 124  # perdoc v1's step count (1984 rows)
+  per_device_batch_size: 1
+  gradient_accumulation_steps: 16
+  learning_rate: 1.0e-4
+  warmup_ratio: 0.03
+  weight_decay: 0.0
+  max_grad_norm: 1.0
+  packing: false
+  logging_steps: 1
+  save_steps: 40
+  save_total_limit: 1  # the final adapter is what ships; checkpoints are removed after a clean run
+  seed: 42
+
+logging:
+  output_dir: D:/gst/runs/perdoc-v3a  # rs-lab only, on D:, outside the repo checkout
+  run_name: gst-recon-sft-perdoc-v3a
+  loggers: [tensorboard]
+
+chat_template: auto
+
+# Runner kwargs: settings AlignTune's YAML parser drops, plus the runner's own checks and cap.
+gst_recon:
+  gradient_checkpointing: true
+  optimizer: adamw_torch  # bitsandbytes is not installed on the Windows host
+  lr_scheduler: cosine
+  dataloader_num_workers: 0
+  dataset_num_proc: 1
+  rows_as_is: true  # bypass AlignTune's messages normaliser so TRL sees prompt/completion and masks the prompt
+  check_completion_mask: true  # abort before step 1 unless row 0's prompt is all -100 and its reply trained
+  bf16_snapshots: D:/gst/runs/perdoc-v3a/bf16
+  max_hours: 2  # wall-clock cap: save, then stop
