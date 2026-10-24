@@ -15,7 +15,7 @@ Frontier rows run each model at its lowest reasoning setting; the detail, cost a
 | ensemble B (identity vote of v1, pd3a, pd3) | not run | not run | not run | 58.3 (-0.2 [-1.0, +0.8]) | 69.7 (+5.6 [+1.7, +10.2]) | 69.9 (+1.3 [+0.5, +2.4]) |
 | Claude Haiku 5.5, minimum thinking | pending | pending | pending | 84.9 (+26.4 [+18.4, +35.1]) | 88.4 (+24.3 [+16.8, +32.6]) | 86.5 (+17.9 [+12.9, +23.4]) |
 | Claude Haiku 4.5, thinking off | pending | pending | pending | 68.2 (+9.7 [+0.3, +19.1]) | 82.2 (+18.1 [+10.5, +26.3]) | 77.4 (+8.8 [+3.3, +14.3]) |
-| GPT-6 luna, reasoning none | pending | pending | pending | 70.6 (+12.2 [+8.1, +16.5]) | 82.5 (+18.3 [+12.5, +24.8]) | 77.9 (+9.3 [+7.4, +11.3]) |
+| GPT-6 luna, reasoning none | 81.9 (+1.8 [-0.1, +3.6]) | 90.5 (+1.8 [+0.9, +2.8]) | 84.0 (+1.2 [+0.2, +2.3]) | 70.6 (+12.2 [+8.1, +16.5]) | 82.5 (+18.3 [+12.5, +24.8]) | 77.9 (+9.3 [+7.4, +11.3]) |
 | Claude Sonnet end to end (reference, whole case, not hybrid) | 96.3 | 99.0 | 94.4 | not run | not run | not run |
 
 Paired delta vs pd3g287 [95% CI], ITC exact / match / composite:
@@ -26,7 +26,7 @@ Paired delta vs pd3g287 [95% CI], ITC exact / match / composite:
 | ensemble B | not run | -2.8 [-7.0, +1.3] / -1.8 [-6.3, +2.6] / -2.9 [-5.5, -0.4] |
 | Claude Haiku 5.5, minimum thinking | pending | +23.8 [+16.0, +32.2] / +16.9 [+12.6, +21.2] / +13.6 [+9.4, +18.2] |
 | Claude Haiku 4.5, thinking off | pending | +7.1 [-2.5, +16.7] / +10.7 [+6.1, +15.3] / +4.5 [-0.4, +9.5] |
-| GPT-6 luna, reasoning none | pending | +9.6 [+5.2, +13.9] / +10.9 [+7.5, +14.2] / +5.0 [+2.7, +7.2] |
+| GPT-6 luna, reasoning none | +1.9 [-0.2, +4.0] / +5.6 [+4.3, +7.0] / +2.4 [+1.2, +3.5] | +9.6 [+5.2, +13.9] / +10.9 [+7.5, +14.2] / +5.0 [+2.7, +7.2] |
 
 Invented identity under the INVENTED rule of `gst_recon/rewards/doc.py` (a GSTIN, invoice number or date other than the truth where the page does not show the truth, over 3 identity slots per parsed document), a per-document proxy:
 
@@ -37,7 +37,7 @@ Invented identity under the INVENTED rule of `gst_recon/rewards/doc.py` (a GSTIN
 | ensemble B | not run | 71 / 702 = 10.1% |
 | Claude Haiku 5.5, minimum thinking | pending | 59 / 702 = 8.4% |
 | Claude Haiku 4.5, thinking off | pending | 114 / 702 = 16.6% |
-| GPT-6 luna, reasoning none | pending | 108 / 702 = 15.4% |
+| GPT-6 luna, reasoning none | 1,041 / 6,756 = 15.4% | 108 / 702 = 15.4% |
 
 Settings: Haiku 5.5 thinking cannot be switched off through the Claude CLI, so its row is the minimum (`CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING=1`, `MAX_THINKING_TOKENS=0`, `--effort low`; mean thinking tokens per document pending); Haiku 4.5 runs with thinking off (5 of its 234 semireal replies were unparseable); GPT-6 luna runs at reasoning effort none.
 The semireal documents are real client documents; the frontier runs sent them to the vendor CLIs (approvals in frontier-hybrid.md), and only aggregates are reported.
