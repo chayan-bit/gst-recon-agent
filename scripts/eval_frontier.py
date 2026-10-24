@@ -54,7 +54,8 @@ def claude_cli(prompt: str, model: str, timeout: float, retries: int, cwd: Path,
             text = data.get("result") or (json.dumps(data["structured_output"]) if data.get("structured_output") else "")
             return {"text": text, "latency_s": time.perf_counter() - t0, "finish_reason": data.get("stop_reason"),
                     "prompt_tokens": sum(u.get(k, 0) for k in ("input_tokens", "cache_creation_input_tokens", "cache_read_input_tokens")),
-                    "completion_tokens": u.get("output_tokens"), "cost_usd": data.get("total_cost_usd"), "error": None}
+                    "completion_tokens": u.get("output_tokens"),
+                    "thinking_tokens": (u.get("output_tokens_details") or {}).get("thinking_tokens"), "cost_usd": data.get("total_cost_usd"), "error": None}
         except (subprocess.SubprocessError, OSError, ValueError, RuntimeError) as e:
             err = f"{type(e).__name__}: {e} {stderr}".strip()
             if attempt < retries:
