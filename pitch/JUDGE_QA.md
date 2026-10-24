@@ -17,7 +17,7 @@ What we do not claim: that the ITC decisions are right on real books, only that 
 
 For this data, privacy decides: purchase invoices, bank statements and supplier GSTINs are the data a business cannot send to a third-party API, and an on-premises model removes that question.
 Latency at month-end volume is the second reason: p50 38.0 s per case end to end (SFT with the compact grammar, 30 simulator cases) and 61.2 s per case in hybrid mode (one document per call, first pass, slightly understated because a demo recording shared the server), against 67.9 s for Sonnet through the Claude Code CLI (not a clean API latency) (see question 6 for how fair that comparison is).
-We are not claiming the small model is better: Claude Sonnet scores 97.8% ITC-exact on the same held-out cases against our 78.9 (SFT with the compact grammar, a sample of 15 out-of-distribution cases), so the student reaches {{Y_PCT_OF_SONNET_ACCURACY}}% of it.
+We are not claiming the small model is better: on the same 120 simulator test cases Claude Sonnet scores 96.3% ITC-exact end to end against 79.9% for our hybrid system (the per-document SFT model plus the deterministic reconciler), so the system reaches 83.0% of Sonnet's ITC-exact accuracy (79.9 / 96.3).
 A private deployment of a hosted model is another way to meet a privacy requirement; we did not test that, and a team that can use one should compare it.
 
 ## 3. How do you know your GST law is right?

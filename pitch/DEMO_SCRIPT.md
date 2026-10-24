@@ -86,10 +86,10 @@ Narration:
 We measured the climb.
 On unseen items and layouts, invoices exactly right go from 53.1 percent for the base model to 78.9 with SFT, on a sample of fifteen cases.
 We also tried GRPO on a rule-checked reward, and it did not beat SFT, so we did not ship it.
-Claude Sonnet gets 97.8: the local model reaches {{Y_PCT_OF_SONNET_ACCURACY}} percent of that, and nothing leaves the machine.
+On the 120 test cases Claude Sonnet gets 96.3 and our hybrid system gets 79.9, which is 83.0 percent of that, and nothing leaves the machine.
 Constrained decoding lifts valid output from 70 to 100 percent."
 
-<!-- Sources: n = 60 and Sonnet 97.8 are reports/results.md, test_ood rows. Base 53.1 is the "student-base constrained" test_ood row and SFT 78.9 is the "SFT constrained (compact grammar)" test_ood row, both n = 15; 70 to 100 is the SFT unconstrained versus compact-grammar schema-valid share on 30 simulator cases (commit da4120a, 42-case stratified sample); say that it is a small sample. -->
+<!-- Sources: 96.3 (Sonnet, n = 120) and 79.9 (student-perdoc-sft hybrid, reconciler v3, n = 120) are reports/results.md overall rows, 79.9 / 96.3 = 83.0 percent; recompute from the shipped system's test row if the shipped system changes. Base 53.1 is the "student-base constrained" test_ood row and SFT 78.9 is the "SFT constrained (compact grammar)" test_ood row, both n = 15; 70 to 100 is the SFT unconstrained versus compact-grammar schema-valid share on 30 simulator cases (commit da4120a, 42-case stratified sample); say that it is a small sample. -->
 
 ### Shot 6 - What we built for the sponsor stack (2:03 to 2:33)
 
