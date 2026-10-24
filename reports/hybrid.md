@@ -70,7 +70,7 @@ A candidate ships instead of student-perdoc-sft v1 if and only if:
 Among the candidates that pass (a), the best on (b) is chosen.
 That candidate and v1 are then run once on the simulated test set (paired, schema v2; this is v1's second test run, under a protocol change applied to both arms) and scored once on realinv2, a fresh held-out set of about 30 real invoices labelled the same way.
 From this point realinv is a selection set; realinv2 is never used for selection.
-Added 2026-10-25 02:48 IST, before anything was scored on realinv2: if no candidate passes, student-perdoc-sft v1 stays and the test set is not run again.
+Added 2026-10-25 02:46 IST, before anything was scored on realinv2: if no candidate passes, student-perdoc-sft v1 stays and the test set is not run again.
 realinv2 is scored for v1 as the shipped model's held-out real-document check; the four v3 candidates are scored on it as an exploratory replication after the ship decision was locked, and nothing on realinv2 can change that decision.
 
 ### GRPO from the per-document SFT (dev only, measured, not shipped)
