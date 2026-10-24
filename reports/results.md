@@ -12,6 +12,7 @@ Headline metrics are ITC invoice exact and context accuracy; the composite (the 
 | teacher-30B unconstrained | 19 | 14.9 [2.1, 29.8] | 9.1 [0.0, 21.2] | 8,658 [855, 20,755] | 217,067 [78,804, 419,825] | 228,875 [93,895, 431,532] | 16.1 [3.7, 31.8] | 20.4 [5.0, 40.6] | 15.8 [0.0, 31.6] | 15.5 [3.4, 30.5] |
 | teacher-30B constrained (same 19 cases as unconstrained) | 19 | 68.0 [56.7, 78.1] | 47.3 [27.1, 67.3] | 89,025 [25,550, 170,079] | 91,462 [155, 270,666] | 198,476 [65,356, 399,887] | 82.8 [71.0, 90.8] | 92.4 [81.6, 98.2] | 94.7 [84.2, 100.0] | 75.1 [65.4, 81.0] |
 | SFT constrained (full grammar) | 120 | 10.9 [7.4, 14.6] | 30.7 [25.3, 36.1] | 465,489 [352,982, 584,747] | 59,776 [20,725, 116,515] | 402,137 [316,132, 496,334] | 64.0 [61.9, 65.9] | 91.0 [89.2, 92.2] | 99.2 [97.5, 100.0] | 58.2 [56.6, 59.6] |
+| SFT constrained (compact grammar) | 30 | 75.7 [70.0, 81.5] | 63.9 [52.5, 73.8] | 435,416 [215,198, 701,045] | 19,491 [6,265, 36,743] | 322,681 [183,096, 493,411] | 85.7 [80.9, 90.3] | 95.7 [94.2, 97.0] | 100.0 [100.0, 100.0] | 80.5 [77.7, 83.5] |
 | Claude Sonnet (via Claude Code CLI) | 120 | 96.3 [94.3, 97.7] | 92.7 [90.5, 94.6] | 15,306 [7,532, 24,334] | 28,403 [4,860, 61,386] | 43,079 [17,201, 78,166] | 99.0 [97.2, 99.9] | 98.4 [96.7, 99.4] | 99.2 [97.5, 100.0] | 94.4 [92.3, 95.9] |
 | SFT+GRPO (not run yet) | - | - | - | - | - | - | - | - | - | - |
 
@@ -25,6 +26,7 @@ Headline metrics are ITC invoice exact and context accuracy; the composite (the 
 | teacher-30B unconstrained | 0.18 | 288 | 450.6 | $3.87 | $40.79 |
 | teacher-30B constrained (same 19 cases as unconstrained) | 0.03 | 391 | 45.5 | - | - |
 | SFT constrained (full grammar) | 0.04 | 387 | 185.0 | - | - |
+| SFT constrained (compact grammar) | 0.05 | 203 | 31.8 | - | - |
 | Claude Sonnet (via Claude Code CLI) | 0.03 | 358 | 67.9 | - | $226.88 |
 | SFT+GRPO (not run yet) | - | - | - | - | - |
 
@@ -40,6 +42,7 @@ GPU cost = measured wall time x the GPU-hour price passed to `run`. API cost = t
 | teacher-30B unconstrained | 19 | 14.9 | 9.1 | 8,658 | 217,067 | 228,875 | 16.1 | 20.4 | 15.8 | 15.5 |
 | teacher-30B constrained (same 19 cases as unconstrained) | 19 | 68.0 | 47.3 | 89,025 | 91,462 | 198,476 | 82.8 | 92.4 | 94.7 | 75.1 |
 | SFT constrained (full grammar) | 60 | 8.1 | 28.6 | 610,319 | 90,586 | 542,383 | 64.5 | 90.6 | 98.3 | 57.5 |
+| SFT constrained (compact grammar) | 15 | 72.6 | 57.4 | 605,393 | 11,688 | 432,296 | 84.1 | 95.6 | 100.0 | 78.7 |
 | Claude Sonnet (via Claude Code CLI) | 60 | 94.9 | 92.3 | 23,982 | 39,299 | 62,212 | 98.0 | 97.5 | 98.3 | 93.0 |
 | SFT+GRPO (not run yet) | - | - | - | - | - | - | - | - | - | - |
 
@@ -51,6 +54,7 @@ GPU cost = measured wall time x the GPU-hour price passed to `run`. API cost = t
 | context-blind rules (oracle extraction and links) | 60 | 82.3 | 46.8 | 58,592 | 95,731 | 130,492 | 100.0 | 100.0 | 100.0 | 87.1 |
 | teacher-30B constrained | 60 | 63.8 | 41.1 | 274,018 | 75,089 | 353,595 | 72.5 | 91.3 | 96.7 | 72.0 |
 | SFT constrained (full grammar) | 60 | 13.7 | 33.2 | 320,659 | 28,966 | 261,891 | 63.5 | 91.4 | 100.0 | 58.9 |
+| SFT constrained (compact grammar) | 15 | 78.9 | 71.4 | 265,438 | 27,294 | 213,067 | 87.3 | 95.7 | 100.0 | 82.3 |
 | Claude Sonnet (via Claude Code CLI) | 60 | 97.8 | 93.1 | 6,629 | 17,506 | 23,946 | 99.9 | 99.4 | 100.0 | 95.8 |
 | SFT+GRPO (not run yet) | - | - | - | - | - | - | - | - | - | - |
 
@@ -61,6 +65,7 @@ realworld is a sanity split of 12 hand-built cases (not part of the Overall row 
 | run | n | ITC invoice exact % | Context acc % | ITC overclaim (Rs) | ITC underclaim (Rs) | ITC net abs err (Rs) | Match acc % | Field F1 % | Schema valid % | Composite (0-100) |
 |---|---|---|---|---|---|---|---|---|---|---|
 | SFT constrained (full grammar) | 12 | 27.1 [13.9, 40.3] | 72.2 [46.7, 90.5] | 35,924 [16,629, 60,077] | 0 [0, 0] | 34,257 [15,349, 58,864] | 77.6 [72.7, 82.5] | 92.1 [89.2, 94.4] | 100.0 [100.0, 100.0] | 65.8 [62.1, 69.7] |
+| SFT constrained (compact grammar) | 12 | 68.8 [54.8, 83.3] | 83.3 [60.0, 96.2] | 21,235 [619, 49,870] | 0 [0, 0] | 21,235 [619, 49,870] | 96.0 [92.4, 99.3] | 96.4 [92.8, 98.9] | 100.0 [100.0, 100.0] | 84.2 [78.0, 90.5] |
 | Claude Sonnet (via Claude Code CLI) | 12 | 97.2 [91.7, 100.0] | 100.0 [100.0, 100.0] | 0 [0, 0] | 64 [0, 192] | 64 [0, 192] | 99.3 [97.9, 100.0] | 98.8 [97.2, 99.9] | 100.0 [100.0, 100.0] | 97.9 [94.7, 99.8] |
 | baseline: majority | - | 43.8 | 36.4 | - | - | 35,770 | 87.5 | 100.0 | - | 73.1 |
 | baseline: no_anomaly | - | 48.6 | 36.4 | - | - | 34,202 | 87.5 | 100.0 | - | 74.7 |
@@ -86,6 +91,9 @@ realworld is a sanity split of 12 hand-built cases (not part of the Overall row 
 | SFT constrained (full grammar) | easy | 40 | 7.8 | 38.4 | 114,584 | 14,415 | 113,935 | 64.5 | 93.4 | 100.0 | 58.2 |
 | SFT constrained (full grammar) | hard | 40 | 16.2 | 29.2 | 936,156 | 139,009 | 716,920 | 59.9 | 87.2 | 97.5 | 57.1 |
 | SFT constrained (full grammar) | medium | 40 | 8.7 | 30.2 | 345,726 | 25,903 | 375,556 | 67.5 | 92.5 | 100.0 | 59.4 |
+| SFT constrained (compact grammar) | easy | 10 | 87.1 | 76.5 | 92,074 | 1,346 | 106,430 | 98.4 | 98.8 | 100.0 | 87.0 |
+| SFT constrained (compact grammar) | hard | 10 | 61.6 | 57.6 | 1,110,727 | 40,303 | 744,924 | 72.0 | 91.8 | 100.0 | 72.7 |
+| SFT constrained (compact grammar) | medium | 10 | 78.5 | 69.1 | 103,445 | 16,824 | 116,689 | 86.7 | 96.3 | 100.0 | 81.8 |
 | Claude Sonnet (via Claude Code CLI) | easy | 40 | 98.0 | 96.4 | 170 | 148 | 317 | 100.0 | 99.4 | 100.0 | 98.1 |
 | Claude Sonnet (via Claude Code CLI) | hard | 40 | 95.5 | 90.8 | 38,449 | 22,949 | 59,684 | 99.6 | 99.0 | 100.0 | 91.6 |
 | Claude Sonnet (via Claude Code CLI) | medium | 40 | 95.4 | 94.3 | 7,298 | 62,111 | 69,237 | 97.2 | 96.9 | 97.5 | 93.5 |
@@ -120,6 +128,12 @@ realworld is a sanity split of 12 hand-built cases (not part of the Overall row 
 | SFT constrained (full grammar) | test_ood/easy | 20 | 10.8 | 34.0 | 151,958 | 28,050 | 155,654 | 63.6 | 92.9 | 100.0 | 58.4 |
 | SFT constrained (full grammar) | test_ood/hard | 20 | 19.3 | 37.1 | 540,869 | 23,632 | 386,862 | 59.6 | 89.5 | 100.0 | 58.7 |
 | SFT constrained (full grammar) | test_ood/medium | 20 | 10.8 | 27.5 | 269,149 | 35,214 | 243,158 | 67.2 | 91.8 | 100.0 | 59.5 |
+| SFT constrained (compact grammar) | test_iid/easy | 5 | 83.6 | 73.7 | 126,104 | 0 | 130,144 | 98.4 | 98.1 | 100.0 | 84.9 |
+| SFT constrained (compact grammar) | test_iid/hard | 5 | 58.6 | 56.4 | 1,631,803 | 26,062 | 1,065,113 | 66.6 | 91.1 | 100.0 | 70.7 |
+| SFT constrained (compact grammar) | test_iid/medium | 5 | 75.6 | 48.0 | 58,273 | 9,003 | 101,630 | 87.3 | 97.7 | 100.0 | 80.6 |
+| SFT constrained (compact grammar) | test_ood/easy | 5 | 90.7 | 80.0 | 58,045 | 2,692 | 82,717 | 98.4 | 99.6 | 100.0 | 89.2 |
+| SFT constrained (compact grammar) | test_ood/hard | 5 | 64.6 | 59.6 | 589,651 | 54,544 | 424,736 | 77.4 | 92.6 | 100.0 | 74.7 |
+| SFT constrained (compact grammar) | test_ood/medium | 5 | 81.3 | 81.4 | 148,618 | 24,645 | 131,748 | 86.2 | 94.8 | 100.0 | 83.0 |
 | Claude Sonnet (via Claude Code CLI) | test_iid/easy | 20 | 97.5 | 96.6 | 126 | 295 | 421 | 100.0 | 99.1 | 100.0 | 97.6 |
 | Claude Sonnet (via Claude Code CLI) | test_iid/hard | 20 | 94.7 | 91.3 | 62,176 | 41,251 | 100,564 | 99.5 | 99.0 | 100.0 | 90.8 |
 | Claude Sonnet (via Claude Code CLI) | test_iid/medium | 20 | 92.4 | 92.5 | 9,644 | 76,350 | 85,650 | 94.6 | 94.4 | 95.0 | 90.6 |
@@ -137,6 +151,7 @@ realworld is a sanity split of 12 hand-built cases (not part of the Overall row 
 | teacher-30B unconstrained | partial | 19 | 14.9 | 9.1 | 8,658 | 217,067 | 228,875 | 16.1 | 20.4 | 15.8 | 15.5 |
 | teacher-30B constrained (same 19 cases as unconstrained) | partial | 19 | 68.0 | 47.3 | 89,025 | 91,462 | 198,476 | 82.8 | 92.4 | 94.7 | 75.1 |
 | SFT constrained (full grammar) | partial | 120 | 10.9 | 30.7 | 465,489 | 59,776 | 402,137 | 64.0 | 91.0 | 99.2 | 58.2 |
+| SFT constrained (compact grammar) | partial | 30 | 75.7 | 63.9 | 435,416 | 19,491 | 322,681 | 85.7 | 95.7 | 100.0 | 80.5 |
 | Claude Sonnet (via Claude Code CLI) | partial | 120 | 96.3 | 92.7 | 15,306 | 28,403 | 43,079 | 99.0 | 98.4 | 99.2 | 94.4 |
 
 ## By case prompt length (Qwen3 tokens: <=16k, 16-32k, >32k)
@@ -157,6 +172,9 @@ realworld is a sanity split of 12 hand-built cases (not part of the Overall row 
 | SFT constrained (full grammar) | <=16k | 63 | 7.6 | 36.5 | 179,234 | 21,687 | 189,333 | 64.6 | 93.1 | 100.0 | 58.3 |
 | SFT constrained (full grammar) | 16-32k | 44 | 16.7 | 29.1 | 671,189 | 66,890 | 559,355 | 66.8 | 91.1 | 100.0 | 60.5 |
 | SFT constrained (full grammar) | >32k | 13 | 7.3 | 27.0 | 1,156,505 | 220,281 | 901,298 | 51.7 | 80.5 | 92.3 | 50.1 |
+| SFT constrained (compact grammar) | <=16k | 16 | 85.8 | 79.0 | 69,832 | 9,861 | 82,209 | 94.6 | 97.6 | 100.0 | 85.9 |
+| SFT constrained (compact grammar) | 16-32k | 8 | 69.1 | 57.8 | 476,592 | 12,114 | 510,706 | 82.0 | 95.3 | 100.0 | 77.2 |
+| SFT constrained (compact grammar) | >32k | 6 | 57.7 | 58.5 | 1,355,403 | 55,009 | 713,240 | 67.1 | 90.9 | 100.0 | 70.6 |
 | Claude Sonnet (via Claude Code CLI) | <=16k | 63 | 96.6 | 94.3 | 303 | 31,633 | 31,827 | 98.4 | 97.8 | 98.4 | 96.0 |
 | Claude Sonnet (via Claude Code CLI) | 16-32k | 44 | 96.1 | 92.3 | 29,599 | 14,044 | 42,133 | 99.7 | 99.3 | 100.0 | 93.6 |
 | Claude Sonnet (via Claude Code CLI) | >32k | 13 | 95.5 | 91.4 | 39,635 | 61,345 | 100,812 | 99.3 | 98.9 | 100.0 | 89.2 |
@@ -169,28 +187,31 @@ realworld is a sanity split of 12 hand-built cases (not part of the Overall row 
 
 Context overflow = the prompt alone does not fit the server context, so the case scores 0 (what a real deployment at that context would do). Cut at the cap = the reply was truncated and is scored as it stands. Only buckets with at least one are listed.
 
-## Paired difference vs SFT constrained (full grammar)
+## Paired difference vs SFT constrained (compact grammar)
 
 | run | metric | paired n | delta pts [95% CI] | bootstrap p |
 |---|---|---|---|---|
-| keyword (oracle extraction and links) | itc_invoice | 120 | +60.7 [+56.3, +64.9] | 0.0005 |
-| keyword (oracle extraction and links) | context_acc | 119 | +11.0 [+2.9, +18.5] | 0.0015 |
-| keyword (oracle extraction and links) | composite | 120 | +23.9 [+22.3, +25.5] | 0.0005 |
-| context-blind rules (oracle extraction and links) | itc_invoice | 120 | +71.8 [+67.2, +76.2] | 0.0005 |
-| context-blind rules (oracle extraction and links) | context_acc | 119 | +17.0 [+9.2, +25.4] | 0.0005 |
-| context-blind rules (oracle extraction and links) | composite | 120 | +29.1 [+27.3, +30.9] | 0.0005 |
-| teacher-30B constrained | itc_invoice | 120 | +48.9 [+43.3, +54.5] | 0.0005 |
-| teacher-30B constrained | context_acc | 119 | +2.2 [-7.5, +11.1] | 0.6367 |
-| teacher-30B constrained | composite | 120 | +10.9 [+7.1, +14.4] | 0.0005 |
-| teacher-30B unconstrained | itc_invoice | 19 | +11.9 [-1.2, +27.2] | 0.1004 |
-| teacher-30B unconstrained | context_acc | 19 | -32.2 [-51.9, -13.5] | 0.0010 |
-| teacher-30B unconstrained | composite | 19 | -41.9 [-54.0, -27.2] | 0.0005 |
-| teacher-30B constrained (same 19 cases as unconstrained) | itc_invoice | 19 | +65.0 [+54.2, +74.7] | 0.0005 |
-| teacher-30B constrained (same 19 cases as unconstrained) | context_acc | 19 | -0.3 [-26.1, +26.7] | 0.9870 |
-| teacher-30B constrained (same 19 cases as unconstrained) | composite | 19 | +17.7 [+7.8, +23.6] | 0.0015 |
-| Claude Sonnet (via Claude Code CLI) | itc_invoice | 132 | +84.0 [+79.8, +87.8] | 0.0005 |
-| Claude Sonnet (via Claude Code CLI) | context_acc | 130 | +56.5 [+50.7, +62.0] | 0.0005 |
-| Claude Sonnet (via Claude Code CLI) | composite | 132 | +35.8 [+33.5, +37.8] | 0.0005 |
+| keyword (oracle extraction and links) | itc_invoice | 30 | -8.2 [-14.2, -2.7] | 0.0070 |
+| keyword (oracle extraction and links) | context_acc | 30 | -29.8 [-42.1, -17.9] | 0.0005 |
+| keyword (oracle extraction and links) | composite | 30 | +0.6 [-2.0, +2.9] | 0.6382 |
+| context-blind rules (oracle extraction and links) | itc_invoice | 30 | +6.7 [-0.6, +14.0] | 0.0715 |
+| context-blind rules (oracle extraction and links) | context_acc | 30 | -10.1 [-28.0, +7.6] | 0.2744 |
+| context-blind rules (oracle extraction and links) | composite | 30 | +7.1 [+4.0, +10.0] | 0.0005 |
+| teacher-30B constrained | itc_invoice | 30 | -20.7 [-27.6, -14.2] | 0.0005 |
+| teacher-30B constrained | context_acc | 30 | -38.3 [-49.3, -26.3] | 0.0005 |
+| teacher-30B constrained | composite | 30 | -13.8 [-21.5, -7.7] | 0.0020 |
+| teacher-30B unconstrained | itc_invoice | 5 | -83.6 [-100.0, -59.6] | 0.0005 |
+| teacher-30B unconstrained | context_acc | 5 | -70.0 [-100.0, -30.0] | 0.0005 |
+| teacher-30B unconstrained | composite | 5 | -84.9 [-89.4, -78.8] | 0.0005 |
+| teacher-30B constrained (same 19 cases as unconstrained) | itc_invoice | 5 | -14.4 [-34.4, +0.0] | 0.0855 |
+| teacher-30B constrained (same 19 cases as unconstrained) | context_acc | 5 | -30.0 [-70.0, +0.0] | 0.0875 |
+| teacher-30B constrained (same 19 cases as unconstrained) | composite | 5 | -6.3 [-10.5, -2.0] | 0.0030 |
+| SFT constrained (full grammar) | itc_invoice | 42 | -59.5 [-68.2, -50.3] | 0.0005 |
+| SFT constrained (full grammar) | context_acc | 41 | -22.5 [-34.2, -11.2] | 0.0005 |
+| SFT constrained (full grammar) | composite | 42 | -21.9 [-25.0, -18.9] | 0.0005 |
+| Claude Sonnet (via Claude Code CLI) | itc_invoice | 42 | +24.7 [+18.8, +30.2] | 0.0005 |
+| Claude Sonnet (via Claude Code CLI) | context_acc | 41 | +28.7 [+18.3, +39.1] | 0.0005 |
+| Claude Sonnet (via Claude Code CLI) | composite | 42 | +15.6 [+13.0, +18.0] | 0.0005 |
 
 Paired by case_id; p-value from a centred paired bootstrap (null: zero mean difference).
 
@@ -220,6 +241,11 @@ Paired by case_id; p-value from a centred paired bootstrap (null: zero mean diff
 - Predicted blocked is nonzero in 79.0% of SFT records, 2.9% of teacher records and 19.8% of Sonnet records (deferred 72.2%, 1.7%, 12.8%); the truth rates are 21.9% and 12.2%.
 - So on the eligible bucket the SFT model matches the teacher, and the whole gap to the teacher on ITC invoice exact comes from blocked and deferred under the full grammar.
 - The earlier SFT figures 59.0% and 12.3% above include realworld (2,246 aligned records); the simulator-only figures are in this note.
+- The "SFT constrained (compact grammar)" rows are the SFT model scored with the grammar that matches its compact training targets (`--compact-schema`); they replace the full-grammar row as the SFT headline.
+- Scope: the compact run is a seeded stratified sample, 15 test_iid, 15 test_ood and all 12 realworld cases, so its Overall row has n = 30 simulator cases while the other rows have n = 120.
+- Compare rows only through the paired table, which uses the shared case ids; the CIs at n = 30 are wide.
+- Sign convention in the paired table is the other run minus SFT compact, so a negative delta means SFT compact is better.
+- Same 42 cases, SFT compact vs SFT full grammar: ITC invoice exact +59.5 points, context accuracy +22.5, composite +21.9 (all p = 0.0005); the grammar mismatch, not the model, caused the earlier 10.9%.
 
 ## Hybrid mode
 
