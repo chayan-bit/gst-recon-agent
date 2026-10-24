@@ -99,7 +99,7 @@ Next to it, a two-bar chart of the constrained versus unconstrained student.
 - AlignTune: an SGLang rollout backend for GRPO. Rollouts come from a live SGLang server, prompts are sent once with `n` samples so RadixAttention shares the prefill, and weights are synced after each step. Measured speedup {{ROLLOUT_SPEEDUP_X}}x on rollout generation.
 - AuditKIT: structured-extraction metrics (`JsonSchemaValid`, `FieldF1`, 66 tests) and a fix for `compare().significance()`, whose p-value was about 0.5 for any effect (50 pairs, means 0.11 vs 0.80, p = 0.52).
 - AlignTune bugs found the hard way: the datasets fingerprint pickles the whole trainer (a 42.7 GB host-RAM blowup), YAML values silently overridden by defaults (512-token truncation, wrong output directory), and dropped train keys (gradient checkpointing silently off).
-- CuratorKIT gates earn their keep: only 55% of teacher paraphrases were kept; 121 failed the code fact check and 28 failed the HallucinationGate.
+- CuratorKIT gates earn their keep: only 651 of 1,242 teacher paraphrases were kept; 471 failed the code fact check and 120 failed the HallucinationGate.
 
 Upstream PRs, all open at the time of writing:
 - AuditKIT PRs: #9 https://github.com/Lexsi-Labs/AuditKIT/pull/9, #10 https://github.com/Lexsi-Labs/AuditKIT/pull/10, #11 https://github.com/Lexsi-Labs/AuditKIT/pull/11.

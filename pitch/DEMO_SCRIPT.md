@@ -96,14 +96,14 @@ On screen: four cards, about six seconds each, each with a repo link and one bef
 1. AlignTune: "SGLang rollout backend for GRPO" with the measured rollout speedup {{ROLLOUT_SPEEDUP_X}}x and the line "prefill shared across samples: 1216 of 1216 prompt tokens cached".
 2. AuditKIT: "structured-extraction metrics" and the p-value fix, with a mini before/after "p = 0.52 before the fix on 50 pairs with means 0.11 versus 0.80; after it, a regression test of a comparable large effect asserts p below 0.01".
 3. AlignTune bugs: "the dataset fingerprint pickled the whole trainer: 42.7 GB of host RAM", plus "YAML values silently overridden" and "train keys silently dropped".
-4. CuratorKIT: "55% of teacher paraphrases kept; 121 failed the fact check, 28 failed the hallucination gate".
+4. CuratorKIT: "651 of 1,242 teacher paraphrases kept; 471 failed the fact check, 120 failed the hallucination gate".
 
 Narration:
 "We also built back into the sponsors' tools.
 AlignTune gets an SGLang rollout backend for GRPO: each prompt is prefilled once and shared across samples.
 AuditKIT gets structured-extraction metrics, and a fix for significance tests that always came out near fifty-fifty.
 We documented three AlignTune bugs, one of which ate forty-two gigabytes of host RAM.
-And CuratorKIT's gates caught the teacher's hallucinations: only fifty-five percent of paraphrases survived."
+And CuratorKIT's gates caught the teacher's hallucinations: only 651 of 1,242 paraphrases survived."
 
 ### Shot 7 - Honest close (2:33 to 2:47)
 
