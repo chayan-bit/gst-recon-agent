@@ -2,7 +2,7 @@
 
 Every document in the real-world split is printed through one of seven invoice print formats published by real accounting or billing software under an open-source licence.
 None of them comes from this repo's Jinja templates (`gst_recon/render/templates/`).
-The upstream files are vendored unchanged in `formats/vendor/` (checksums in `formats/vendor/SHA256SUMS`); their licences allow copying and modification, and this repo is private, so nothing is redistributed.
+The upstream files are vendored unchanged in `formats/vendor/` (checksums in `formats/vendor/SHA256SUMS`); their licences (GPL-3.0, LGPL-3.0, MIT) allow copying, modification and redistribution, and this repo is published under GPL-3.0 (`LICENSE` at the root), which is compatible with all three; upstream copyright and licence notices are kept.
 
 ## Formats used
 
