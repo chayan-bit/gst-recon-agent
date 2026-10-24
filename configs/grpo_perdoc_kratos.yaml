@@ -19,7 +19,7 @@ backend: trl  # unsloth + sglang is refused by the fork by design
 model:
   name_or_path: Qwen/Qwen3-4B-Instruct-2507  # the launcher substitutes the local snapshot (MODEL=...)
   precision: bf16
-  max_seq_length: 6144  # longest prompt 4634 + 1024 completion
+  max_seq_length: 2688  # prompts <= 2048 tokens + 640 completion
   gradient_checkpointing: true
   use_peft: true
   # must match the per-document adapter exactly (the runner checks): r32, alpha 64, plain LoRA, all 7 projections
@@ -30,7 +30,9 @@ model:
   quantization: {load_in_4bit: true, bnb_4bit_compute_dtype: bfloat16, bnb_4bit_quant_type: nf4}  # also passed as a kwarg below
 
 datasets:
-  - name: data/train/curated/grpo-perdoc  # columns: prompt (system + user messages), reference (truth + doc_text)
+  # grpo-perdoc rows whose chat-templated prompt is <= 2048 tokens (2590 of 2596; the launcher builds it). On the
+  # 16 GB card the 6 longer prompts and 1024-token completions (594 MiB of fp32 logits) OOMed the trainer twice.
+  - name: data/train/curated/grpo-perdoc-2k  # columns: prompt (system + user messages), reference (truth + doc_text)
     split: train
 
 rewards:
@@ -53,8 +55,8 @@ train:
   scale_rewards: group
   temperature: 1.0  # sample the policy itself: the SFT adapter is confident (token accuracy ~0.99), so 8 samples
   top_p: 1.0        # at a lower temperature are often identical and carry no advantage
-  max_prompt_length: 4736  # > the longest prompt (4634), so no prompt is truncated
-  max_completion_length: 1024  # longest truth record is 480 tokens
+  max_prompt_length: 2048  # = the data filter, so no prompt is truncated
+  max_completion_length: 640  # longest truth record is 480 tokens; a clipped record is invalid and scores 0
   logging_steps: 1
   save_steps: 25  # each save also writes a bf16 copy with SHA256SUMS (gst_recon.bf16_snapshots)
   save_total_limit: 2

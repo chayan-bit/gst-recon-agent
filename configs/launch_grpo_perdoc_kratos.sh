@@ -20,7 +20,7 @@ ALIGN_REF=5e987f3c89a144d7f96da6cdf6d90d95ef35b47d
 # KV 8192 tokens (1.1 GB): 12288 left the trainer 183 MiB and it OOMed in backward at step 13 (2026-10-24)
 PORT=30001; MEMFRAC=0.45; KV_TOKENS=${KV_TOKENS:-8192}
 MODE=${1:-run}; STOP_AT=${STOP_AT:-00:30}
-DATA=data/train/curated/grpo-perdoc; INIT=runs/grpo-perdoc-init
+DATA=data/train/curated/grpo-perdoc-2k; INIT=runs/grpo-perdoc-init
 cd "$ROOT" || exit 1
 mkdir -p logs
 log() { echo "$(date +%T) $*" | tee -a "$LOG"; }
@@ -46,6 +46,15 @@ fi
 : "${PERDOC_ADAPTER:?set PERDOC_ADAPTER to the per-document adapter dir (v2 if it is not worse than v1, else v1)}"
 (cd "$PERDOC_ADAPTER" && sha256sum -c --quiet SHA256SUMS) || die "adapter $PERDOC_ADAPTER fails SHA256SUMS"
 ln -sfn "$PERDOC_ADAPTER" "$INIT"
+if [ ! -s "$DATA/train.jsonl" ] && [ -x "$PY" ]; then  # prompts <= 2048 tokens: the longer ones do not fit next to the server
+  mkdir -p "$DATA" && HF_HUB_OFFLINE=1 "$PY" -c "
+import json, sys
+from transformers import AutoTokenizer
+tok = AutoTokenizer.from_pretrained('$BASE')
+n = lambda r: len(tok(tok.apply_chat_template(r['prompt'], add_generation_prompt=True, tokenize=False)).input_ids)
+rows = [l for l in open('data/train/curated/grpo-perdoc/train.jsonl') if n(json.loads(l)) <= 2048]
+open('$DATA/train.jsonl', 'w').writelines(rows); print('kept', len(rows))" 2>&1 | grep -v -i warn | tee -a "$LOG"
+fi
 [ -s "$DATA/train.jsonl" ] || die "no $DATA/train.jsonl"
 [ -x "$PY" ] || die "no $PY: run '$0 setup' first"
 grep -q "\"commit_id\":\"$ALIGN_REF\"" "$ROOT"/.venv-grpo/lib/python3.12/site-packages/aligntune-*.dist-info/direct_url.json \
