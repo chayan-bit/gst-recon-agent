@@ -311,6 +311,33 @@ Per-document identity on the 2,252 simulator test documents, with two further de
 pd3g287 leaves far more invoice numbers blank than v1 (its invoice number exact drops from 58.3% to 39.2%), and those blanks cost register and GSTR-2B links: that is the 3.8-point match loss, while the reconciler's fill keeps ITC level.
 Result against the override: the test set does not show the real-document gain; pd3g287 ties v1 on ITC and is worse on match and composite on simulated documents, and it ships per the decision fixed above.
 
+### Error attribution (semireal)
+
+Why pd3g287 trails Claude Haiku 5.5 (minimum thinking) on the real documents (pooled ITC invoice exact 61.1 vs 84.9): every reader gets the same document text (no images), so the question is whether the lost points are input-limited (the value is not in the text) or model-limited (the value is there and the model misreads it or misjudges the line).
+`scripts/hybrid_error_attribution.py` replaces one field group of every parsed record with the labelled truth, re-runs reconciler v3 and the scorer, and reports case means over the 54 semireal cases (no model calls; unpatched records reproduce the stored scores of both runs exactly).
+Groups: identity (GSTIN, invoice number, date), amounts (header and line taxable value, rate, tax heads, total), judgment (line ITC category and purpose, reverse charge, place of supply, document type); "share" is the part of the gap from the model's records to all-truth records that the swap closes.
+
+| records | pd3g287 ITC exact | match | composite | Haiku 5.5 ITC exact | match | composite |
+|---|---|---|---|---|---|---|
+| model as run | 61.1 | 71.5 | 72.9 | 84.9 | 88.4 | 86.5 |
+| + true identity | 62.6 (4%) | 82.0 (37%) | 75.9 (11%) | 87.2 (16%) | 92.8 (39%) | 88.5 (16%) |
+| + true amounts | 88.6 (71%) | 87.7 (58%) | 89.6 (63%) | 94.4 (64%) | 95.2 (60%) | 94.0 (58%) |
+| + true judgment | 64.7 (9%) | 74.6 (11%) | 74.4 (6%) | 85.2 (2%) | 88.8 (3%) | 86.9 (3%) |
+| + true identity and amounts | 94.4 (86%) | 94.7 (82%) | 94.1 (80%) | 98.3 (90%) | 98.5 (89%) | 97.6 (85%) |
+| + all three groups | 98.0 (96%) | 97.8 (93%) | 97.4 (92%) | 98.6 (93%) | 98.9 (93%) | 98.0 (88%) |
+| all-truth records | 99.7 | 99.7 | 99.5 | 99.7 | 99.7 | 99.5 |
+
+Wrong copy fields (identity and header amounts, 234 documents x 9 fields), split by whether the document text holds the true value (GSTIN and number look-alike folded, dates in any parseable style, amounts within Rs 1, a true 0 counts as present):
+
+| run | wrong identity fields | wrong amount fields | not in the text (input-limited) | in the text (model-limited) | wrong lines' ITC category or purpose | documents with a wrong line count |
+|---|---|---|---|---|---|---|
+| pd3g287 | 276 | 320 | 312 (52%); Haiku 5.5 right on 51 | 284 (48%); Haiku 5.5 right on 222 | 91 of 522 lines | 47 |
+| Claude Haiku 5.5 | 181 | 152 | 267 (80%) | 66 (20%) | 22 of 522 lines | 27 |
+
+The input-limited identity errors are mostly a supplier GSTIN (60) or date (30) that the label carries but the text does not show; both models miss them (Haiku 5.5 gets 3 of pd3g287's 132 right), so they are a ceiling for any text reader, not a model gap.
+Conclusion: about 86% of pd3g287's lost ITC exact comes from copying identity and amounts off the page and about 9% from line and document judgment (s.17(5) category, purpose and the like), so the gap to Haiku 5.5 is reading, not reasoning.
+About half (52%) of pd3g287's wrong identity and amount fields are not in the text at all and Haiku 5.5 misses them too, while Haiku 5.5 gets 78% of the other half (values that are in the text) right: the 4B model's deficit is misreading values that are present.
+
 ### GRPO from the per-document SFT (dev only, measured, not shipped)
 
 A GRPO snapshot (step 75) trained from student-perdoc-sft v2 with the per-document reward was measured on both dev sets under reconciler v3; it is not the shipped adapter and was never run on test.
