@@ -7,6 +7,7 @@
 set -u
 export REPO=${REPO:-$(cd "$(dirname "$0")/.." && pwd)}  # this checkout (~/gst-recon/repo-grpo), not gst-eval's ~/gst-recon/repo
 : "${PERDOC_ADAPTER:?set PERDOC_ADAPTER to the perdoc-v2 adapter dir}"
-CONFIG=configs/grpo_perdoc_hard.yaml DATA=data/train/curated/grpo-perdoc-hard INIT_ADAPTER=runs/grpo-perdoc-init \
+CONFIG=${CONFIG:-configs/grpo_perdoc_hard.yaml} DATA=${DATA:-data/train/curated/grpo-perdoc-hard} \
+  INIT_ADAPTER=${INIT_ADAPTER:-runs/grpo-perdoc-init} \
   INIT_FROM="$PERDOC_ADAPTER" CONTEXT=2688 MEMFRAC=${MEMFRAC:-0.30} MAX_RUNNING=64 GPU_MIN_MIB=60000 TRAINER_MIN_MIB=26000 \
   MIN_AVAIL=10 STOP_AT=${STOP_AT:-00:30} exec bash "$(dirname "$0")/launch_grpo.sh"
