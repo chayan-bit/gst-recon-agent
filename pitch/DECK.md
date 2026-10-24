@@ -131,7 +131,9 @@ Only rows with evidence stay on the slide.
 
 - Solid: ground-truth-first data, checkable rewards, a held-out OOD set, an honest baseline ladder, and four contributions to the sponsor toolkits.
 - Not yet: real scans at scale (on a private eval-only set of 42 real purchase documents the fine-tuned per-document model reads amounts and categories better than the base but invents invoice numbers in simulator formats; the real-world sanity set is small: 36 documents, field F1 96.4% [92.8, 98.9] for the SFT student with the compact grammar on the 12 cases), tax law beyond the modelled sections, and a vision front end that replaces OCR.
-- What we learned: the real-invoice eval exposed an overfit to simulator identity formats, and we are fixing it in the simulator from CGST Rule 46 (at most 16 characters, letters, digits, hyphen and slash, unique per financial year) and general Indian invoicing practice, not from those invoices. {{IDENTITY_FIX_OUTCOME_SENTENCE}}
+- What we learned: the real-invoice eval exposed an overfit to simulator identity formats; the attempted fix, designed from CGST Rule 46 without using those invoices, did not beat student-perdoc-sft on the dev set and was not shipped.
+- The fix did remove the symptom (0 of 21 wrong invoice numbers in simulator formats against 18 of 29, invoice-number accuracy 47.6% against 30.9% on the 42 real documents) but not the ITC-exact cost on dev, so the shipped adapter and the headline are unchanged (`reports/hybrid.md`).
+- On 30 fresh real invoices the shipped model gets ITC document exact 70.0% and invoice number 40.0%: a failure analysis, not a real-world accuracy claim.
 - Next: a vision-language student that reads the page directly, more of the GST rules (and a lawyer-reviewed rule table), and upstreaming the AlignTune and AuditKIT work.
 
 Visual: a three-column "solid / not yet / next" board; under it, a QR code to the repo (https://github.com/chayan-bit/gst-recon-agent) and the demo video.
