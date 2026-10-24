@@ -75,3 +75,17 @@ def test_cli_writes_one_file_per_case(tmp_path):
     files = sorted(tmp_path.glob("*.json"))
     assert len(files) == 3
     Case.model_validate(json.loads(files[0].read_text()))
+
+
+def test_train_size_profiles_shrink_cases_and_keep_eval_sizes():
+    from gst_recon.sim.world import DIFFICULTY, TRAIN_SIZES
+
+    for size, ranges in TRAIN_SIZES.items():
+        for d, (lo, hi) in ranges.items():
+            c = generate_case(3, d, 0, size=size)
+            invoices = [i for i in c.inputs.invoices if i.doc_type.value == "invoice"]
+            assert lo <= len(invoices) <= hi and c.case_id.startswith(f"{size}-{d}-") and c.split == "train"
+            assert hi < DIFFICULTY[d].n_invoices[1]
+    assert generate_case(3, "hard", 0, size="sft").case_id != generate_case(3, "hard", 0).case_id
+    with pytest.raises(ValueError):
+        generate_case(3, "hard", 0, split="test_ood", size="grpo")

@@ -30,6 +30,8 @@ def main(argv: list[str] | None = None) -> None:
     g.add_argument("--out", type=Path, default=Path("data/truth"))
     g.add_argument("--split", choices=SPLITS, default="train",
                    help="train, test_iid (held-out phrasing) or test_ood (held-out concepts, profiles, vocab)")
+    g.add_argument("--size", choices=("sft", "grpo"),
+                   help="train split only: smaller document-count profile for SFT or GRPO (world.TRAIN_SIZES)")
     g.add_argument("--period-from", type=_ym, default=DEFAULT_PERIODS[0], help="first return period, YYYY-MM")
     g.add_argument("--period-to", type=_ym, default=DEFAULT_PERIODS[-1], help="last return period, YYYY-MM")
     args = ap.parse_args(argv)
@@ -40,7 +42,7 @@ def main(argv: list[str] | None = None) -> None:
 
     args.out.mkdir(parents=True, exist_ok=True)
     for i in range(args.n_cases):
-        case = generate_case(args.seed, args.difficulty, i, periods, args.split)
+        case = generate_case(args.seed, args.difficulty, i, periods, args.split, args.size)
         (args.out / f"{case.case_id}.json").write_text(case.model_dump_json(indent=1))
     print(f"wrote {args.n_cases} {args.split} {args.difficulty} cases to {args.out}")
 

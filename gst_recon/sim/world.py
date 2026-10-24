@@ -13,7 +13,7 @@ from __future__ import annotations
 import calendar
 import random
 import string
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import date, timedelta
 
 from gst_recon.schema import Case, CaseInputs, DocType, Party, PurchaseRegisterRow, TruthInvoice
@@ -38,6 +38,14 @@ DIFFICULTY = {
     "easy": Knobs((5, 12), 0.05, 0.0, 0.04),
     "medium": Knobs((10, 25), 0.12, 0.5, 0.06),
     "hard": Knobs((20, 40), 0.22, 0.7, 0.08),
+}
+
+# Training-size profiles (train split only): fewer documents per case so SFT fits 12k tokens in
+# total and GRPO a 6k prompt + 3k completion (Qwen3 tokenizer). Every other difficulty knob is
+# unchanged; eval splits keep the DIFFICULTY sizes, so length generalisation is a measured axis.
+TRAIN_SIZES = {
+    "sft": {"easy": (3, 5), "medium": (4, 6), "hard": (5, 7)},
+    "grpo": {"easy": (2, 3), "medium": (2, 4), "hard": (3, 4)},
 }
 
 TWOB_ANOMALIES = ("not_filed", "filed_wrong_buyer", "filed_other_gstin", "filed_wrong_amount", "filed_late")
@@ -156,9 +164,15 @@ def _draft_invoices(rng: random.Random, knobs: Knobs, view: View, ctx: BuyerCont
 
 
 def generate_case(seed: int, difficulty: str = "medium", index: int = 0,
-                  periods: list[tuple[int, int]] | None = None, split: str = "train") -> Case:
+                  periods: list[tuple[int, int]] | None = None, split: str = "train", size: str | None = None) -> Case:
+    """`size` ("sft" or "grpo", train split only) picks a TRAIN_SIZES document-count profile;
+    such cases get their own rng stream and a "<size>-" case_id prefix."""
     knobs, view = DIFFICULTY[difficulty], View(check_split(split))
-    tag = "" if split == "train" else f"{split}:"
+    if size is not None:
+        if split != "train" or size not in TRAIN_SIZES:
+            raise ValueError(f"size must be one of {sorted(TRAIN_SIZES)} and only for the train split")
+        knobs = replace(knobs, n_invoices=TRAIN_SIZES[size][difficulty])
+    tag = ("" if split == "train" else f"{split}:") + (f"{size}:" if size else "")
     rng = random.Random(f"gst-recon:{tag}{seed}:{difficulty}:{index}")
     y, m = rng.choice(periods or DEFAULT_PERIODS)
     start, end = date(y, m, 1), _month_end(y, m)
@@ -186,6 +200,6 @@ def generate_case(seed: int, difficulty: str = "medium", index: int = 0,
     anomalies += [f"{d.inv.doc_id}:{d.family}:{d.inv.line_items[0].purpose.value}" for d in drafts
                   if d.family in ("rcm", "motor_vehicle", "food", "club", "works_contract", "construction",
                                   "household", "giftable") or d.inv.line_items[0].purpose.value != "business"]
-    prefix = "" if split == "train" else f"{split}-"
+    prefix = ("" if split == "train" else f"{split}-") + (f"{size}-" if size else "")
     return Case(case_id=f"{prefix}{difficulty}-{seed}-{index:05d}", seed=seed, difficulty=difficulty, split=split,
                 inputs=inputs, expected=reconcile(inputs, links), anomalies=anomalies)
