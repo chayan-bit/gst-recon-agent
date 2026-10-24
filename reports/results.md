@@ -271,6 +271,22 @@ All hybrid rows are scored with commit ac03f32, which stops the repair step from
 
 Each model call sees one document (about 1.5-3k tokens), so no hybrid case overflows the 16k context or hits the token cap; accuracy still falls with case length because long cases carry more documents and more matching.
 
+### Paired difference vs SFT constrained (full grammar), end-to-end
+
+| run | metric | paired n | delta pts [95% CI] | bootstrap p |
+|---|---|---|---|---|
+| student-base hybrid | itc_invoice | 132 | +31.4 [+26.8, +35.9] | 0.0005 |
+| student-base hybrid | context_acc | 130 | +28.6 [+20.9, +35.9] | 0.0005 |
+| student-base hybrid | composite | 132 | +6.4 [+4.8, +8.0] | 0.0005 |
+| heuristic hybrid (code alone) | itc_invoice | 132 | -2.4 [-6.8, +1.4] | 0.2499 |
+| heuristic hybrid (code alone) | context_acc | 130 | -2.8 [-11.9, +6.0] | 0.5217 |
+| heuristic hybrid (code alone) | composite | 132 | -12.5 [-14.3, -10.8] | 0.0005 |
+
+Paired by case_id over all 132 cases (realworld included); p-value from a centred paired bootstrap (null: zero mean difference).
+Caveat: that end-to-end SFT run used the full constrained grammar, which does not match the compact-form SFT targets (blocked and deferred fill with junk; see Notes above), so it understates the SFT model.
+A compact-grammar end-to-end SFT rerun is pending, and paired numbers against it will replace these.
+The student-base hybrid row is also a different model (no fine-tune) from the end-to-end SFT row; the like-for-like pairing is SFT hybrid vs SFT end-to-end, which follows when the SFT hybrid run finishes.
+
 ### Throughput
 
 | run | req/s | out tok/s | p50 latency (s) | GPU $/1k cases | API list $/1k cases |
