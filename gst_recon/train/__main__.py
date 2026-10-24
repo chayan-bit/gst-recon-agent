@@ -332,6 +332,12 @@ def cmd_run(a: argparse.Namespace) -> None:
         from gst_recon.render.memlimit import apply_memory_cap
 
         print(f"memory cap {os.environ['GST_MEM_CAP_GB']} GB: {apply_memory_cap(float(os.environ['GST_MEM_CAP_GB']))}", flush=True)
+    if os.environ.get("GST_GPU_CAP_GB"):  # shared GPU: the allocator refuses (OOM) past the cap instead of crowding others
+        import torch
+
+        cap = float(os.environ["GST_GPU_CAP_GB"]) * 2**30
+        torch.cuda.set_per_process_memory_fraction(min(1.0, cap / torch.cuda.get_device_properties(0).total_memory))
+        print(f"gpu cap {os.environ['GST_GPU_CAP_GB']} GB", flush=True)
     cfg, extras = load_config(a.config)
     if cfg.get("backend") == "unsloth":
         import unsloth  # noqa: F401 - must precede transformers/trl/peft or its patches (incl. memory) are skipped
