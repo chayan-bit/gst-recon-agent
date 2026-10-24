@@ -6,40 +6,43 @@ import pytest
 
 from gst_recon.schema import DocType
 from gst_recon.sim import catalog as cat
+from gst_recon.sim.concepts import BY_ID, CONCEPTS, Concept
 from gst_recon.sim.__main__ import main
 from gst_recon.sim.world import DEFAULT_PERIODS, fy_label, generate_case, period_range
 
 BEFORE, ON = date(2025, 9, 21), date(2025, 9, 22)
-PRODUCTS = {p.description: p for p in cat.GOODS + cat.SERVICES + cat.RCM + cat.BLOCKED}
 
 
-def by_hsn(hsn):
-    return next(p for p in PRODUCTS.values() if p.hsn == hsn)
+def by_id(cid):
+    return BY_ID[cid]
 
 
-@pytest.mark.parametrize("hsn,before,after", [
-    ("2523", (28, 0), (18, 0)),    # cement
-    ("8415", (28, 0), (18, 0)),    # air conditioners
-    ("3004", (12, 0), (5, 0)),     # medicaments
-    ("8703", (28, 22), (40, 0)),   # SUV: 40% slab, compensation cess Nil
-    ("2202", (28, 12), (40, 0)),   # aerated waters
-    ("999723", (18, 0), (5, 0)),   # fitness centre (group 99972)
-    ("996311", (12, 0), (5, 0)),   # hotel <= Rs 7500
-    ("8471", (18, 0), (18, 0)),    # unchanged
+@pytest.mark.parametrize("cid,before,after", [
+    ("cement", (28, 0), (18, 0)),
+    ("air_conditioner", (28, 0), (18, 0)),
+    ("medicaments", (12, 0), (5, 0)),
+    ("suv", (28, 22), (40, 0)),            # 40% slab, compensation cess Nil
+    ("small_car", (28, 1), (18, 0)),
+    ("aerated_drinks", (28, 12), (40, 0)),
+    ("gym_membership", (18, 0), (5, 0)),   # group 99972
+    ("hotel_stay", (12, 0), (5, 0)),       # <= Rs 7500
+    ("cartons", (18, 0), (5, 0)),
+    ("goods_vehicle", (28, 0), (18, 0)),
+    ("laptop", (18, 0), (18, 0)),          # unchanged
 ])
-def test_rate_on_switches_exactly_at_cutover(hsn, before, after):
-    p = by_hsn(hsn)
+def test_rate_on_switches_exactly_at_cutover(cid, before, after):
+    p = by_id(cid)
     assert cat.rate_on(p, BEFORE) == before
     assert cat.rate_on(p, ON) == after
 
 
 def test_unverified_post_rate_excludes_product_after_cutover():
-    p = cat.Product("x", "0000", 18, "Nos", (1, 2), (1, 1))  # post_rate defaults to unverified
+    p = Concept("x", "misc", "0000", 18, None, "Nos", (1, 2), (1, 1), ("x",))
     assert cat.rate_on(p, BEFORE) == (18, 0) and cat.rate_on(p, ON) is None
 
 
 def test_every_catalog_product_has_a_verified_post_rate():
-    missing = [p.description for p in PRODUCTS.values() if p.post_rate is None]
+    missing = [c.id for c in CONCEPTS if c.post_rate is None]
     assert missing == []  # if one is added unverified, it is simply not generated after the cutover
 
 
@@ -52,7 +55,7 @@ def _check_case_rates(c):
                 orig = originals[(inv.supplier_gstin, inv.original_invoice_no)]
                 assert li.rate == orig.line_items[0].rate  # credit note keeps the original supply's rate
                 continue
-            rate, cess = cat.rate_on(PRODUCTS[li.description], inv.invoice_date)
+            rate, cess = cat.rate_on(BY_ID[li.concept], inv.invoice_date)
             assert li.rate == rate
             assert li.cess == pytest.approx(round(li.taxable_value * cess / 100, 2), abs=0.011)
 
@@ -75,7 +78,7 @@ def test_credit_note_after_cutover_keeps_pre_cutover_rate():
             if cn.doc_type == DocType.CREDIT_NOTE and cn.invoice_date >= ON:
                 orig = next(x for x in c.inputs.invoices if x.invoice_no == cn.original_invoice_no
                             and x.supplier_gstin == cn.supplier_gstin)
-                if orig.invoice_date < ON and orig.line_items[0].rate != cat.rate_on(PRODUCTS[orig.line_items[0].description], ON)[0]:
+                if orig.invoice_date < ON and orig.line_items[0].rate != cat.rate_on(BY_ID[orig.line_items[0].concept], ON)[0]:
                     hits += 1
                     assert cn.line_items[0].rate == orig.line_items[0].rate
     assert hits > 0
@@ -96,7 +99,8 @@ def test_pre_cutover_invoices_keep_old_rate_when_recon_and_2b_are_after():
 def test_post_cutover_period_has_no_old_slabs():
     for i in range(20):
         c = generate_case(9, "hard", i, periods=[(2026, 3)])
-        assert all(li.rate in (0, 5, 18, 40) and li.cess == 0 for inv in c.inputs.invoices for li in inv.line_items)
+        # 3% = precious-metal jewellery (Sch IV)
+        assert all(li.rate in (0, 3, 5, 18, 40) and li.cess == 0 for inv in c.inputs.invoices for li in inv.line_items)
 
 
 def test_default_periods_span_april_2024_to_september_2026():

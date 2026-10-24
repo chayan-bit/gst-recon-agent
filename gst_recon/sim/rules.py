@@ -12,6 +12,8 @@ from dataclasses import dataclass, field
 from datetime import date
 
 from gst_recon.schema import (
+    BuyerProfile,
+    BusinessProfile,
     CaseInputs,
     DocType,
     ExtractionRecord,
@@ -19,12 +21,14 @@ from gst_recon.schema import (
     ItcDecision,
     ItcTotals,
     LineItemOut,
+    LinePurpose,
     MatchFlag,
     MatchRow,
     ReasonCode,
     ReconOutput,
     TaxHeads,
     TruthInvoice,
+    TruthLineItem,
 )
 from gst_recon.sim.money import r2
 
@@ -143,16 +147,56 @@ def match_flags(inv: TruthInvoice, inputs: CaseInputs, link: Link, twob: dict) -
 # ---------------------------------------------------------------------- ITC
 
 
-def _split_blocked(inv: TruthInvoice) -> tuple[Heads, Heads, list[ReasonCode]]:
+CANTEEN_HEADCOUNT = 250  # Factories Act 1948 s.46: canteen mandatory above 250 workers
+_MV_EXCEPT = {LinePurpose.FURTHER_SUPPLY, LinePurpose.PASSENGER_TRANSPORT, LinePurpose.DRIVING_TRAINING}
+
+
+def _employer_obliged(purpose: LinePurpose, profile: BuyerProfile | None) -> bool:
+    """s.17(5)(b) second proviso (scope per Circular 172/04/2022: all of clause (b)):
+    credit available where the employer is obliged by law to provide it. Only
+    modelled case: a factory canteen of a manufacturer with > 250 workers."""
+    return (purpose == LinePurpose.FACTORY_CANTEEN and profile is not None
+            and profile.profile == BusinessProfile.MANUFACTURER and profile.employees > CANTEEN_HEADCOUNT)
+
+
+def line_block_reason(line: TruthLineItem, profile: BuyerProfile | None) -> ReasonCode | None:
+    """s.17(5) for one line, from its category, its purpose and the buyer profile.
+    None = not blocked."""
+    p = line.purpose
+    if p == LinePurpose.PERSONAL:
+        return ReasonCode.BLOCKED_PERSONAL_USE  # s.17(5)(g)
+    if p == LinePurpose.GIFT:
+        return ReasonCode.BLOCKED_GIFT  # s.17(5)(h)
+    if p == LinePurpose.OWN_CONSTRUCTION:
+        return ReasonCode.BLOCKED_WORKS_CONTRACT  # s.17(5)(c), (d): own immovable property
+    cat = line.category
+    if cat == ItcCategory.MOTOR_VEHICLE:
+        # s.17(5)(a)(A)-(C) for vehicles; (ab) proviso (i) for their servicing
+        return None if p in _MV_EXCEPT else ReasonCode.BLOCKED_MOTOR_VEHICLE
+    if cat == ItcCategory.FOOD_BEVERAGE:
+        # s.17(5)(b)(i) first proviso: same-category outward supply / composite element
+        ok = p == LinePurpose.FURTHER_SUPPLY or _employer_obliged(p, profile)
+        return None if ok else ReasonCode.BLOCKED_FOOD_BEVERAGE
+    if cat == ItcCategory.CLUB_MEMBERSHIP:
+        # s.17(5)(b)(ii): no same-category proviso; employer-obligation proviso never met here
+        return None if _employer_obliged(p, profile) else ReasonCode.BLOCKED_CLUB_MEMBERSHIP
+    if cat == ItcCategory.WORKS_CONTRACT:
+        # s.17(5)(c): except an input service for further supply of works contract service
+        return None if p == LinePurpose.FURTHER_SUPPLY else ReasonCode.BLOCKED_WORKS_CONTRACT
+    return BLOCK_REASON.get(cat)  # legacy categories PERSONAL_USE / GIFT
+
+
+def _split_blocked(inv: TruthInvoice, profile: BuyerProfile | None) -> tuple[Heads, Heads, list[ReasonCode]]:
     """s.17(5): tax on blocked line items is never available. Returns
     (blocked heads, remaining heads, reasons)."""
     blocked, remaining, reasons = _zero(), _zero(), []
     for line in inv.line_items:
-        target = blocked if line.category in BLOCK_REASON else remaining
+        reason = line_block_reason(line, profile)
+        target = blocked if reason else remaining
         for h in HEADS:
             target[h] += getattr(line, h)
-        if line.category in BLOCK_REASON and any(getattr(line, h) for h in HEADS):
-            reasons.append(BLOCK_REASON[line.category])
+        if reason and any(getattr(line, h) for h in HEADS):
+            reasons.append(reason)
     return {h: r2(v) for h, v in blocked.items()}, {h: r2(v) for h, v in remaining.items()}, reasons
 
 
@@ -189,7 +233,7 @@ def itc_decision(inv: TruthInvoice, inputs: CaseInputs, link: Link, twob: dict) 
         return ItcDecision(doc_id=inv.doc_id, eligible=TaxHeads(**neg), blocked=TaxHeads(**_zero()),
                            deferred=TaxHeads(**_zero()), reasons=[ReasonCode.CREDIT_NOTE_REVERSAL])
 
-    blocked, eligible, reasons = _split_blocked(inv)
+    blocked, eligible, reasons = _split_blocked(inv, inputs.buyer_profile)
     deferred = _zero()
     if inv.reverse_charge:
         # s.9(3): recipient pays the tax itself; credit does not depend on 2B

@@ -77,6 +77,37 @@ class ItcCategory(str, Enum):
     GIFT = "gift"
 
 
+class BusinessProfile(str, Enum):
+    """What the buyer does; decides several s.17(5) exceptions."""
+
+    MANUFACTURER = "manufacturer"
+    IT_SERVICES = "it_services"
+    TRADING_COMPANY = "trading_company"
+    CAR_DEALER = "car_dealer"
+    PASSENGER_TRANSPORT = "passenger_transport"
+    DRIVING_SCHOOL = "driving_school"
+    HOTEL = "hotel"
+    CATERER = "caterer"
+    GYM_OPERATOR = "gym_operator"
+    CONSTRUCTION_CONTRACTOR = "construction_contractor"
+    AUTO_WORKSHOP = "auto_workshop"
+
+
+class LinePurpose(str, Enum):
+    """Truth-only: what the buyer uses a line for. Visible to the model only via
+    the buyer profile header or the invoice remarks (see sim/RULES.md)."""
+
+    BUSINESS = "business"  # ordinary business use
+    FURTHER_SUPPLY = "further_supply"  # resale / same-category outward supply / composite element
+    PASSENGER_TRANSPORT = "passenger_transport"
+    DRIVING_TRAINING = "driving_training"
+    FACTORY_CANTEEN = "factory_canteen"
+    STAFF_WELFARE = "staff_welfare"
+    OWN_CONSTRUCTION = "own_construction"
+    PERSONAL = "personal"
+    GIFT = "gift"
+
+
 # ------------------------------------------------------------------- input truth
 
 
@@ -85,6 +116,14 @@ class Party(_Strict):
     gstin: str
     state_code: str  # 2-digit GST state code, e.g. "27"
     address: str
+
+
+class BuyerProfile(_Strict):
+    """Company header shown to the model with every case."""
+
+    profile: BusinessProfile
+    description: str  # e.g. "Business hotel with restaurant and banquets. Employees: 140."
+    employees: int
 
 
 class TruthLineItem(_Strict):
@@ -100,6 +139,8 @@ class TruthLineItem(_Strict):
     sgst: float
     cess: float
     category: ItcCategory = ItcCategory.NORMAL
+    concept: str = ""  # catalog concept id (truth-only)
+    purpose: LinePurpose = LinePurpose.BUSINESS  # truth-only
 
 
 class TruthInvoice(_Strict):
@@ -124,6 +165,7 @@ class TruthInvoice(_Strict):
     sgst: float
     cess: float
     total: float  # amount payable to supplier; excludes tax when reverse_charge
+    remarks: str = ""  # free-text "Remarks / Purpose" line printed on the document, "" if none
 
 
 class PurchaseRegisterRow(_Strict):
@@ -234,6 +276,7 @@ class BankTxn(_Strict):
 
 class CaseInputs(_Strict):
     buyer: Party
+    buyer_profile: BuyerProfile | None = None
     period: str  # MMYYYY, the return period being reconciled
     as_of_date: date  # date the reconciliation is performed (180-day rule clock)
     invoices: list[TruthInvoice]
@@ -319,6 +362,7 @@ class Case(_Strict):
     difficulty: str
     inputs: CaseInputs
     expected: ReconOutput
+    split: str = "train"  # train | test_iid | test_ood
     anomalies: list[str] = Field(default_factory=list)  # generator log, for debugging/stratified eval
 
 
