@@ -20,6 +20,12 @@
     </label>
     <button id="openDirBtn" class="icon-btn" title="Open another case directory" aria-label="Open case directory">+</button>
 
+    <div class="field"><span>Pipeline</span>
+      <div id="kindSeg" class="seg" role="group" aria-label="Pipeline">
+        <button data-kind="e2e" title="One call: the model writes the whole reconciliation as JSON">End-to-end</button><button data-kind="hybrid" title="The model reads one document at a time; plain code matches the books, GSTR-2B and bank, and applies GST law">Hybrid</button>
+      </div>
+    </div>
+
     <div class="field"><span>Model</span>
       <div id="modelSeg" class="seg" role="group" aria-label="Model"></div>
     </div>
@@ -59,12 +65,13 @@
   </section>
 
   <section class="panel" id="mid" aria-label="Model output">
-    <div class="ph"><h2>2 &middot; Model writes JSON</h2><span id="runBadge" class="badge" hidden></span></div>
+    <div class="ph"><h2 id="midTitle">2 &middot; Model writes JSON</h2><span id="runBadge" class="badge" hidden></span></div>
     <div class="mid-ctl">
       <div id="conSeg" class="seg wide" role="group" aria-label="Decoding">
         <button data-con="1">Constrained <em>json_schema</em></button><button data-con="0">Unconstrained</button>
       </div>
     </div>
+    <div id="callStrip" class="calls" hidden></div>
     <div class="stream-wrap">
       <pre id="stream" class="stream" tabindex="0" aria-live="off"></pre>
       <div id="streamEmpty" class="empty"></div>
@@ -74,7 +81,7 @@
   </section>
 
   <section class="panel" id="right" aria-label="Reconciliation">
-    <div class="ph"><h2>3 &middot; Reconciliation</h2>
+    <div class="ph"><h2 id="rightTitle">3 &middot; Reconciliation</h2>
       <label class="switch" id="gtSwitch" hidden><input type="checkbox" id="gtToggle" checked><i></i><span>Compare with ground truth</span></label>
     </div>
     <div id="headline" class="headline"></div>
