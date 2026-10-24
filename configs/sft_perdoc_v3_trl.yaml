@@ -1,0 +1,57 @@
+# Per-document SFT v3 on rs-lab: perdoc v1's recipe (LoRA r32/alpha64, completion-only, 16 rows per step, LR 1e-4)
+# for v1's 124 steps, on rows from fmt_version 2 cases (diverse per-supplier invoice-number and date formats; sim seeds
+# 8301-8303, disjoint from every eval/dev/test/grpo seed). v1 learned to emit the simulator's own number formats instead
+# of copying the page. Differences from v1: max_steps 124 (v1 was cut at 124 of 298 by its 1 h cap), so cosine decays
+# to 0 by step 124; batch 2 x 8 (v2's split) to keep the logits under 48 GB; 2 h cap.
+#   configs/launch_sft_perdoc_rslab.ps1 -Config configs\sft_perdoc_v3_trl.yaml -Name sft_perdoc_v3 -Data sft-perdoc-v3-pc
+algo: sft
+backend: trl
+
+model:
+  name_or_path: Qwen/Qwen3-4B-Instruct-2507
+  precision: bf16
+  max_seq_length: 4096  # longest curated row is 3785 tokens
+  use_peft: true
+  lora_r: 32
+  lora_alpha: 64
+  lora_dropout: 0.0
+  lora_target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+
+datasets:
+  - name: data/train/curated/sft-perdoc-v3-pc  # directory with train.jsonl (columns: prompt, completion)
+    split: train
+    task_type: sft
+
+train:
+  epochs: 1
+  max_steps: 124  # perdoc v1's step count (1984 rows)
+  per_device_batch_size: 2
+  gradient_accumulation_steps: 8
+  learning_rate: 1.0e-4
+  warmup_ratio: 0.03
+  weight_decay: 0.0
+  max_grad_norm: 1.0
+  packing: false
+  logging_steps: 1
+  save_steps: 40
+  save_total_limit: 1  # the final adapter is what ships; checkpoints are removed after a clean run
+  seed: 42
+
+logging:
+  output_dir: runs/sft-perdoc-v3
+  run_name: gst-recon-sft-perdoc-v3
+  loggers: [tensorboard]
+
+chat_template: auto
+
+# Runner kwargs: settings AlignTune's YAML parser drops, plus the runner's own checks and cap.
+gst_recon:
+  gradient_checkpointing: true
+  optimizer: adamw_torch  # bitsandbytes is not installed on the Windows host
+  lr_scheduler: cosine
+  dataloader_num_workers: 0
+  dataset_num_proc: 1
+  rows_as_is: true  # bypass AlignTune's messages normaliser so TRL sees prompt/completion and masks the prompt
+  check_completion_mask: true  # abort before step 1 unless row 0's prompt is all -100 and its reply trained
+  bf16_snapshots: runs/sft-perdoc-v3/bf16
+  max_hours: 2  # wall-clock cap: save, then stop
