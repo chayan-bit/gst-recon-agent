@@ -11,6 +11,7 @@ Headline metrics are ITC invoice exact and context accuracy; the composite (the 
 | teacher-30B constrained | 120 | 59.8 [55.6, 63.9] | 38.8 [32.4, 45.0] | 383,144 [295,619, 487,652] | 140,111 [63,289, 230,110] | 509,015 [399,915, 624,934] | 71.1 [66.7, 75.1] | 87.5 [82.8, 91.6] | 92.5 [87.5, 96.7] | 69.1 [65.3, 72.5] |
 | teacher-30B unconstrained | 19 | 14.9 [2.1, 29.8] | 9.1 [0.0, 21.2] | 8,658 [855, 20,755] | 217,067 [78,804, 419,825] | 228,875 [93,895, 431,532] | 16.1 [3.7, 31.8] | 20.4 [5.0, 40.6] | 15.8 [0.0, 31.6] | 15.5 [3.4, 30.5] |
 | teacher-30B constrained (same 19 cases as unconstrained) | 19 | 68.0 [56.7, 78.1] | 47.3 [27.1, 67.3] | 89,025 [25,550, 170,079] | 91,462 [155, 270,666] | 198,476 [65,356, 399,887] | 82.8 [71.0, 90.8] | 92.4 [81.6, 98.2] | 94.7 [84.2, 100.0] | 75.1 [65.4, 81.0] |
+| student-base constrained | 30 | 50.0 [41.7, 58.2] | 24.7 [13.5, 37.0] | 384,809 [228,829, 566,930] | 278,024 [22,897, 647,167] | 648,016 [341,829, 1,039,593] | 59.7 [49.8, 68.9] | 81.6 [70.6, 90.7] | 90.0 [76.7, 100.0] | 60.1 [51.7, 67.0] |
 | SFT constrained (full grammar) | 120 | 10.9 [7.4, 14.6] | 30.7 [25.3, 36.1] | 465,489 [352,982, 584,747] | 59,776 [20,725, 116,515] | 402,137 [316,132, 496,334] | 64.0 [61.9, 65.9] | 91.0 [89.2, 92.2] | 99.2 [97.5, 100.0] | 58.2 [56.6, 59.6] |
 | SFT constrained (compact grammar) | 30 | 75.7 [70.0, 81.5] | 63.9 [52.5, 73.8] | 435,416 [215,198, 701,045] | 19,491 [6,265, 36,743] | 322,681 [183,096, 493,411] | 85.7 [80.9, 90.3] | 95.7 [94.2, 97.0] | 100.0 [100.0, 100.0] | 80.5 [77.7, 83.5] |
 | SFT unconstrained | 30 | 72.3 [64.8, 79.4] | 59.5 [48.0, 69.7] | 387,852 [183,040, 636,231] | 36,977 [7,310, 78,010] | 355,488 [196,829, 546,233] | 83.6 [76.0, 89.7] | 92.6 [85.6, 96.7] | 70.0 [53.3, 86.7] | 75.5 [68.4, 81.1] |
@@ -26,6 +27,7 @@ Headline metrics are ITC invoice exact and context accuracy; the composite (the 
 | teacher-30B constrained | 0.03 | 391 | 134.6 | $20.04 | $224.41 |
 | teacher-30B unconstrained | 0.18 | 288 | 450.6 | $3.87 | $40.79 |
 | teacher-30B constrained (same 19 cases as unconstrained) | 0.03 | 391 | 45.5 | - | - |
+| student-base constrained | 0.01 | 59 | 121.6 | - | - |
 | SFT constrained (full grammar) | 0.04 | 387 | 185.0 | - | - |
 | SFT constrained (compact grammar) | 0.05 | 203 | 31.8 | - | - |
 | SFT unconstrained | 0.04 | 200 | 31.0 | - | - |
@@ -43,6 +45,7 @@ GPU cost = measured wall time x the GPU-hour price passed to `run`. API cost = t
 | teacher-30B constrained | 60 | 55.7 | 36.7 | 492,270 | 205,132 | 664,436 | 69.6 | 83.7 | 88.3 | 66.1 |
 | teacher-30B unconstrained | 19 | 14.9 | 9.1 | 8,658 | 217,067 | 228,875 | 16.1 | 20.4 | 15.8 | 15.5 |
 | teacher-30B constrained (same 19 cases as unconstrained) | 19 | 68.0 | 47.3 | 89,025 | 91,462 | 198,476 | 82.8 | 92.4 | 94.7 | 75.1 |
+| student-base constrained | 15 | 46.9 | 17.2 | 412,362 | 527,029 | 984,915 | 54.0 | 73.8 | 80.0 | 54.2 |
 | SFT constrained (full grammar) | 60 | 8.1 | 28.6 | 610,319 | 90,586 | 542,383 | 64.5 | 90.6 | 98.3 | 57.5 |
 | SFT constrained (compact grammar) | 15 | 72.6 | 57.4 | 605,393 | 11,688 | 432,296 | 84.1 | 95.6 | 100.0 | 78.7 |
 | SFT unconstrained | 15 | 72.1 | 56.6 | 532,352 | 6,526 | 481,081 | 85.2 | 95.9 | 73.3 | 76.1 |
@@ -56,6 +59,7 @@ GPU cost = measured wall time x the GPU-hour price passed to `run`. API cost = t
 | keyword (oracle extraction and links) | 60 | 70.4 | 45.5 | 246,854 | 40,269 | 246,049 | 93.9 | 100.0 | 100.0 | 81.7 |
 | context-blind rules (oracle extraction and links) | 60 | 82.3 | 46.8 | 58,592 | 95,731 | 130,492 | 100.0 | 100.0 | 100.0 | 87.1 |
 | teacher-30B constrained | 60 | 63.8 | 41.1 | 274,018 | 75,089 | 353,595 | 72.5 | 91.3 | 96.7 | 72.0 |
+| student-base constrained | 15 | 53.1 | 33.3 | 357,256 | 29,019 | 311,118 | 65.3 | 89.4 | 100.0 | 65.9 |
 | SFT constrained (full grammar) | 60 | 13.7 | 33.2 | 320,659 | 28,966 | 261,891 | 63.5 | 91.4 | 100.0 | 58.9 |
 | SFT constrained (compact grammar) | 15 | 78.9 | 71.4 | 265,438 | 27,294 | 213,067 | 87.3 | 95.7 | 100.0 | 82.3 |
 | SFT unconstrained | 15 | 72.6 | 62.9 | 243,352 | 67,429 | 229,895 | 82.0 | 89.3 | 66.7 | 74.8 |
@@ -68,6 +72,7 @@ realworld is a sanity split of 12 hand-built cases (not part of the Overall row 
 
 | run | n | ITC invoice exact % | Context acc % | ITC overclaim (Rs) | ITC underclaim (Rs) | ITC net abs err (Rs) | Match acc % | Field F1 % | Schema valid % | Composite (0-100) |
 |---|---|---|---|---|---|---|---|---|---|---|
+| student-base constrained | 12 | 31.9 [13.9, 51.4] | 50.0 [14.3, 77.3] | 15,220 [895, 37,243] | 28,697 [8,062, 55,244] | 46,081 [23,551, 72,698] | 41.0 [19.4, 63.9] | 45.7 [22.2, 69.7] | 50.0 [25.0, 75.0] | 35.7 [17.3, 54.7] |
 | SFT constrained (full grammar) | 12 | 27.1 [13.9, 40.3] | 72.2 [46.7, 90.5] | 35,924 [16,629, 60,077] | 0 [0, 0] | 34,257 [15,349, 58,864] | 77.6 [72.7, 82.5] | 92.1 [89.2, 94.4] | 100.0 [100.0, 100.0] | 65.8 [62.1, 69.7] |
 | SFT constrained (compact grammar) | 12 | 68.8 [54.8, 83.3] | 83.3 [60.0, 96.2] | 21,235 [619, 49,870] | 0 [0, 0] | 21,235 [619, 49,870] | 96.0 [92.4, 99.3] | 96.4 [92.8, 98.9] | 100.0 [100.0, 100.0] | 84.2 [78.0, 90.5] |
 | SFT unconstrained | 12 | 68.8 [55.6, 80.6] | 83.3 [61.5, 100.0] | 6,135 [329, 15,537] | 5,310 [0, 15,930] | 11,445 [1,247, 24,644] | 96.0 [93.1, 98.6] | 95.8 [92.1, 98.5] | 100.0 [100.0, 100.0] | 83.4 [78.2, 89.2] |
@@ -93,6 +98,9 @@ realworld is a sanity split of 12 hand-built cases (not part of the Overall row 
 | teacher-30B constrained | medium | 40 | 64.0 | 44.7 | 312,557 | 49,320 | 386,181 | 75.9 | 93.1 | 97.5 | 73.4 |
 | teacher-30B unconstrained | easy | 19 | 14.9 | 9.1 | 8,658 | 217,067 | 228,875 | 16.1 | 20.4 | 15.8 | 15.5 |
 | teacher-30B constrained (same 19 cases as unconstrained) | easy | 19 | 68.0 | 47.3 | 89,025 | 91,462 | 198,476 | 82.8 | 92.4 | 94.7 | 75.1 |
+| student-base constrained | easy | 10 | 63.3 | 23.5 | 207,280 | 150 | 141,045 | 83.9 | 93.4 | 100.0 | 72.5 |
+| student-base constrained | hard | 10 | 33.4 | 17.6 | 647,801 | 816,921 | 1,465,494 | 33.0 | 62.8 | 70.0 | 42.8 |
+| student-base constrained | medium | 10 | 53.3 | 38.2 | 299,347 | 17,001 | 337,510 | 62.1 | 88.6 | 100.0 | 64.9 |
 | SFT constrained (full grammar) | easy | 40 | 7.8 | 38.4 | 114,584 | 14,415 | 113,935 | 64.5 | 93.4 | 100.0 | 58.2 |
 | SFT constrained (full grammar) | hard | 40 | 16.2 | 29.2 | 936,156 | 139,009 | 716,920 | 59.9 | 87.2 | 97.5 | 57.1 |
 | SFT constrained (full grammar) | medium | 40 | 8.7 | 30.2 | 345,726 | 25,903 | 375,556 | 67.5 | 92.5 | 100.0 | 59.4 |
@@ -130,6 +138,12 @@ realworld is a sanity split of 12 hand-built cases (not part of the Overall row 
 | teacher-30B constrained | test_ood/medium | 20 | 65.8 | 52.1 | 228,850 | 33,295 | 277,593 | 75.8 | 95.0 | 100.0 | 74.5 |
 | teacher-30B unconstrained | test_iid/easy | 19 | 14.9 | 9.1 | 8,658 | 217,067 | 228,875 | 16.1 | 20.4 | 15.8 | 15.5 |
 | teacher-30B constrained (same 19 cases as unconstrained) | test_iid/easy | 19 | 68.0 | 47.3 | 89,025 | 91,462 | 198,476 | 82.8 | 92.4 | 94.7 | 75.1 |
+| student-base constrained | test_iid/easy | 5 | 65.8 | 31.6 | 219,711 | 125 | 137,586 | 84.7 | 93.1 | 100.0 | 72.6 |
+| student-base constrained | test_iid/hard | 5 | 19.0 | 12.8 | 694,575 | 1,559,160 | 2,381,690 | 16.6 | 36.0 | 40.0 | 24.1 |
+| student-base constrained | test_iid/medium | 5 | 56.0 | 20.0 | 322,801 | 21,802 | 435,469 | 60.7 | 92.4 | 100.0 | 65.9 |
+| student-base constrained | test_ood/easy | 5 | 60.9 | 13.3 | 194,848 | 175 | 144,505 | 83.1 | 93.8 | 100.0 | 72.4 |
+| student-base constrained | test_ood/hard | 5 | 47.8 | 25.5 | 601,026 | 74,682 | 549,298 | 49.4 | 89.7 | 100.0 | 61.6 |
+| student-base constrained | test_ood/medium | 5 | 50.7 | 48.8 | 275,892 | 12,199 | 239,551 | 63.5 | 84.9 | 100.0 | 63.9 |
 | SFT constrained (full grammar) | test_iid/easy | 20 | 4.7 | 42.4 | 77,210 | 780 | 72,217 | 65.4 | 93.8 | 100.0 | 57.9 |
 | SFT constrained (full grammar) | test_iid/hard | 20 | 13.0 | 23.4 | 1,331,443 | 254,386 | 1,046,977 | 60.3 | 84.9 | 95.0 | 55.5 |
 | SFT constrained (full grammar) | test_iid/medium | 20 | 6.7 | 33.3 | 422,303 | 16,592 | 507,954 | 67.8 | 93.2 | 100.0 | 59.2 |
@@ -164,6 +178,7 @@ realworld is a sanity split of 12 hand-built cases (not part of the Overall row 
 | teacher-30B constrained | partial | 120 | 59.8 | 38.8 | 383,144 | 140,111 | 509,015 | 71.1 | 87.5 | 92.5 | 69.1 |
 | teacher-30B unconstrained | partial | 19 | 14.9 | 9.1 | 8,658 | 217,067 | 228,875 | 16.1 | 20.4 | 15.8 | 15.5 |
 | teacher-30B constrained (same 19 cases as unconstrained) | partial | 19 | 68.0 | 47.3 | 89,025 | 91,462 | 198,476 | 82.8 | 92.4 | 94.7 | 75.1 |
+| student-base constrained | partial | 30 | 50.0 | 24.7 | 384,809 | 278,024 | 648,016 | 59.7 | 81.6 | 90.0 | 60.1 |
 | SFT constrained (full grammar) | partial | 120 | 10.9 | 30.7 | 465,489 | 59,776 | 402,137 | 64.0 | 91.0 | 99.2 | 58.2 |
 | SFT constrained (compact grammar) | partial | 30 | 75.7 | 63.9 | 435,416 | 19,491 | 322,681 | 85.7 | 95.7 | 100.0 | 80.5 |
 | SFT unconstrained | partial | 30 | 72.3 | 59.5 | 387,852 | 36,977 | 355,488 | 83.6 | 92.6 | 70.0 | 75.5 |
@@ -184,6 +199,9 @@ realworld is a sanity split of 12 hand-built cases (not part of the Overall row 
 | teacher-30B constrained | >32k | 13 | 31.7 | 31.6 | 684,097 | 485,666 | 981,528 | 38.0 | 55.8 | 61.5 | 41.4 |
 | teacher-30B unconstrained | <=16k | 19 | 14.9 | 9.1 | 8,658 | 217,067 | 228,875 | 16.1 | 20.4 | 15.8 | 15.5 |
 | teacher-30B constrained (same 19 cases as unconstrained) | <=16k | 19 | 68.0 | 47.3 | 89,025 | 91,462 | 198,476 | 82.8 | 92.4 | 94.7 | 75.1 |
+| student-base constrained | <=16k | 16 | 60.4 | 27.4 | 229,038 | 8,738 | 198,071 | 77.9 | 91.2 | 100.0 | 70.2 |
+| student-base constrained | 16-32k | 8 | 44.3 | 28.9 | 354,784 | 421,662 | 747,808 | 49.0 | 79.6 | 87.5 | 55.7 |
+| student-base constrained | >32k | 6 | 30.1 | 18.3 | 840,233 | 804,602 | 1,714,815 | 25.2 | 58.8 | 66.7 | 38.9 |
 | SFT constrained (full grammar) | <=16k | 63 | 7.6 | 36.5 | 179,234 | 21,687 | 189,333 | 64.6 | 93.1 | 100.0 | 58.3 |
 | SFT constrained (full grammar) | 16-32k | 44 | 16.7 | 29.1 | 671,189 | 66,890 | 559,355 | 66.8 | 91.1 | 100.0 | 60.5 |
 | SFT constrained (full grammar) | >32k | 13 | 7.3 | 27.0 | 1,156,505 | 220,281 | 901,298 | 51.7 | 80.5 | 92.3 | 50.1 |
@@ -201,6 +219,8 @@ realworld is a sanity split of 12 hand-built cases (not part of the Overall row 
 
 | run | length bucket | cases | context overflow | cut at the token cap |
 |---|---|---|---|---|
+| student-base constrained | 16-32k | 8 | 0 | 1 |
+| student-base constrained | >32k | 6 | 0 | 2 |
 | SFT constrained (full grammar) | >32k | 13 | 0 | 1 |
 
 Context overflow = the prompt alone does not fit the server context, so the case scores 0 (what a real deployment at that context would do). Cut at the cap = the reply was truncated and is scored as it stands. Only buckets with at least one are listed.
@@ -224,6 +244,9 @@ Context overflow = the prompt alone does not fit the server context, so the case
 | teacher-30B constrained (same 19 cases as unconstrained) | itc_invoice | 5 | -14.4 [-34.4, +0.0] | 0.0855 |
 | teacher-30B constrained (same 19 cases as unconstrained) | context_acc | 5 | -30.0 [-70.0, +0.0] | 0.0875 |
 | teacher-30B constrained (same 19 cases as unconstrained) | composite | 5 | -6.3 [-10.5, -2.0] | 0.0030 |
+| student-base constrained | itc_invoice | 42 | -28.9 [-36.3, -22.1] | 0.0005 |
+| student-base constrained | context_acc | 41 | -44.5 [-56.0, -33.8] | 0.0005 |
+| student-base constrained | composite | 42 | -28.5 [-36.7, -21.1] | 0.0005 |
 | SFT constrained (full grammar) | itc_invoice | 42 | -59.5 [-68.2, -50.3] | 0.0005 |
 | SFT constrained (full grammar) | context_acc | 41 | -22.5 [-34.2, -11.2] | 0.0005 |
 | SFT constrained (full grammar) | composite | 42 | -21.9 [-25.0, -18.9] | 0.0005 |
@@ -274,6 +297,11 @@ Paired by case_id; p-value from a centred paired bootstrap (null: zero mean diff
 - Without the grammar the model still emits valid compact JSON on most cases, but only 70.0% pass the schema check and 1 reply failed to parse (a missing closing brace), against 100% schema-valid with the compact grammar.
 - Paired against SFT compact (same 42 cases): ITC invoice exact -2.4 points [-7.3, +2.5], p = 0.32, context accuracy -1.7 [-9.0, +5.9], p = 0.65, composite -3.8 [-8.1, -0.4], p = 0.049.
 - So the compact grammar gives the guarantee of valid output at no measurable accuracy cost, and the SFT model does not depend on the grammar for its ITC decisions.
+- "student-base constrained" (Qwen3-4B-Instruct-2507 with the full grammar, no training) ran the same 42-case sample at concurrency 2.
+- Six of its 12 realworld cases (rw01, rw02, rw04, rw06, rw09, rw11) failed with ConnectionResetError when the shared rs-epyc host was starved of RAM at the end of the run, and they score as failures; this is an infrastructure fault, not a model result, so the base realworld row and the 42-case Overall are understated.
+- The 30 simulator cases are valid: 0 transport errors, 3 replies cut at the 24,000-token cap (test_iid-hard 00005, 00008, 00018, prompts of 33k to 40k tokens), which are genuine.
+- On the 30 simulator cases the base model scores ITC invoice exact 50.0, context accuracy 24.7 and composite 60.1, against 75.7, 63.9 and 80.5 for SFT compact.
+- Paired on the same 30 simulator cases, SFT compact beats base by +25.7 points on ITC invoice exact [18.8, 32.6], +45.9 on context accuracy [35.0, 56.5] and +20.5 on composite [14.4, 27.4], all p = 0.0005; read the realworld and 42-case deltas with the failed cases in mind.
 
 ## Hybrid mode
 
