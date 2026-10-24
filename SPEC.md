@@ -1,7 +1,7 @@
 # gst-recon spec
 
 Syntax Error 2026 (SDSLabs IITR), Local LLM track (RadixArk prize), registered under PS6: reasoning with verifiable answers (financial calculations).
-Deadline: Sunday 2026-10-25 21:00 IST. Solo.
+Deadline: Sunday 2026-10-25 09:00 IST. Solo.
 
 ## Product
 A small open model (about 4B, LoRA) served on SGLang that does monthly GST input tax credit (ITC) reconciliation for one buyer company.
