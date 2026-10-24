@@ -27,3 +27,34 @@ All deltas against v1 and pd3g287 on match accuracy and for Haiku 5.5 on every m
 A Haiku 4.5 run with default thinking was stopped after 64 documents (about 60 s and $0.043 per document, 16k thinking tokens on the check document) and is not scored.
 The 30-case subset list `reports/hybrid-haiku45-subset.txt` (fixed in 001a4eb) was fixed for that abandoned thinking-on arm; the thinking-off Haiku 4.5 arm runs the full 120 test cases.
 The semireal documents are real client documents; the Haiku runs sent them to the Claude CLI only, and only aggregates are reported here.
+
+### GPT-6 luna (codex exec)
+
+Invocation: `codex exec -m gpt-6-luna --skip-git-repo-check --ephemeral --ignore-user-config --ignore-rules --json -s read-only` with tools, skills, plugins, hooks and sub-agents disabled through `-c` (the full list is `CODEX_CLEAN` in `scripts/eval_frontier.py`), `-c model_reasoning_effort="none" -c model_reasoning_summary="none"`, the per-document system prompt as `model_instructions_file`, the document as the prompt and doc schema v2 as `--output-schema`, run through `python scripts/eval_frontier.py --mode hybrid --backend codex` from a scratch working directory with a `CODEX_HOME` that holds only `auth.json`.
+codex-cli 0.164.0; about 6.0k tokens of harness-injected developer messages remain per call (a trivial prompt costs 16.3k under the default config), so a document call is about 8k input tokens.
+The schema is the API's structured output, not grammar-constrained decoding like the XGrammar runs of our models, and the model is not fine-tuned.
+Codex reports no per-call cost; tokens come from its `turn.completed` usage events.
+The user approved sending the semireal real documents to OpenAI for this baseline; only aggregates are reported here.
+
+Reasoning: gpt-6-luna accepts effort none, low, medium, high, xhigh and max (minimal is rejected).
+The headline arm is `none`: 0 reasoning tokens on all 234 semireal and all 2,252 test documents (from the usage events), so there is no test-time compute, like the 4B model.
+The secondary arm is `medium` (three smoke documents spent 407 to 804 reasoning tokens each); its semireal run predates the reasoning-token field, so its completion tokens include the reasoning tokens and are not split.
+A medium-effort test run was stopped at 554 of 2,252 documents when the no-reasoning requirement arrived and is not scored.
+
+**semireal, 54 cases, 234 documents** (delta vs v1 [95% CI]; delta vs pd3g287 [95% CI])
+
+| run | ITC invoice exact % | Match acc % | Composite | docs parsed | invented identity | s per doc | completion tokens per doc (p95) |
+|---|---|---|---|---|---|---|---|
+| GPT-6 luna, reasoning none | 70.6 (+12.2 [+8.1, +16.5]; +9.6 [+5.2, +13.9]) | 82.5 (+18.3 [+12.5, +24.8]; +10.9 [+7.5, +14.2]) | 77.9 (+9.3 [+7.4, +11.3]; +5.0 [+2.7, +7.2]) | 100.0% | 15.4% (108 of 702) | 4.2 | 197 (337) |
+| GPT-6 luna, medium effort (secondary) | 82.4 (+23.9 [+16.7, +32.1]; +21.3 [+13.9, +29.4]) | 86.4 (+22.3 [+15.1, +30.3]; +14.8 [+10.9, +19.0]) | 84.1 (+15.5 [+11.1, +20.7]; +11.3 [+7.5, +15.6]) | 100.0% | 12.4% (87 of 702) | 6.4 | 458 incl. reasoning (960) |
+
+All semireal deltas have p < 0.0001.
+
+**simulated test, 120 cases (test_iid 60, test_ood 60), 2,252 documents** (delta vs v1 [95% CI]; delta vs pd3g287 [95% CI]; v1 80.1 / 88.7 / 82.8 and pd3g287 80.0 / 85.0 / 81.6 under doc schema v2 and reconciler v3)
+
+| run | ITC invoice exact % | Match acc % | Composite | docs parsed | invented identity | s per doc | completion tokens per doc (p95) |
+|---|---|---|---|---|---|---|---|
+| GPT-6 luna, reasoning none | 81.9 (+1.8 [-0.1, +3.6]; +1.9 [-0.2, +4.0]) | 90.5 (+1.8 [+0.9, +2.8]; +5.6 [+4.3, +7.0]) | 84.0 (+1.2 [+0.2, +2.3]; +2.4 [+1.2, +3.5]) | 100.0% | 15.4% (1,041 of 6,756) | 4.8 | 193 (288) |
+
+Test p-values: against v1, ITC p = 0.062, match p < 0.0001, composite p = 0.018; against pd3g287, ITC p = 0.083, match and composite p < 0.0001.
+Total tokens on the test run: 17.81M input and 0.43M output; wall time 2,156 s at concurrency 5, with no failed calls.
