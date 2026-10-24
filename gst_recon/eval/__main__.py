@@ -52,7 +52,7 @@ def cmd_report(a: argparse.Namespace) -> int:
     runs.sort(key=lambda r: order.get(r["label"], order.get(Path(r["dir"]).name, len(order))))
     base = rep.load_baselines(a.baselines)
     appendices = [p.read_text() for p in a.append or []]
-    md = rep.report_md(runs, base, a.ref, appendices)
+    md = rep.report_md(runs, base, a.ref, appendices, a.placeholder)
     a.out.parent.mkdir(parents=True, exist_ok=True)
     a.out.write_text(md)
     png = rep.chart(runs, base, a.chart or a.out.with_suffix(".png"))
@@ -97,6 +97,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--baselines", type=Path, help="JSON from `python -m gst_recon.sim.audit --json FILE` (trivial baselines)")
     p.add_argument("--ref", help="run label or dir name to compute paired differences against")
     p.add_argument("--order", nargs="+", help="run labels or dir names in display order")
+    p.add_argument("--placeholder", nargs="+", help="labels of rows to show as 'not run yet' (e.g. student-base SFT SFT+GRPO)")
     p.add_argument("--append", type=Path, nargs="+", help="markdown files appended verbatim (e.g. the AuditKIT section)")
     p.set_defaults(fn=cmd_report)
     a = ap.parse_args(argv)

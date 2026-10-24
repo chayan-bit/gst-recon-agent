@@ -11,6 +11,7 @@ PRIMARY = ("schema_valid", "extraction_f1", "match_accuracy", "itc_invoice", "co
 SECONDARY = ("grpo", "parse_ok", "arithmetic", "itc_reasons", "itc_total_exact", "itc_all_abs_err_rs")
 ALL_METRICS = PRIMARY + SECONDARY
 N_BOOT = 2000
+LENGTH_ORDER = ["<=16k", "16-32k", ">32k"]
 
 
 def _num_den(rec: dict, name: str) -> tuple[float, float]:
@@ -49,9 +50,10 @@ def summarize(records: list[dict], *, ci: bool = True) -> dict[str, Any]:
 def breakdowns(records: list[dict]) -> dict[str, dict[str, Any]]:
     """Metric means (no CI) per split, difficulty and OCR-recall bucket."""
     out: dict[str, dict[str, Any]] = {}
-    for dim in ("split", "difficulty", "ocr_bucket"):
-        groups = sorted({r[dim] for r in records})
-        out[dim] = {g: summarize([r for r in records if r[dim] == g], ci=False) for g in groups}
+    recs = [{**r, "split_difficulty": f"{r['split']}/{r['difficulty']}"} for r in records]
+    for dim in ("split", "difficulty", "split_difficulty", "ocr_bucket", "length_bucket"):
+        groups = sorted({r[dim] for r in recs}, key=lambda g: (LENGTH_ORDER.index(g) if g in LENGTH_ORDER else 9, g))
+        out[dim] = {g: summarize([r for r in recs if r[dim] == g], ci=False) for g in groups}
     return out
 
 

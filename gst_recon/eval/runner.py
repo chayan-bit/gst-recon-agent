@@ -65,7 +65,7 @@ def generate_all(cases: list[EvalCase], gen: Generate, out: Path, *, concurrency
         for fut in as_completed([ex.submit(work, c) for c in todo]):
             c, r = fut.result()
             rec = {"case_id": c.case_id, "split": c.split, "difficulty": c.difficulty, "ocr_recall": c.meta.get("ocr_recall"),
-                   "ocr_bucket": c.ocr_bucket, "raw": r.get("text", ""), "parsed": parse_output(r.get("text", "")),
+                   "ocr_bucket": c.ocr_bucket, "length_bucket": c.length_bucket, "raw": r.get("text", ""), "parsed": parse_output(r.get("text", "")),
                    **{k: v for k, v in r.items() if k != "text"}}
             _atomic_write(_case_path(out, c.case_id), json.dumps(rec))
             stats["n_requests"] += 1
@@ -101,8 +101,8 @@ def score_all(cases: list[EvalCase], out: Path) -> list[dict]:
     for c in cases:
         p = _case_path(out, c.case_id)
         rec = json.loads(p.read_text()) if p.exists() else {"case_id": c.case_id, "split": c.split, "difficulty": c.difficulty,
-                                                           "ocr_recall": c.meta.get("ocr_recall"), "ocr_bucket": c.ocr_bucket,
-                                                           "raw": "", "error": "missing"}
+                                                           "ocr_recall": c.meta.get("ocr_recall"), "raw": "", "error": "missing"}
+        rec |= {"split": c.split, "difficulty": c.difficulty, "ocr_bucket": c.ocr_bucket, "length_bucket": c.length_bucket}
         rec["metrics"] = case_metrics(rec.get("raw", ""), c)
         records.append(rec)
     return records
@@ -155,7 +155,7 @@ def run_eval(cases: list[EvalCase], gen: Generate, out: Path, config: dict, *, c
     records = score_all(cases, out)
     agg = aggregate(records, config, run_stats, {r["metrics"]["context_source"] for r in records})
     _atomic_write(out / "aggregate.json", json.dumps(agg, indent=1))
-    _atomic_write(out / "scores.jsonl", "\n".join(json.dumps({k: r[k] for k in ("case_id", "split", "difficulty", "ocr_bucket", "metrics", "error", "latency_s",
+    _atomic_write(out / "scores.jsonl", "\n".join(json.dumps({k: r[k] for k in ("case_id", "split", "difficulty", "ocr_bucket", "length_bucket", "metrics", "error", "latency_s",
                                                                                  "prompt_tokens", "completion_tokens") if k in r}) for r in records) + "\n")
     _atomic_write(out / "table.md", run_table_md(agg))
     return agg

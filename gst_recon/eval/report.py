@@ -53,6 +53,11 @@ def _perf_cells(agg: dict) -> list[str]:
 PERF_HEAD = ["req/s", "out tok/s", "p50 latency (s)", "GPU $/1k cases", "API list $/1k cases"]
 
 
+DIMS = (("split", "By split"), ("difficulty", "By difficulty"), ("split_difficulty", "By split and difficulty"),
+        ("ocr_bucket", "By OCR recall (full = every field present in the prompt)"),
+        ("length_bucket", "By case prompt length (Qwen3 tokens: <=16k, 16-32k, >32k)"))
+
+
 def run_table_md(agg: dict) -> str:
     """table.md of one run: primary metrics with 95% CIs, breakdowns, throughput and cost."""
     head = ["group", "n"] + [c[1] for c in COLS]
@@ -60,7 +65,9 @@ def run_table_md(agg: dict) -> str:
              f"cases: {agg['n_cases']}, transport errors: {agg['n_errors']} (context overflow: {agg.get('n_context_overflow', 0)}), truncated (finish_reason=length): {agg['n_truncated']}",
              f"context accuracy source: {agg['context_source']}", "", "## Overall (bootstrap 95% CI over cases)", "",
              _table(head, [["all", str(agg["n_cases"])] + _metric_cells(agg["overall"], True)])]
-    for dim, title in (("split", "By split"), ("difficulty", "By difficulty"), ("ocr_bucket", "By OCR recall (full = every field present in the prompt)")):
+    for dim, title in DIMS:
+        if dim not in agg["breakdowns"]:
+            continue
         rows = [[g, str(s["n"])] + _metric_cells(s, False) for g, s in agg["breakdowns"][dim].items()]
         parts += ["", f"## {title}", "", _table(head, rows)]
     parts += ["", "## Throughput and cost", "", _table(PERF_HEAD, [_perf_cells(agg)]), ""]
@@ -116,17 +123,18 @@ def _baseline_cells(row: dict) -> list[str]:
 
 
 def report_md(runs: list[dict], baselines: dict[str, dict[str, dict]] | None = None, ref: str | None = None,
-              appendices: list[str] | None = None) -> str:
+              appendices: list[str] | None = None, placeholders: list[str] | None = None) -> str:
     baselines = baselines or {}
+    pending = lambda ncols, extra=0: [[f"{n} (not run yet)", *["-"] * (ncols - 1 + extra)] for n in placeholders or []]  # noqa: E731
     head = ["run", "n"] + [c[1] for c in COLS]
     parts = ["# gst-recon evaluation results", "",
              "Component metrics are primary; composite is the weighted reward. Cells are percentages unless stated; "
              "[lo, hi] is a bootstrap 95% CI over cases. Trivial baselines are handed the true extraction and links "
              "(they isolate the decisions): their field F1 and match accuracy are oracle values and their composite already "
              "includes full credit for extraction, schema and arithmetic, so compare them on ITC invoice exact, context accuracy and ITC error only.", "",
-             "## Overall", "", _table(head, [[r["label"], str(r["n_cases"])] + _metric_cells(r["overall"], True) for r in runs]),
+             "## Overall", "", _table(head, [[r["label"], str(r["n_cases"])] + _metric_cells(r["overall"], True) for r in runs] + pending(len(head))),
              "", "## Throughput and cost per 1,000 cases", "",
-             _table(["run", *PERF_HEAD], [[r["label"], *_perf_cells(r)] for r in runs]),
+             _table(["run", *PERF_HEAD], [[r["label"], *_perf_cells(r)] for r in runs] + pending(len(PERF_HEAD) + 1)),
              "", "GPU cost = measured wall time x the GPU-hour price passed to `run`. API cost = this run's mean token counts x the list "
              "price passed to `run`. Prices are inputs, not facts; `-` means no price was given.", ""]
     splits = sorted({s for r in runs for s in r["breakdowns"]["split"]})
@@ -135,9 +143,12 @@ def report_md(runs: list[dict], baselines: dict[str, dict[str, dict]] | None = N
                 for r in runs if split in r["breakdowns"]["split"]]
         rows += [[f"baseline: {name}", "-"] + _baseline_cells(row) for name, row in baselines.get(split, {}).items()
                  if any(row.get(k) is not None for k, _, _ in COLS)]
+        rows += pending(len(head))
         parts += [f"## {split}", "", _table(head, rows), ""]
-    for dim, title in (("difficulty", "By difficulty"), ("ocr_bucket", "By OCR recall (full vs partial)")):
-        rows = [[r["label"], g, str(s["n"])] + _metric_cells(s, False) for r in runs for g, s in r["breakdowns"][dim].items()]
+    for dim, title in DIMS[1:]:
+        rows = [[r["label"], g, str(s["n"])] + _metric_cells(s, False) for r in runs for g, s in r["breakdowns"].get(dim, {}).items()]
+        if not rows:
+            continue
         parts += [f"## {title}", "", _table(["run", "group", "n", *[c[1] for c in COLS]], rows), ""]
     if ref:
         refs = [r for r in runs if ref in (r["label"], Path(r["dir"]).name)]

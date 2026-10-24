@@ -29,15 +29,23 @@ class EvalCase:
         return str(self.meta.get("difficulty", "unknown"))
 
     @property
+    def length_bucket(self) -> str:
+        """Case prompt length from meta.prompt_tokens (Qwen3 tokenizer, excludes the task instruction)."""
+        t = self.meta.get("prompt_tokens")
+        return "unknown" if t is None else "<=16k" if t <= 16384 else "16-32k" if t <= 32768 else ">32k"
+
+    @property
     def ocr_bucket(self) -> str:
         r = self.meta.get("ocr_recall")
         return "unknown" if r is None else "full" if r >= FULL_RECALL else "partial"
 
 
 def _load_truth(truth_dir: Path | None, case_id: str) -> Case | None:
-    if truth_dir is None or not (truth_dir / f"{case_id}.json").exists():
+    """<truth_dir>/<case_id>.json, or one directory level down (e.g. truth/<split>/<case_id>.json)."""
+    if truth_dir is None:
         return None
-    return Case.model_validate_json((truth_dir / f"{case_id}.json").read_text())
+    found = [p for p in (truth_dir / f"{case_id}.json", *truth_dir.glob(f"*/{case_id}.json")) if p.exists()]
+    return Case.model_validate_json(found[0].read_text()) if found else None
 
 
 def load_cases(dirs: list[Path], *, truth_dir: Path | None = None, n_per_dir: int | None = None,

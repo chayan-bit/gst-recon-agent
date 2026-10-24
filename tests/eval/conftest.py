@@ -29,7 +29,8 @@ def make_rendered(root: Path, split: str, n: int, truth_dir: Path | None = None,
         (d / "prompt.txt").write_text(f"CASE_ID: {c.case_id}\n{c.inputs.model_dump_json()}")
         (d / "target.json").write_text(c.expected.model_dump_json())
         (d / "meta.json").write_text(json.dumps({"case_id": c.case_id, "difficulty": c.difficulty, "split": split,
-                                                 "ocr_recall": 1.0 if i % 2 == 0 else 0.9}))
+                                                 "ocr_recall": 1.0 if i % 2 == 0 else 0.9,
+                                                 "prompt_tokens": (8000, 20000, 40000)[i % 3]}))
         targets[c.case_id] = c.expected.model_dump(mode="json")
         if truth_dir is not None:
             truth_dir.mkdir(parents=True, exist_ok=True)
