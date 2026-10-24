@@ -114,3 +114,9 @@ def test_context_overflow_is_counted_separately(world, monkeypatch):
     assert client.clip_max_tokens("The input (37032 tokens) is longer than the model's context length (16384 tokens).") is None
     assert client.clip_max_tokens("maximum context length of 16384 tokens. You requested a total of 17858 tokens: "
                                   "9666 tokens from the input messages and 8192") == 16384 - 9666 - 8
+
+
+def test_completion_cap_error_is_clipped():
+    from gst_recon.eval import client
+
+    assert client.clip_max_tokens("max_completion_tokens is too large: 32768.This model supports at most 16384 completion tokens.") == 16384

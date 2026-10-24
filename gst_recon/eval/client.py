@@ -25,10 +25,14 @@ def json_schema_format(schema: dict | None = None) -> dict:
 
 
 _CTX = re.compile(r"maximum context length of (\d+) tokens.*?(\d+) tokens from the input", re.S)
+_CAP = re.compile(r"supports at most (\d+) completion tokens")
 
 
 def clip_max_tokens(error: str) -> int | None:
     """From an SGLang/vLLM 'requested total exceeds the context' 400, the largest max_tokens that fits (None if not that error)."""
+    cap = _CAP.search(error)
+    if cap:
+        return int(cap.group(1))
     m = _CTX.search(error)
     if not m:
         return None
