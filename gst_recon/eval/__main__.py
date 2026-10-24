@@ -84,7 +84,7 @@ def cmd_report(a: argparse.Namespace) -> int:
     runs.sort(key=lambda r: order.get(r["label"], order.get(Path(r["dir"]).name, len(order))))
     base = rep.load_baselines(a.baselines)
     paths = list(a.append or [])
-    for name in ("hybrid.md", "pipeline.md"):  # hand-written sections beside the output always ride along, so a regeneration cannot drop them
+    for name in ("hybrid.md", "pipeline.md", "frontier-hybrid.md"):  # hand-written sections beside the output always ride along, so a regeneration cannot drop them
         extra = a.out.parent / name
         if extra.exists() and extra.resolve() not in {p.resolve() for p in paths}:
             paths.append(extra)

@@ -38,9 +38,11 @@ def test_report_includes_hybrid_md_next_to_the_output_once(world):
     out.parent.mkdir(parents=True, exist_ok=True)
     (out.parent / "hybrid.md").write_text("## Hybrid mode\n\nhybrid rows\n")
     (out.parent / "pipeline.md").write_text("## Pipeline comparison\n\nrows\n")
+    (out.parent / "frontier-hybrid.md").write_text("## Frontier per-document models\n\nrows\n")
     for extra in ([], ["--append", str(out.parent / "hybrid.md")]):
         assert main(["report", "--runs", str(world["tmp"] / "runs" / "eval"), "--out", str(out), *extra]) == 0
         assert out.read_text().count("## Hybrid mode") == 1 and out.read_text().count("## Pipeline comparison") == 1
+        assert out.read_text().count("## Frontier per-document models") == 1
 
 
 def test_paired_delta_detects_improvement():
