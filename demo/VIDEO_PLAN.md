@@ -78,7 +78,7 @@ Do not use the medium case for this contrast: there the end-to-end SFT run (9/13
 ### Shot 6 - How it is built (2:00 to 2:20)
 
 Screen: the static slide `http://localhost:8765/built` (screenshot: `screenshots/21-built.png`), no recording needed.
-Six tiles, in this order, about 3 s each: SGLang multi-LoRA serving (base, base:sft, base:perdoc on one server); XGrammar constrained decoding (schema as `response_format`); RadixAttention shared prefill (1216 of 1216 prompt tokens cached, against 0 as separate requests); the AlignTune SGLang rollout backend for GRPO; CuratorKIT gates (55% of teacher paraphrases kept); AuditKIT structured-extraction metrics.
+Six tiles, in this order, about 3 s each: SGLang multi-LoRA serving (base, base:sft, base:perdoc on one server); XGrammar constrained decoding (schema as `response_format`); RadixAttention shared prefill (1216 of 1216 prompt tokens cached, against 0 as separate requests); the AlignTune SGLang rollout backend for GRPO; CuratorKIT gates (651 of 1,242 teacher paraphrases kept: 471 failed the fact check, 120 the hallucination gate); AuditKIT structured-extraction metrics.
 End on the badge for 3 s: "11 pull requests open upstream, none merged" (AlignTune 4, CuratorKIT 3, AuditKIT 3, SGLang 1).
 
 VO prompt: one SGLang server serves the base model and two LoRA adapters, switched per request; XGrammar makes the JSON always valid; RadixAttention shares the prompt prefill, which is what made GRPO rollouts cheap enough, and we built that as the AlignTune SGLang backend; CuratorKIT filtered the teacher's data and AuditKIT scored the extraction; eleven pull requests are open upstream and none is merged yet, and we say so.
