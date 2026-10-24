@@ -84,3 +84,26 @@ def test_compact_target_shrinks_and_expands_back(rendered):
     small = b.compact_target(c, lambda t: (len(t) // 4, "chars"))
     assert len(small.target) < len(c.target) and small.target_tokens == len(small.target) // 4
     assert expand(json.loads(small.target)) == json.loads(c.target)
+
+
+def test_kept_grpo_rows_round_trip_with_ocr_provenance(rendered, tmp_path):
+    cands = b.load_rendered(rendered)
+    b.export(cands, tmp_path / "curated", 300, LIMITS)
+    (tmp_path / "curated" / "manifest.json").write_text(json.dumps({"provenance": {"source": str(rendered)}}))
+    kept, source = b.load_grpo_rows(tmp_path / "curated" / "grpo" / "train.jsonl", lambda t: (len(t), "chars"))
+    by_id = {c.case_id: c for c in cands}
+    assert kept and source == str(rendered)
+    for k in kept:
+        c = by_id[k.case_id]
+        assert (k.prompt, k.target, k.split, k.ocr_build) == (c.prompt, c.target, c.split, c.ocr_build)
+        assert k.ocr_build and k.unrecoverable == ()  # already gated: never re-masked or dropped for OCR
+    assert b.ocr_label({"ocr_build": {"engine": "tesseract 5.5.0", "platform": "win32-amd64", "leptonica": "1.83.1"}}) \
+        == "tesseract 5.5.0 win32-amd64 leptonica 1.83.1"
+    assert b.ocr_label({"ocr_engine": "tesseract 5.5.0"}) == "tesseract 5.5.0 (build unrecorded)"
+
+
+def test_build_requires_an_explicit_paraphrase_choice(tmp_path):
+    from gst_recon.train.__main__ import main
+
+    with pytest.raises(SystemExit):
+        main(["build", "--rendered", str(tmp_path), "--out", str(tmp_path / "o")])

@@ -40,18 +40,26 @@ def cmd_build(a: argparse.Namespace) -> dict:
     cands = [b.compact_target(c, count_tokens) for c in b.load_rendered(Path(a.rendered))]
     sys_tokens, method = count_tokens(SYSTEM_PROMPT)
     train = [c for c in cands if c.split == "train"]
-    raw_rw, gated_rw, para_rej, para_counts = {}, {}, [], {"skipped": "no --teacher given"}
+    raw_rw, gated_rw, para_rej = {}, {}, []
+    para_counts = {"skipped": "--no-paraphrase", "unparaphrased_source": str(Path(a.rendered).resolve())}
+    kept_old, kept_info = [], None
+    if a.keep_grpo:
+        kept_old, kept_source = b.load_grpo_rows(Path(a.keep_grpo), count_tokens)
+        kept_info = {"path": str(Path(a.keep_grpo).resolve()), "rows": len(kept_old), "rendered_source": kept_source,
+                     "paraphrase": "as built (teacher-paraphrased build, rows unchanged)"}
     if a.teacher:
         gen = cu.teacher(a.teacher, a.teacher_model)
         judge = cu.teacher(a.teacher, a.judge_model or a.teacher_model, temperature=0.0, max_tokens=1024)
         raw_rw, gated_rw, para_rej, para_counts = cu.paraphrase_stage(train, gen, judge, a.workers)
     out = Path(a.out)
     raw = [_rewrite(c, raw_rw, count_tokens) for c in train]
-    kept, case_rej, info = cu.gate_cases([_rewrite(c, gated_rw, count_tokens) for c in train])
+    kept, case_rej, info = cu.gate_cases(kept_old + [_rewrite(c, gated_rw, count_tokens) for c in train])
     stats = {
         "cases": {s: sum(c.split == s for c in cands) for s in ("train", "test_iid", "test_ood")},
         "token_method": method,
         "paraphrase": para_counts,
+        "kept_grpo": kept_info,
+        "ocr_builds": dict(Counter(c.ocr_build for c in kept_old + train)),
         "raw": b.export(raw, out / "raw", sys_tokens, limits),
         "curated": b.export(kept, out / "curated", sys_tokens, limits) | {
             "case_gates": info["stage_counts"],
@@ -62,9 +70,10 @@ def cmd_build(a: argparse.Namespace) -> dict:
     cu.write_manifest(out / "curated", info["passed_samples"], para_rej + case_rej,
                       {"TeacherParaphrase": para_counts, **info["stage_counts"]}, t0,
                       {"source": str(refuse_eval_path(Path(a.rendered)).resolve()), "teacher": a.teacher_model if a.teacher else None,
-                       "limits": limits})
+                       "paraphrase": "teacher" if a.teacher else "none (--no-paraphrase)", "kept_grpo": kept_info,
+                       "ocr_builds": stats["ocr_builds"], "limits": limits})
     (out / "stats.json").write_text(json.dumps(stats, indent=1))
-    print(json.dumps({k: stats[k] for k in ("cases", "paraphrase", "raw", "curated", "eval")}, indent=1))
+    print(json.dumps({k: stats[k] for k in ("cases", "paraphrase", "kept_grpo", "raw", "curated", "eval")}, indent=1))
     print(json.dumps(stats["tokens"]["by_difficulty"], indent=1), json.dumps(stats["tokens"]["proposed_max_docs"]))
     return stats
 
@@ -200,7 +209,12 @@ def main(argv: list[str] | None = None) -> None:
     p = sub.add_parser("build", help="rendered cases -> raw and curated SFT/GRPO datasets")
     p.add_argument("--rendered", required=True)
     p.add_argument("--out", required=True)
-    p.add_argument("--teacher", help="OpenAI-compatible base URL of the SGLang teacher, e.g. http://localhost:30000/v1")
+    para_mode = p.add_mutually_exclusive_group(required=True)  # paraphrase is never skipped silently
+    para_mode.add_argument("--teacher", help="OpenAI-compatible base URL of the SGLang teacher, e.g. http://localhost:30000/v1")
+    para_mode.add_argument("--no-paraphrase", action="store_true",
+                           help="build --rendered without teacher paraphrase (recorded in stats.json and the manifest)")
+    p.add_argument("--keep-grpo", help="a previous build's curated grpo/train.jsonl: rows kept verbatim (their own "
+                   "paraphrase), gated and deduplicated together with --rendered, listed first so duplicates drop the new case")
     p.add_argument("--teacher-model", default="teacher", help="served model name (infra/launch_teacher.sh)")
     p.add_argument("--judge-model", help="grounding judge (default: the teacher)")
     p.add_argument("--workers", type=int, default=32)

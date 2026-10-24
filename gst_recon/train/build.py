@@ -37,10 +37,19 @@ class Candidate:
     target_tokens: int
     unrecoverable: tuple[str, ...]  # "doc_id:fact" the OCR lost (render recall check)
     path: str
+    ocr_build: str = ""  # provenance: the OCR build that rendered the prompt (ocr_label)
 
 
 def _read(path: Path) -> str:
     return refuse_eval_path(path).read_text()
+
+
+def ocr_label(meta: dict) -> str:
+    """One provenance string per OCR build. Renders before meta.ocr_build only recorded the engine."""
+    b = meta.get("ocr_build")
+    if b:
+        return f"{b['engine']} {b['platform']} leptonica {b['leptonica']}"
+    return f"{meta.get('ocr_engine', 'unknown')} (build unrecorded)"
 
 
 def load_rendered(root: Path) -> list[Candidate]:
@@ -52,8 +61,24 @@ def load_rendered(root: Path) -> list[Candidate]:
         lost = tuple(f"{u['doc_id']}:{f}" for u in meta.get("unrecoverable", []) for f in u["facts"])
         out.append(Candidate(meta["case_id"], meta["split"], meta["difficulty"], len(meta["documents"]),
                              _read(d / "prompt.txt"), _read(d / "target.json").strip(),
-                             meta["prompt_tokens"], meta["target_tokens"], lost, str(refuse_eval_path(d))))
+                             meta["prompt_tokens"], meta["target_tokens"], lost, str(refuse_eval_path(d)),
+                             ocr_label(meta)))
     return out
+
+
+def load_grpo_rows(path: Path, count) -> tuple[list[Candidate], str]:
+    """A previous build's curated GRPO rows as candidates, prompts (paraphrased or not) and compact masked
+    targets verbatim. Provenance comes from that build's manifest: its rendered source and each case's meta."""
+    path = refuse_eval_path(path)
+    source = Path(json.loads(_read(path.parent.parent / "manifest.json"))["provenance"]["source"])
+    out = []
+    for line in _read(path).splitlines():
+        r = json.loads(line)
+        prompt, target, case = r["prompt"][1]["content"], r["reference"], source / r["case_id"]
+        meta = json.loads(_read(case / "meta.json"))
+        out.append(Candidate(r["case_id"], meta["split"], r["difficulty"], r["n_docs"], prompt, target,
+                             count(prompt)[0], count(target)[0], (), str(refuse_eval_path(case)), ocr_label(meta)))
+    return out, str(source)
 
 
 HSN_LOST = re.compile(r"^(D\d+):line(\d+)_hsn$")
@@ -103,14 +128,14 @@ def with_prompt(c: Candidate, prompt: str, tokens: int) -> Candidate:
 
 
 def sft_row(c: Candidate) -> dict:
-    return {"case_id": c.case_id, "difficulty": c.difficulty, "n_docs": c.n_docs,
+    return {"case_id": c.case_id, "difficulty": c.difficulty, "n_docs": c.n_docs, "ocr_build": c.ocr_build,
             "messages": build_messages(c.prompt) + [{"role": "assistant", "content": c.target}]}
 
 
 def grpo_row(c: Candidate) -> dict:
     """`reference` is the truth ReconOutput JSON: AlignTune passes it to the reward as `reference`."""
-    return {"case_id": c.case_id, "difficulty": c.difficulty, "n_docs": c.n_docs, "prompt": build_messages(c.prompt),
-            "reference": c.target}
+    return {"case_id": c.case_id, "difficulty": c.difficulty, "n_docs": c.n_docs, "ocr_build": c.ocr_build,
+            "prompt": build_messages(c.prompt), "reference": c.target}
 
 
 def length_ok(c: Candidate, kind: str, sys_tokens: int, limits: dict[str, int]) -> bool:
@@ -190,7 +215,10 @@ def export(cands: list[Candidate], out: Path, sys_tokens: int, limits: dict[str,
         keep = [c for c in pool if length_ok(c, kind, sys_tokens, limits)]
         counts[kind] = {"pool": len(pool), "too_long": len(pool) - len(keep),
                         "rows": write_jsonl(out / kind / "train.jsonl", [make(c) for c in keep]),
-                        "by_difficulty": {d: sum(c.difficulty == d for c in keep) for d in ("easy", "medium", "hard")}}
+                        "by_difficulty": {d: sum(c.difficulty == d for c in keep) for d in ("easy", "medium", "hard")},
+                        "by_ocr_build": {o: {d: sum(c.difficulty == d and c.ocr_build == o for c in keep)
+                                             for d in ("easy", "medium", "hard")}
+                                         for o in sorted({c.ocr_build for c in keep})}}
     return counts
 
 
