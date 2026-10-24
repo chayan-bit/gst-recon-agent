@@ -31,6 +31,9 @@ If the model of the law is wrong, the student faithfully learns the error, but t
 
 ## 4. What does GRPO add over SFT?
 
+(Before the GRPO numbers: the best measured student today is the per-document hybrid described in question 12.)
+
+
 SFT teaches the model to imitate a reference answer token by token, which is how it learns the format and the common patterns.
 GRPO samples several answers to the same case and rewards the outcome we care about, which code can check exactly: schema validity, flag and reason-code sets, and exact ITC on the invoices that are not fully eligible, with a dense term so partial progress still counts.
 The hypothesis is that this helps most where imitation is weak: context-dependent blocked credits and exact amounts.
@@ -115,3 +118,13 @@ The fix is a compact grammar that matches the training format: it makes the zero
 We label that row "compact grammar" in the report, and the full-grammar row stays in as evidence of the failure.
 The lesson is about structured output with small models: constrained decoding is only as good as the agreement between the grammar and what the model was trained to emit, and a grammar stricter than the training format does not catch errors, it manufactures them.
 What we do not claim: the compact-grammar rerun is pending, so we say "not measured yet" for it and do not quote the full-grammar row as the SFT model's capability; and the student is far behind Sonnet, which is why the eligible-bucket parity with the teacher is not the headline.
+
+## 12. What is hybrid mode, and what is your best number?
+
+In hybrid mode the model reads one document at a time and returns its extraction plus two judgments per line (ITC category and purpose).
+Deterministic code then does the matching to the register, GSTR-2B and bank, the rupee arithmetic and the ITC rules, and emits the same output scored by the same scorer.
+The oracle check, true per-document records through the same code, reproduces the truth exactly on all 132 cases, so every point lost is a reading or judgment error, not a code error.
+Our best measured student is Qwen3-4B with a per-document LoRA (r 32, 124 steps, 1,984 curated rows, completion-only loss) in this mode: ITC-exact 62.9% [60.2, 65.3] on the 120 simulator cases (67.0 in-distribution, 58.7 out-of-distribution), context accuracy 82.7%, composite 73.2, ITC overclaim Rs 19,053.
+The same model without the adapter, same prompts, code and server, gets 44.3% / 67.6% / 65.1 with Rs 72,728 overclaim, so the adapter adds +20.3 ITC-exact points (95% CI +16.9 to +23.8, p = 0.0005, n = 132).
+On the 12 real-world sanity cases it scores 76.4% against 97.2% for Claude Sonnet in the same mode, so we are still far behind the frontier.
+What we do not claim: these hybrid rows are not like-for-like with the end-to-end rows of the 30B teacher and Sonnet, because code does part of the work; this is reconciler v1, with a v2 (code fixes tuned on the train split only) still pending; and throughput is slightly understated because a demo recording shared the server for the first four minutes.

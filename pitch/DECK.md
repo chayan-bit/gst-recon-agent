@@ -68,6 +68,11 @@ Visual: a split bar showing train / test_iid / test_ood, with the held-out items
 - The number that matters most for the pitch: context accuracy, the invoices where the buyer profile decides the answer ({{BASE_CTX_OOD}} -> 33.2 (full-grammar SFT) -> {{GRPO_CTX_OOD}}).
 - The weighted composite is shown in small print ({{BASE_COMPOSITE_OOD}} / 58.9 (full-grammar SFT) / {{GRPO_COMPOSITE_OOD}}), because its floor is high: a model that copies the documents perfectly and calls everything clean already scores about 0.81.
 <!-- Slide 6 SFT figures: reports/results.md, "SFT constrained (full grammar)" rows, test_iid 8.1, test_ood 13.7, context accuracy test_ood 33.2, composite test_ood 58.9. -->
+- Hybrid mode, the best measured student so far: the model reads one document at a time and deterministic code does the matching, rupee arithmetic and ITC rules.
+  With the per-document LoRA on the 120 simulator cases the 4B student reaches ITC-exact 62.9% [60.2, 65.3] (in-distribution 67.0, out-of-distribution 58.7), context accuracy 82.7% and composite 73.2, against 44.3% / 67.6% / 65.1 for the same model without the adapter (paired gain +20.3 ITC-exact points, p = 0.0005, n = 132).
+  ITC overclaim is Rs 19,053 for the adapter against Rs 72,728 for the base student in the same mode.
+  On the real-world sanity cases (12 cases) it scores ITC-exact 76.4% with context accuracy 100%; Claude Sonnet in the same mode scores 97.2%, so the gap to the frontier remains.
+  <!-- Hybrid figures: reports/hybrid.md (commit daf6aae), "student-perdoc-sft hybrid" and "student-base hybrid" rows, reconciler v1; a v2 with code fixes is pending. -->
 - What GRPO adds over SFT on ITC-exact, with a paired bootstrap interval and a corrected p-value: {{GRPO_DELTA_VS_SFT_ITCEXACT_OOD}} points, p = {{GRPO_VS_SFT_P}}.
 
 Visual: a three-step staircase bar chart (base, SFT, SFT+GRPO), two bars per step (iid and ood), with 95% bootstrap CIs.
