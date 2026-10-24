@@ -25,7 +25,7 @@ Headline metrics are ITC invoice exact and context accuracy; the composite (the 
 | teacher-30B constrained | 0.03 | 391 | 134.6 | $20.04 | $224.41 |
 | teacher-30B unconstrained | 0.18 | 288 | 450.6 | $3.87 | $40.79 |
 | teacher-30B constrained (same 19 cases as unconstrained) | 0.03 | 391 | 45.5 | - | - |
-| Claude Sonnet (via Claude Code CLI) | 0.02 | 359 | 76.8 | - | $245.43 |
+| Claude Sonnet (via Claude Code CLI) | 0.03 | 358 | 67.9 | - | $226.88 |
 | student-base (not run yet) | - | - | - | - | - |
 | SFT (not run yet) | - | - | - | - | - |
 | SFT+GRPO (not run yet) | - | - | - | - | - |
@@ -54,6 +54,21 @@ GPU cost = measured wall time x the GPU-hour price passed to `run`. API cost = t
 | context-blind rules (oracle extraction and links) | 60 | 82.3 | 46.8 | 58,592 | 95,731 | 130,492 | 100.0 | 100.0 | 100.0 | 87.1 |
 | teacher-30B constrained | 60 | 63.8 | 41.1 | 274,018 | 75,089 | 353,595 | 72.5 | 91.3 | 96.7 | 72.0 |
 | Claude Sonnet (via Claude Code CLI) | 60 | 97.8 | 93.1 | 6,629 | 17,506 | 23,946 | 99.9 | 99.4 | 100.0 | 95.8 |
+| student-base (not run yet) | - | - | - | - | - | - | - | - | - | - |
+| SFT (not run yet) | - | - | - | - | - | - | - | - | - | - |
+| SFT+GRPO (not run yet) | - | - | - | - | - | - | - | - | - | - |
+
+## realworld
+
+realworld is a sanity split of 12 hand-built cases (not part of the Overall row or the difficulty, OCR and length tables); cells show a bootstrap 95% CI over those cases, which is wide at this n. Baseline rows are not CI-bearing.
+
+| run | n | ITC invoice exact % | Context acc % | ITC overclaim (Rs) | ITC underclaim (Rs) | ITC net abs err (Rs) | Match acc % | Field F1 % | Schema valid % | Composite (0-100) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Claude Sonnet (via Claude Code CLI) | 12 | 97.2 [91.7, 100.0] | 100.0 [100.0, 100.0] | 0 [0, 0] | 64 [0, 192] | 64 [0, 192] | 99.3 [97.9, 100.0] | 98.8 [97.2, 99.9] | 100.0 [100.0, 100.0] | 97.9 [94.7, 99.8] |
+| baseline: majority | - | 43.8 | 36.4 | - | - | 35,770 | 87.5 | 100.0 | - | 73.1 |
+| baseline: no_anomaly | - | 48.6 | 36.4 | - | - | 34,202 | 87.5 | 100.0 | - | 74.7 |
+| baseline: keyword | - | 42.4 | 31.8 | - | - | 21,201 | 87.5 | 100.0 | - | 73.9 |
+| baseline: context_blind | - | 73.6 | 60.6 | - | - | 25,672 | 100.0 | 100.0 | - | 88.4 |
 | student-base (not run yet) | - | - | - | - | - | - | - | - | - | - |
 | SFT (not run yet) | - | - | - | - | - | - | - | - | - | - |
 | SFT+GRPO (not run yet) | - | - | - | - | - | - | - | - | - | - |
@@ -168,3 +183,7 @@ Paired by case_id; p-value from a centred paired bootstrap (null: zero mean diff
 - Sonnet: the first 62 completed cases ran under the earlier prompt and the last 58 under the current one (prompt hashes are in config.json).
 - GPU and API price flags in the cost table are illustrative inputs; the Sonnet API cost is the total_cost_usd reported by the claude CLI.
 - All 120 cases were rendered with one OCR engine (Tesseract 5.5.0); gst_recon/eval/eval_sets_manifest.json pins the data.
+- realworld (12 hand-built cases, 36 documents printed through 7 open-source print formats, OCR'd with Tesseract 5.5.0, no synthetic degradation; see realworld/README.md) is reported as its own split and is excluded from the Overall row and from the difficulty, OCR and length tables, so those stay comparable with the simulator test sets.
+- With n = 12 the realworld bootstrap CIs are wide; read them as coverage evidence, not a precise score.
+- The realworld baseline rows come from `python -m realworld.baselines --n-train 2000` and are handed the true extraction and links; the two oracle-extraction baseline runs above were not run on realworld.
+- No teacher row exists for realworld because the teacher was stopped.

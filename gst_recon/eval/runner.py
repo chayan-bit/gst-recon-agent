@@ -19,7 +19,7 @@ from gst_recon.eval.cost import cost_per_1000
 from gst_recon.eval.guard import mark_eval_dir
 from gst_recon.eval.metrics import case_metrics
 from gst_recon.eval.prompts import SYSTEM_PROMPT
-from gst_recon.eval.stats import breakdowns, summarize
+from gst_recon.eval.stats import EXTERNAL_SPLITS, breakdowns, external, summarize
 from gst_recon.rewards import parse_output
 from gst_recon.schema import output_json_schema
 
@@ -117,7 +117,8 @@ def aggregate(records: list[dict], config: dict, run_stats: dict, ctx_sources: s
         "n_context_overflow": sum(1 for r in records if "context length" in (r.get("error") or "")),
         "n_truncated": sum(1 for r in records if r.get("finish_reason") == "length"),
         "context_source": "truth" if ctx_sources == {"truth"} else "proxy (no truth Case JSON; BLOCKED-reason docs)",
-        "overall": summarize(records), "breakdowns": breakdowns(records),
+        "overall": summarize([r for r in records if r["split"] not in EXTERNAL_SPLITS]), "breakdowns": breakdowns(records),
+        "external": external(records),
         "throughput": {
             "n_requests": n_req, "wall_s": wall,
             "req_per_s": n_req / wall if wall > 0 else None,

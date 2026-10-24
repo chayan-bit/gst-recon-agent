@@ -153,6 +153,19 @@ python -m gst_recon.eval.manifest verify --rendered data/eval/rendered --manifes
 
 Regenerate the manifest with `python -m gst_recon.eval.manifest write --rendered data/eval/rendered --out gst_recon/eval/eval_sets_manifest.json --seed test_iid=9001 --seed test_ood=9002 --command "<render command>"`.
 
+### realworld split
+
+12 hand-built cases (36 documents) from open-source GST print formats; see `realworld/README.md`.
+Every student eval (base, SFT, SFT+GRPO) must include it: pass its directory as a third `--cases` entry and put its truth under a `--truth-dir` that also holds the simulator truth (one subdirectory per split, e.g. symlinks), for example:
+
+```
+python -m gst_recon.eval run --endpoint ... --model ... --cases data/eval/rendered/test_iid data/eval/rendered/test_ood data/realworld --truth-dir data/eval/truth-all --out runs/eval/<name>
+python -m gst_recon.eval report --runs runs/eval/* --baselines runs/realworld/baselines.json ...
+```
+
+The split is excluded from `overall` and from the difficulty, OCR and length breakdowns (`stats.EXTERNAL_SPLITS`), so those stay comparable with earlier runs; its own report table shows bootstrap CIs and n.
+The Sonnet run covers it in `runs/eval/frontier` (132 cases: 120 simulator, 12 realworld); the teacher has no realworld row.
+
 ### How the baselines were run
 
 - Keyword and context-blind baselines: `python scripts/eval_baselines.py --cases data/eval/rendered/test_iid data/eval/rendered/test_ood --truth-dir data/eval/truth --out-root runs/eval`, on kratos.

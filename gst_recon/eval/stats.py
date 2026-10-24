@@ -15,6 +15,9 @@ SECONDARY = ("composite", "grpo", "parse_ok", "arithmetic", "itc_reasons", "itc_
 ALL_METRICS = PRIMARY + SECONDARY
 N_BOOT = 2000
 LENGTH_ORDER = ["<=16k", "16-32k", ">32k"]
+# Splits that are a separate sanity check, not part of the simulator test sets: kept out of the overall row and the
+# difficulty/OCR/length breakdowns so those stay comparable across runs; reported as their own split, with CIs.
+EXTERNAL_SPLITS = ("realworld",)
 
 
 def _num_den(rec: dict, name: str) -> tuple[float, float]:
@@ -55,9 +58,15 @@ def breakdowns(records: list[dict]) -> dict[str, dict[str, Any]]:
     out: dict[str, dict[str, Any]] = {}
     recs = [{**r, "split_difficulty": f"{r['split']}/{r['difficulty']}"} for r in records]
     for dim in ("split", "difficulty", "split_difficulty", "ocr_bucket", "length_bucket"):
-        groups = sorted({r[dim] for r in recs}, key=lambda g: (LENGTH_ORDER.index(g) if g in LENGTH_ORDER else 9, g))
-        out[dim] = {g: summarize([r for r in recs if r[dim] == g], ci=False) for g in groups}
+        rows = recs if dim == "split" else [r for r in recs if r["split"] not in EXTERNAL_SPLITS]
+        groups = sorted({r[dim] for r in rows}, key=lambda g: (LENGTH_ORDER.index(g) if g in LENGTH_ORDER else 9, g))
+        out[dim] = {g: summarize([r for r in rows if r[dim] == g], ci=False) for g in groups}
     return out
+
+
+def external(records: list[dict]) -> dict[str, dict[str, Any]]:
+    """Bootstrap-CI summaries of the external splits (small n, so the intervals matter)."""
+    return {s: summarize([r for r in records if r["split"] == s]) for s in EXTERNAL_SPLITS if any(r["split"] == s for r in records)}
 
 
 def paired_delta(a: list[dict], b: list[dict], name: str = "composite", seed: int = 0) -> dict[str, float]:

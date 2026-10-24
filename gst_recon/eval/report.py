@@ -7,7 +7,7 @@ import math
 from pathlib import Path
 from typing import Any
 
-from gst_recon.eval.stats import paired_delta
+from gst_recon.eval.stats import EXTERNAL_SPLITS, paired_delta
 
 COLS = (("itc_invoice", "ITC invoice exact %", 100), ("context_acc", "Context acc %", 100),
         ("itc_overclaim_rs", "ITC overclaim (Rs)", 1), ("itc_underclaim_rs", "ITC underclaim (Rs)", 1),
@@ -136,19 +136,26 @@ def report_md(runs: list[dict], baselines: dict[str, dict[str, dict]] | None = N
              "[lo, hi] is a bootstrap 95% CI over cases. Trivial baselines are handed the true extraction and links "
              "(they isolate the decisions): their field F1 and match accuracy are oracle values and their composite already "
              "includes full credit for extraction, schema and arithmetic, so compare them on ITC invoice exact, context accuracy and ITC error only.", "",
-             "## Overall", "", _table(head, [[r["label"], str(r["n_cases"])] + _metric_cells(r["overall"], True) for r in runs] + pending(len(head))),
+             "## Overall", "", _table(head, [[r["label"], str(r["overall"]["n"])] + _metric_cells(r["overall"], True) for r in runs] + pending(len(head))),
              "", "## Throughput and cost per 1,000 cases", "",
              _table(["run", *PERF_HEAD], [[r["label"], *_perf_cells(r)] for r in runs] + pending(len(PERF_HEAD) + 1)),
              "", "GPU cost = measured wall time x the GPU-hour price passed to `run`. API cost = this run's mean token counts x the list "
              "price passed to `run`. Prices are inputs, not facts; `-` means no price was given.", ""]
     splits = sorted({s for r in runs for s in r["breakdowns"]["split"]})
-    for split in splits:
-        rows = [[r["label"], str(r["breakdowns"]["split"][split]["n"])] + _metric_cells(r["breakdowns"]["split"][split], False)
-                for r in runs if split in r["breakdowns"]["split"]]
+    for split in sorted(splits, key=lambda x: (x in EXTERNAL_SPLITS, x)):
+        ext = split in EXTERNAL_SPLITS  # small sanity split: show bootstrap CIs and say how few cases there are
+        src = lambda r: r["external"][split] if ext else r["breakdowns"]["split"][split]  # noqa: E731
+        rows = [[r["label"], str(src(r)["n"])] + _metric_cells(src(r), ext)
+                for r in runs if split in r["breakdowns"]["split"] and (not ext or split in r.get("external", {}))]
         rows += [[f"baseline: {name}", "-"] + _baseline_cells(row) for name, row in baselines.get(split, {}).items()
                  if any(row.get(k) is not None for k, _, _ in COLS)]
         rows += pending(len(head))
-        parts += [f"## {split}", "", _table(head, rows), ""]
+        parts += [f"## {split}", ""]
+        if ext:
+            n = max((src(r)["n"] for r in runs if split in r.get("external", {})), default=0)
+            parts += [f"{split} is a sanity split of {n} hand-built cases (not part of the Overall row or the difficulty, OCR and length tables); "
+                      "cells show a bootstrap 95% CI over those cases, which is wide at this n. Baseline rows are not CI-bearing.", ""]
+        parts += [_table(head, rows), ""]
     for dim, title in DIMS[1:]:
         rows = [[r["label"], g, str(s["n"])] + _metric_cells(s, False) for r in runs for g, s in r["breakdowns"].get(dim, {}).items()]
         if not rows:
@@ -181,9 +188,9 @@ def chart(runs: list[dict], baselines: dict[str, dict[str, dict]], out_png: Path
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    full = max((r["n_cases"] for r in runs), default=0)
-    runs = [r for r in runs if r["n_cases"] == full]  # partial runs (stopped early, subsets) are not comparable bars
-    splits = [s for s in ("test_iid", "test_ood") if any(s in r["breakdowns"]["split"] for r in runs)] or ["all"]
+    full = max((r["overall"]["n"] for r in runs), default=0)
+    runs = [r for r in runs if r["overall"]["n"] == full]  # partial runs (stopped early, subsets) are not comparable bars
+    splits = [s for s in ("test_iid", "test_ood", "realworld") if any(s in r["breakdowns"]["split"] for r in runs)] or ["all"]
     colors = ("#0072B2", "#E69F00", "#009E73", "#CC79A7")  # Okabe-Ito, colour-blind safe
     fig, axes = plt.subplots(1, len(splits), figsize=(max(6, 1.1 * len(runs) + 4) * len(splits) / 1.6, 5), sharey=True, squeeze=False)
     for ax, split in zip(axes[0], splits):
