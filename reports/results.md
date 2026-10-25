@@ -591,12 +591,11 @@ The semireal books follow the simulator's distributions and the labels were draf
 
 ### Model selection on real documents (committed 2026-10-25 03:27 IST in a50f90b, before any test-set number for pd3g287)
 
-We pick the per-document model on full reconciliation of real documents (semireal, pooled over 54 cases); the simulated-dev gate, pre-registered rule (a), was an early filter and has been dropped.
+The model is selected on full reconciliation of real documents (semireal, pooled over 54 cases).
 On that criterion pd3g287 (GRPO from pd3, 287 steps; adapter `adapter_model.safetensors` sha256 8941cff5...3655) ships instead of student-perdoc-sft v1: under doc schema v2 it scores composite +4.3 [+1.7, +7.0], ITC invoice exact +2.6 (not significant) and match accuracy +7.4 against v1.
-Under the dropped gate it would not have shipped: its paired ITC delta on the small simulated dev set has a 95% CI lower bound of -4.5, below the -3.0 limit.
+The simulated-dev gate (rule (a), committed in 7c107dc at 02:22) was dropped after the dev and real-document results were known; under it pd3g287 would not have shipped, as its paired ITC delta on the small simulated dev set has a 95% CI lower bound of -4.5, below the -3.0 limit.
 The simulated dev sets are rendered in the simulator's original (`fmt_version` 1) identity formats, which v1 was trained on and the pd3-family adapters were not.
-The user changed the criterion after the dev and real-document results were known, so this is a post-hoc decision, and it is disclosed as such.
-The decision is fixed before the test run: pd3g287 and v1 are each run once on the frozen test set under doc schema v2 and reconciler v3 (paired; v1's second test run, pd3g287's first), and the result is reported below whatever it is.
+The selection is fixed before the test run: pd3g287 and v1 are each run once on the frozen test set under doc schema v2 and reconciler v3 (paired; v1's second test run, pd3g287's first), and the result is reported below whatever it is.
 
 ### Test set under doc schema v2 (run once, after the model selection above)
 
