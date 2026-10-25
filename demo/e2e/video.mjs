@@ -1,0 +1,70 @@
+// Usage: node video.mjs <outdir>  Live run on the shipped model (hybrid), silent 1920x1080 capture via CDP screencast.
+// Writes frames/*.jpg, frames.txt (ffmpeg concat list with real frame durations) and shots.json. Encode with the ffmpeg line printed at the end.
+import { chromium } from "playwright-core";
+import fs from "node:fs";
+const out = process.argv[2], CASE = "test_iid-hard-23-00001";
+const browser = await chromium.launch({ executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", headless: true });
+const ctx = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
+fs.mkdirSync(`${out}/frames`, { recursive: true });
+await ctx.addInitScript(() => { // recording-only pointer, so the viewer can follow the clicks
+  const d = document.createElement("div");
+  d.style.cssText = "position:fixed;left:0;top:0;width:20px;height:20px;margin:-3px 0 0 -3px;border-radius:50%;background:rgba(255,255,255,.92);border:2px solid #0a0d12;box-shadow:0 2px 8px rgba(0,0,0,.5);z-index:2147483647;pointer-events:none;transition:transform .02s linear";
+  addEventListener("DOMContentLoaded", () => document.documentElement.appendChild(d));
+  addEventListener("mousemove", (e) => { d.style.transform = `translate(${e.clientX}px,${e.clientY}px)`; }, true);
+});
+const page = await ctx.newPage();
+const cdp = await ctx.newCDPSession(page);
+const frames = []; let t0 = null;
+cdp.on("Page.screencastFrame", (f) => {
+  const ts = f.metadata.timestamp; if (t0 === null) t0 = ts;
+  const name = `frames/${String(frames.length).padStart(6, "0")}.jpg`;
+  fs.writeFileSync(`${out}/${name}`, Buffer.from(f.data, "base64")); frames.push({ name, ts: ts - t0 });
+  cdp.send("Page.screencastFrameAck", { sessionId: f.sessionId }).catch(() => {});
+});
+await cdp.send("Page.startScreencast", { format: "jpeg", quality: 92, maxWidth: 1920, maxHeight: 1080, everyNthFrame: 1 });
+const wall0 = Date.now();
+const shots = [];
+const mark = (name) => { shots.push({ t: +((Date.now() - wall0) / 1000).toFixed(1), name }); console.log(shots.at(-1).t, name); };
+let cx = 960, cy = 540;
+const glide = async (x, y, ms = 900) => { const n = Math.max(12, Math.round(ms / 16)); for (let i = 1; i <= n; i++) { const k = i / n, e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2; await page.mouse.move(cx + (x - cx) * e, cy + (y - cy) * e); await page.waitForTimeout(ms / n); } cx = x; cy = y; };
+const at = async (sel) => { const b = await page.locator(sel).first().boundingBox(); return [b.x + b.width / 2, b.y + b.height / 2]; };
+const go = async (sel, hold = 600) => { const [x, y] = await at(sel); await glide(x, y); await page.waitForTimeout(250); await page.mouse.click(x, y); await page.waitForTimeout(hold); };
+const hover = async (sel, hold = 1500) => { const [x, y] = await at(sel); await glide(x, y); await page.waitForTimeout(hold); };
+const top = () => page.evaluate(() => document.querySelectorAll("*").forEach((e) => { if (e.scrollTop > 0) e.scrollTop = 0; }));
+
+await page.goto(`http://localhost:8765/?case=${CASE}`);
+await page.waitForSelector("#modelSeg button"); await page.waitForSelector("#srvStatus.up"); await page.waitForTimeout(1500);
+await page.mouse.move(cx, cy);
+mark("1 Intro: the app on the hard case, shipped model, hybrid, live");
+await hover("#kindSeg [data-kind=hybrid]", 1800);
+await hover('#modelSeg [aria-pressed="true"]', 2200);
+await go('#docTabs [data-doc="D05"]', 3500);
+mark("2 A messy scan and its OCR text, before any run");
+await go("#runBtn", 500);
+mark("3 Run: documents stream in one at a time, the model writes JSON under the schema");
+await page.waitForFunction(() => !document.body.classList.contains("running"), null, { timeout: 280000 });
+mark("4 Run finished: the code reconciler has built the table");
+await page.waitForTimeout(2500);
+await top();
+await hover(".tile .amt", 3500);
+mark("5 Totals against ground truth: eligible, blocked, deferred, ITC exact");
+await go('#callStrip button[data-doc="D01"]', 3500);
+mark("6 A WhatsApp-style document next to the JSON the model read");
+await top(); await hover('tbody[data-id="D01"] tr.main', 4500);
+mark("7 Decision trace, blocked: tea and sugar under Sec 17(5)(b)(i)");
+await hover('tbody[data-id="D02"] tr.main', 4500);
+mark("8 Decision trace, deferred: unpaid over 180 days, Sec 16(2), Rule 37");
+await go('#docTabs [data-doc="D05"]', 500); await go('#callStrip button[data-doc="D05"]', 3500);
+mark("9 The skewed scan and the JSON read from it");
+await go("a.foot-link", 1500);
+await page.waitForSelector(".reader"); await page.waitForTimeout(500);
+mark("10 Real-document results: 54 documents, four readers");
+await glide(1500, 700, 1200); await page.waitForTimeout(9000);
+mark("11 End");
+await page.waitForTimeout(1500);
+fs.writeFileSync(`${out}/shots.json`, JSON.stringify(shots, null, 1));
+await cdp.send("Page.stopScreencast");
+const end = Math.max(frames.at(-1).ts + 1.0, (Date.now() - wall0) / 1000 - 0.15); // static tails emit no frames, so hold the last one until the wall-clock end
+fs.writeFileSync(`${out}/frames.txt`, frames.map((f, i) => `file '${f.name}'\nduration ${((frames[i + 1]?.ts ?? end) - f.ts).toFixed(4)}`).join("\n") + `\nfile '${frames.at(-1).name}'\n`);
+console.log("frames", frames.length, "seconds", end.toFixed(1));
+await browser.close();

@@ -88,7 +88,7 @@ select:hover { border-color: #3b485b; }
 .badge.replay { color: var(--warn); background: var(--warn-bg); border-color: var(--warn-line); }
 
 /* ---------- left: documents ---------- */
-.doctabs { display: flex; gap: 6px; padding: 0 18px 12px; overflow-x: auto; flex: none; mask-image: linear-gradient(to right, transparent, #000 18px, #000 calc(100% - 18px), transparent); }
+.doctabs { position: relative; display: flex; gap: 6px; padding: 0 18px 12px; overflow-x: auto; flex: none; mask-image: linear-gradient(to right, transparent, #000 18px, #000 calc(100% - 18px), transparent); }
 .doctabs button { flex: none; }
 .doctabs button {
   flex: none; height: 30px; padding: 0 10px; display: inline-flex; align-items: center; gap: 7px; border-radius: 8px;

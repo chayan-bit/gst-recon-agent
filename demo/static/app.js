@@ -161,6 +161,12 @@ function renderDocs(statusById = lastStatuses()) {
     return `<button role="tab" data-doc="${esc(x.id)}" aria-selected="${x.id === S.doc}">${esc(x.id)}<span class="kind ${x.image ? "img" : ""}" title="${x.image ? "scanned image" : "email or WhatsApp text"}"></span>${st ? `<i class="${st}"></i>` : ""}</button>`;
   }).join("");
   for (const b of $("docTabs").children) b.onclick = () => { pickDoc(b.dataset.doc); };
+  const strip = $("docTabs"), cur = strip.querySelector('[aria-selected="true"]'); // keep the selected tab inside the strip
+  if (cur) {
+    const l = cur.offsetLeft, r = l + cur.offsetWidth;
+    if (r > strip.scrollLeft + strip.clientWidth - 18) strip.scrollLeft = r - strip.clientWidth + 18;
+    else if (l < strip.scrollLeft + 18) strip.scrollLeft = Math.max(0, l - 18);
+  }
   const doc = d.docs.find((x) => x.id === S.doc) || d.docs[0];
   const scan = $("scan");
   if (doc?.image) {
