@@ -1,11 +1,16 @@
 ## Pipeline comparison: e2e SFT-compact vs per-doc hybrid v3
 
-Which pipeline is better: the end-to-end SFT model with the compact grammar (`student-sft-compact`), or the per-document hybrid (`hybrid-perdoc-v3`, the per-document SFT adapter plus the deterministic reconciler, commit 8286f1f)?
+Two ways to use a small model for the whole reconciliation, compared on the same cases:
+
+- **End to end**: one SFT-trained model reads the whole case and writes the full JSON (`student-sft-compact`, the compact output grammar).
+- **Per-document hybrid**: the per-document SFT adapter reads one document at a time and deterministic code does the rest (`hybrid-perdoc-v3`, the earlier perdoc-v1 adapter with reconciler v3, commit 8286f1f).
+  This is an earlier adapter than the shipped pd3g287.
+
 Both are scored on the same 42 cases: the 30 simulator cases of the stratified sample (15 test_iid, 15 test_ood) and the 12 realworld cases.
-The delta is hybrid minus e2e, with a paired bootstrap 95% CI and a centred paired-bootstrap p-value over shared case ids.
+The delta is hybrid minus end to end, with a paired bootstrap 95% CI and a centred paired-bootstrap p-value over shared case ids.
 Ratio metrics show pooled values in points; the two rupee metrics are per-case means.
 Context accuracy has one case fewer because that case has no context documents.
-Regenerate with `python scripts/eval_pair.py runs/eval/student-sft-compact runs/eval/hybrid-perdoc-v3`.
+To regenerate the table (the prose below is hand-written): `python scripts/eval_pair.py runs/eval/student-sft-compact runs/eval/hybrid-perdoc-v3`.
 
 | set | metric | n | student-sft-compact | hybrid-perdoc-v3 | delta (other minus ref) [95% CI] | bootstrap p |
 |---|---|---|---|---|---|---|

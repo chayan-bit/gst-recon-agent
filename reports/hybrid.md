@@ -1,5 +1,18 @@
 ## Hybrid mode
 
+This page is the lab notebook for the hybrid pipeline: a small model reads one document at a time, and plain code does the matching, the rupee arithmetic and the ITC rules.
+It is maintained by hand (the tool that used to build it no longer runs), and `reports/results.md` carries a copy of it.
+The first table is the one to read; everything below it is supporting detail, newest decisions last.
+
+Names used on this page:
+
+- **pd3g287**: the shipped adapter (Hugging Face folder `grpo-pd3-final`): a Qwen3-4B-Instruct-2507 LoRA trained on simulator rows with realistic identity formats (`pd3`), then 287 steps of GRPO.
+- **v1** (`student-perdoc-sft v1`, also called perdoc-v1): the earlier per-document adapter, trained on the simulator's original identity formats.
+- **pd3, pd3a**: the other two retrained adapters; pd3a is trained to leave an identity field blank when the page does not show it. **Ensemble A and B**: field-wise votes of several adapters.
+- **semireal**: 54 cases built from real supplier documents, with a simulated purchase register, GSTR-2B and bank statement. **realinv, realinv2**: two eval sets of real invoices read one document at a time (42 and 30 documents). **realworld**: 12 hand-built cases from open-source invoice print formats.
+- **Reconciler v1, v2, v3** and **doc schema v1, v2**: successive versions of the matching code and of the per-document output schema, explained in their own sections.
+- **Dev sets**: simulated train-split cases used while building; the **test set** is the 120 frozen simulator cases (132 with realworld), scored once per candidate.
+
 ### Full reconciliation (headline)
 
 Case-level scores of the whole pipeline (per-document model, then the frozen reconciler v3), doc schema v2: ITC invoice exact, match accuracy and composite.
@@ -40,7 +53,7 @@ Invented identity under the INVENTED rule of `gst_recon/rewards/doc.py` (a GSTIN
 | GPT-6 luna, reasoning none | 1,041 / 6,756 = 15.4% | 108 / 702 = 15.4% |
 
 Settings: Haiku 5.5 thinking cannot be switched off through the Claude CLI, so its row is the minimum (`CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING=1`, `MAX_THINKING_TOKENS=0`, `--effort low`; mean 1,012 thinking tokens per document on the test set, p95 2,163); Haiku 4.5 runs with thinking off (5 of its 234 semireal replies were unparseable); GPT-6 luna runs at reasoning effort none.
-The semireal documents are real client documents; the frontier runs sent them to the vendor CLIs (approvals in frontier-hybrid.md), and only aggregates are reported.
+The semireal documents are real client documents; the frontier runs sent them to the vendor CLIs (details in frontier-hybrid.md), and only aggregates are reported.
 On the test set pd3g287 ties v1 on ITC invoice exact and matches 3.8 points worse; on the real documents it is ahead of v1 on all three, significantly on match and composite, and every frontier model at its lowest reasoning setting is ahead of pd3g287 on match.
 Ensemble B was not run on the test set, which is run once per shipped candidate.
 
@@ -59,7 +72,7 @@ The oracle check (true per-document records through the same code) reproduces ta
 Runs: `python -m gst_recon.eval run --mode hybrid --constrained` (per-document json_schema decoding, Qwen3-4B-Instruct-2507 on one RTX 5070 Ti 16 GB, SGLang 0.5.22, 16k context, 4,096-token reply cap per document); the code-alone floor is `--extractor heuristic` (regex extraction, every line normal and business, no model); Sonnet is `scripts/eval_frontier.py --mode hybrid` on realworld only.
 The end-to-end row "SFT constrained (full grammar)" is repeated in the tables for side-by-side comparison; it understates the SFT model (see the caveat below), and the paired comparison against the compact-grammar end-to-end SFT run, the reference row of this report, is the like-for-like one.
 student-sft hybrid is the end-to-end SFT adapter (trained on whole-case prompts) applied to per-document prompts, so it is off its training distribution.
-student-perdoc-sft hybrid is the matched model: a LoRA (r 32, alpha 64, all 7 projections, served in bf16) trained on rs-lab for 124 steps (0.42 epoch, 1,984 curated per-document rows built with `build_doc_messages` and `DOC_SYSTEM_PROMPT`, full DocRecord targets, completion-only loss).
+student-perdoc-sft hybrid is the matched model: a LoRA (r 32, alpha 64, all 7 projections, served in bf16) trained for 124 steps (0.42 epoch, 1,984 curated per-document rows built with `build_doc_messages` and `DOC_SYSTEM_PROMPT`, full DocRecord targets, completion-only loss).
 student-perdoc-sft-v2 hybrid continues that LoRA for 174 more steps on the 2,775 curated rows v1 never saw (one full epoch of 4,759 rows, same prompt and LoRA shape, adapter sha256 c0c287de...); it was compared with v1 on both dev sets before the test set was run once.
 All rows include commit ac03f32, which stops the repair step from computing tax as taxable x a misread rate (it had produced Rs 67M of phantom ITC on one case).
 
@@ -110,7 +123,7 @@ Sanity check on an adapter that never looped (student-perdoc-sft v1, fresh repli
 Two cases of the 12-case realworld set carry an 18-character invoice number (beyond the Rule 46 limit, which that hand-built set did not enforce), so no arm can read those two fields under v2; every other set's invoice numbers are at most 16 characters long.
 Results labelled "doc schema v2" below were run with fresh replies under this protocol; earlier rows are schema v1.
 
-### Ship rule for the v3 adapters (pre-registered 2026-10-25 02:21 IST, before their final numbers)
+### Ship rule for the v3 adapters (superseded by the model selection below; pre-registered 2026-10-25 02:21 IST, before their final numbers)
 
 The small dev set uses the simulator's original (`fmt_version` 1) identity formats, which student-perdoc-sft v1 was trained on, so "beats v1 on sim dev" is biased against adapters trained on the diverse formats.
 Candidates: student-perdoc-sft v3 (pd3), its GRPO final (pd3g287), the abstention SFT (pd3a: identity fields not visible on the page blanked in the SFT targets) and its GRPO final, if it lands in time.
@@ -128,12 +141,12 @@ realinv2 is scored for v1 as the shipped model's held-out real-document check; t
 
 ### The v3 per-document adapters (doc schema v2, measured, not shipped)
 
-Three adapters were trained tonight against the identity inventions found on the real documents, and evaluated under doc schema v2 and reconciler v3 against student-perdoc-sft v1 run the same way:
+Three adapters were trained on 2026-10-24 and 25 against the identity inventions found on the real documents, and evaluated under doc schema v2 and reconciler v3 against student-perdoc-sft v1 run the same way:
 - pd3: per-document SFT on simulator rows with diverse per-supplier invoice-number and date formats (`fmt_version` 2);
 - pd3g287: GRPO from pd3 with the per-document reward (287 steps, one pass over 1,147 hard documents);
 - pd3a: as pd3, but an identity field (supplier GSTIN, invoice number, invoice date) that the page does not show is "" in the SFT target, so the model is taught to leave it empty.
 
-A GRPO run from pd3a was planned but dropped (its host stopped responding), and none of the three passes the pre-registered rule, so student-perdoc-sft v1 stays the shipped adapter and the test set was not run again.
+A GRPO run from pd3a was planned but dropped (its host stopped responding), and none of the three passes the pre-registered rule, so student-perdoc-sft v1 was still the shipped adapter at this point and the test set was not run again; the final selection is in "Model selection on real documents" below.
 
 **Simulated dev under doc schema v2 (paired against student-perdoc-sft v1 under schema v2, bootstrap 95% CI over cases).**
 
@@ -199,7 +212,7 @@ Ablation, variant B (pre-registered 2026-10-25 03:13 IST, commit 5c95f97, after 
 Rationale: pd3g287 almost never invents an identity (0% on both real sets), so a non-blank value from it is a confirmation rather than a vote.
 Variant A stays the primary ensemble whichever scores higher; there are no other variants.
 
-Amendment (user decision after the ensemble results, committed 2026-10-25 03:20 IST in 8419cf6, before any variant B semireal number existed): the per-invoice ITC tie on realinv is structural (B takes all ITC-relevant fields from v1), so it no longer counts as a fail.
+Amendment (after the ensemble results, committed 2026-10-25 03:20 IST in 8419cf6, before any variant B semireal number existed): the per-invoice ITC tie on realinv is structural (B takes all ITC-relevant fields from v1), so it no longer counts as a fail.
 Replacement criterion (b'): on semireal under schema v2, pooled over all 54 cases (clean 9 + sim-s0 9 + sim-s1to4 36), ensemble B must be at least student-perdoc-sft v1 on both ITC invoice exact and match accuracy (point estimates; paired deltas and CIs reported).
 Pooled means the mean of the per-case values over the 54 cases (the case mean the eval tables report), with a paired bootstrap of 10,000 case resamples (seed 0) for the CIs; fixed before any B semireal number.
 Variant A is not eligible (it fails rule (a)).
@@ -218,7 +231,7 @@ If B passes (b'), the frozen test set is run once under schema v2 for v1, pd3, p
 
 False links stay at 0 register and 0 GSTR-2B (payment: 2 on small dev, 12 and 10 on big dev; v1 2 and 9).
 On realinv (table above) both variants raise the mean of invoice number and date accuracy from 40.5% to 51.2% and invent no identity (v1 8.8%), but tie v1 on ITC doc exact (57.1%): the ensemble takes amounts, categories and purposes from v1, and the identity fields do not enter that metric.
-So variant A fails rule (a) (small-dev lower bound -3.2) and variant B, which passes (a), fails rule (b) on the tie ("beats" was pre-registered); neither ships under the rule as first registered; the user then replaced (b) for B by a pooled semireal criterion (amendment above), which B also fails (below).
+So variant A fails rule (a) (small-dev lower bound -3.2) and variant B, which passes (a), fails rule (b) on the tie ("beats" was pre-registered); neither ships under the rule as first registered; (b) was then replaced for B by a pooled semireal criterion (amendment above), which B also fails (below).
 On sim dev an identity left empty where v1 had read it right is only recovered when the book fill finds exactly one matching entry, which is consistent with A (more abstentions) trailing v1 on match accuracy and B (fewer) staying level; the per-field split was not measured.
 
 **semireal under doc schema v2 (real documents with simulated books, end to end through reconciler v3; exploratory for the adapters, criterion (b') for ensemble B).**
@@ -256,13 +269,13 @@ Pooled over the 54 cases (case mean, paired bootstrap of 10,000 case resamples):
 | ensemble B | 58.3 (-0.2 [-1.0, +0.8], p = 0.62) | 69.7 (+5.6 [+1.7, +10.2], p < 0.005) | 69.9 (+1.3 [+0.5, +2.4], p < 0.005) |
 
 Decision: ensemble B fails criterion (b'): its pooled ITC invoice exact is 58.27% against v1's 58.47% (4 cases worse, 1 better), although it matches 5.6 points better.
-student-perdoc-sft v1 stays the shipped adapter under doc schema v2, and the test set was not run again for any of tonight's candidates.
+student-perdoc-sft v1 was still the shipped adapter at this point under doc schema v2, and the test set had not been run for any of these candidates.
 
 Every v3 adapter matches better than v1 on the real documents (+6 to +7 points pooled): the identity fix pays off end to end in register and GSTR-2B links, with all fills correct and no false link.
 pd3g287 is the strongest model on these real documents end to end (pooled ITC +2.6 points, not significant, and composite +4.3, significant), yet it failed rule (a) on the small simulated dev set, whose identity formats v1 was trained on.
-That tension is the main open finding for the next round: the simulated dev sets reward v1's familiarity with the simulator's formats, while the real documents reward the format and abstention fixes; rule (a) was kept as pre-registered, so no ship claim is made for pd3g287.
+That tension is the main open finding for the next round: the simulated dev sets reward v1's familiarity with the simulator's formats, while the real documents reward the format and abstention fixes; the selection that followed is in "Model selection on real documents" below.
 pd3a's abstentions cost ITC on real documents (underclaim Rs 19k to 26k per level against v1's Rs 6k to 10k), because an empty identity is recovered only when exactly one book entry matches.
-The semireal books follow the simulator's distributions and the labels were drafted by Claude, so these are real-document reading results, not a real-world book result.
+The semireal books follow the simulator's distributions and the labels were drafted by a model, so these are real-document reading results, not a real-world book result.
 
 ### Model selection on real documents (committed 2026-10-25 03:27 IST in a50f90b, before any test-set number for pd3g287)
 

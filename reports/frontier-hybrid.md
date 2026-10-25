@@ -1,7 +1,12 @@
 ## Frontier per-document models (same harness, only the per-document call differs)
 
+This page compares our shipped model with larger hosted models on the same task.
+Each hosted model plays the role of our 4B reader: it reads one document at a time, and the same code reconciler does everything else.
+pd3g287 is our shipped adapter and v1 is the earlier per-document adapter (both defined in `reports/hybrid.md`); semireal is the 54-case real-document set with simulated books.
+Latency and cost per document are listed for each model.
+
 Each model replaces the per-document call of the shipped pipeline and nothing else: the same per-document messages, doc schema v2, reconciler v3, fill, linker and scorer, the same case lists (semireal 54 cases: clean 9, sim-s0 9, sim-s1to4 36, 234 documents; simulated test 120 cases, 2,252 documents) and the same statistics.
-Pooled numbers are case means; deltas are run minus reference with a paired bootstrap of 10,000 case resamples (seed 0), computed by `scripts/eval_hybrid_compare.py` against gst-hybrid's stored v1 and pd3g287 runs on the same cases (v1 58.5 / 64.1 / 68.6 and pd3g287 61.1 / 71.5 / 72.9 on semireal, ITC / match / composite).
+Pooled numbers are case means; deltas are run minus reference with a paired bootstrap of 10,000 case resamples (seed 0), computed by `scripts/eval_hybrid_compare.py` against the stored v1 and pd3g287 runs on the same cases (v1 58.5 / 64.1 / 68.6 and pd3g287 61.1 / 71.5 / 72.9 on semireal, ITC / match / composite).
 Invented identity is the share of identity slots (3 per document) that the INVENTED rule of `gst_recon/rewards/doc.py` flags (semireal: pd3g287 68 of 702 = 9.7%, v1 141 of 702 = 20.1%).
 The target is no test-time compute, like the 4B model, so thinking is off wherever the CLI allows it.
 
@@ -47,12 +52,12 @@ Invocation: `codex exec -m gpt-6-luna --skip-git-repo-check --ephemeral --ignore
 codex-cli 0.164.0; about 6.0k tokens of harness-injected developer messages remain per call (a trivial prompt costs 16.3k under the default config), so a document call is about 8k input tokens.
 The schema is the API's structured output, not grammar-constrained decoding like the XGrammar runs of our models, and the model is not fine-tuned.
 Codex reports no per-call cost; tokens come from its `turn.completed` usage events.
-The user approved sending the semireal real documents to OpenAI for this baseline; only aggregates are reported here.
+The semireal documents were sent to OpenAI for this baseline; only aggregates are reported here.
 
 Reasoning: gpt-6-luna accepts effort none, low, medium, high, xhigh and max (minimal is rejected).
 The headline arm is `none`: 0 reasoning tokens on all 234 semireal and all 2,252 test documents (from the usage events), so there is no test-time compute, like the 4B model.
 The secondary arm is `medium` (three smoke documents spent 407 to 804 reasoning tokens each); its semireal run predates the reasoning-token field, so its completion tokens include the reasoning tokens and are not split.
-A medium-effort test run was stopped at 554 of 2,252 documents when the no-reasoning requirement arrived and is not scored.
+A medium-effort test run was stopped at 554 of 2,252 documents when we fixed the comparison at no reasoning, and it is not scored.
 
 **semireal, 54 cases, 234 documents** (delta vs v1 [95% CI]; delta vs pd3g287 [95% CI])
 
