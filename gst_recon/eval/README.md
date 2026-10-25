@@ -1,11 +1,11 @@
 # gst_recon.eval
 
-Evaluation harness for gst-recon: run a model on rendered cases, score with the shared reward functions, report component metrics with bootstrap CIs, throughput and cost.
+The evaluation harness for gst-recon: run a model on rendered cases, score it with the shared reward functions, and report component metrics with bootstrap confidence intervals, throughput and cost.
 Everything here is a client; the model is served elsewhere (SGLang).
 Outputs live under `runs/eval/` and are never training data (see Guard).
 
-Where to run: runs and reports are light (HTTP client plus scoring), but bulk scoring and AuditKIT sweeps belong on kratos or rs-epyc, not the Mac.
-The frontier baseline is the one thing that runs on the Mac (it needs the local `claude` login).
+Runs and reports are light (an HTTP client plus scoring), but bulk scoring and AuditKIT sweeps are best done on a machine with spare CPUs.
+The frontier baseline needs a local `claude` login.
 
 ## Install
 
@@ -132,20 +132,19 @@ The data lives outside git under `data/eval/` and is pinned by `gst_recon/eval/e
 | test_ood | 9002 | `data/eval/truth/test_ood` | `data/eval/rendered/test_ood` |
 
 Seeds 9001 and 9002 are disjoint from every training seed.
-Both splits were rendered once, on kratos, with one OCR engine: Tesseract 5.5.0 (`GST_TESSERACT=$HOME/gst-tess/tesseract`).
-Both sets predate commit 73cd471, which disables OpenCV CPU dispatch (`cv2.setUseOptimized(False)`) so degraded pixels are identical across hosts; they are not re-rendered and stay kratos-only.
-Training corpora may also be rendered on rs-lab (conda win-64 Tesseract 5.5.0, leptonica 1.83.1), whose OCR text differs slightly from kratos for the same input; `meta.json` `ocr_build` records engine, leptonica, SIMD flags, dotproduct and platform.
+Both splits were rendered once, on one Linux host, with one OCR engine: Tesseract 5.5.0 (set its path with `GST_TESSERACT`).
+Both sets predate commit 73cd471, which disables OpenCV CPU dispatch (`cv2.setUseOptimized(False)`) so degraded pixels are identical across hosts; they were not re-rendered.
+Training corpora were also rendered on a Windows host (conda win-64 Tesseract 5.5.0, leptonica 1.83.1), whose OCR text differs slightly from the Linux host for the same input; `meta.json` `ocr_build` records engine, leptonica, SIMD flags, dotproduct and platform.
 The manifest records the engine, the render version, per-case hashes and the per-split difficulty and length-bucket counts.
 
-Command per split (kratos, `~/gst-recon-eval/render_split.sh <split> <seed>`, run under tmux, one worker per split):
+Command per split (one render process per split):
 
 ```
 python -m gst_recon.sim generate --n-cases 20 --seed <seed> --difficulty {easy,medium,hard} --split <split> --out data/eval/truth/<split>
 python -m gst_recon.render --truth data/eval/truth/<split> --out data/eval/rendered/<split> --workers 1 --max-mem-gb 3
 ```
 
-The kratos user cgroup is capped at 2 CPUs, so the two splits render in parallel with one worker each.
-More workers only add contention.
+The render host was capped at 2 CPUs, so the two splits ran in parallel with one process each; more processes only added contention.
 
 Check a copy of the data against the manifest (exit 1 on missing, extra or changed content):
 
@@ -170,16 +169,16 @@ The Sonnet run covers it in `runs/eval/frontier` (132 cases: 120 simulator, 12 r
 
 ### How the baselines were run
 
-- Keyword and context-blind baselines: `python scripts/eval_baselines.py --cases data/eval/rendered/test_iid data/eval/rendered/test_ood --truth-dir data/eval/truth --out-root runs/eval`, on kratos.
+- Keyword and context-blind baselines: `python scripts/eval_baselines.py --cases data/eval/rendered/test_iid data/eval/rendered/test_ood --truth-dir data/eval/truth --out-root runs/eval`.
   They are handed the true extraction, so only the decision components are comparable.
-- Teacher (Qwen3-30B-A3B, SGLang at rs-epyc:30000, served as `teacher`): `python -m gst_recon.eval run --endpoint http://127.0.0.1:30000/v1 --model teacher --cases <both splits> --truth-dir data/eval/truth --out runs/eval/teacher-constrained --constrained --concurrency 4-6 --max-tokens 24000`.
+- Teacher (Qwen3-30B-A3B, served by SGLang as `teacher` on port 30000): `python -m gst_recon.eval run --endpoint http://127.0.0.1:30000/v1 --model teacher --cases <both splits> --truth-dir data/eval/truth --out runs/eval/teacher-constrained --constrained --concurrency 4-6 --max-tokens 24000`.
   The runs are resumable and were done in passes as cases finished rendering.
   The first passes used a 24000-token cap, later passes added `--max-tokens-factor 2` (cap = 2 x reference length + 1000, never above 24000) because unconstrained and some constrained generations degenerate into repetition.
   A reply that hits the cap is scored as it stands, so a capped runaway counts as a failure; `n_truncated` is in each `aggregate.json`.
 - The teacher passes used the task prompt from before the compact-form sentence was added (`Fields that are 0, empty or false may be omitted.`).
   The prompt hash of each run is in its `config.json`.
-- Teacher unconstrained was stopped early at the coordinator's request (the teacher GPU was needed for training), so it is reported as a subset with `n` stated, next to the same subset of the constrained run.
-- Sonnet: `scripts/eval_frontier.py` over both splits, concurrency 2 on the Mac, output only under `runs/eval/frontier`.
+- Teacher unconstrained was stopped early (the teacher GPU was needed for training), so it is reported as a subset with `n` stated, next to the same subset of the constrained run.
+- Sonnet: `scripts/eval_frontier.py` over both splits, concurrency 2 on the laptop, output only under `runs/eval/frontier`.
   The first 62 completed cases ran under the earlier task prompt and the last 58 under the current one (the process was relaunched after the prompt commit); the run is resumable and `config.json` holds only the last launch's prompt hash.
 - Stopped or partial runs are rescored on the cases they finished with `scripts/eval_rescore_subset.py RUN_DIR --cases ... --truth-dir ...`, which keeps the recorded config; the same script rescored all runs when the ITC overclaim and underclaim metrics were added.
 - The `--gpu-hour-usd` and `--api-*-per-mtok` flags are illustrative inputs for the cost column, not measured prices.

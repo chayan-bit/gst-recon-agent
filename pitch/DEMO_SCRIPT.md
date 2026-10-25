@@ -1,5 +1,8 @@
 # Demo video script (target 2:45, hard limit 3:00)
 
+The first draft of the demo-video script: shots, narration and the rules we set so that nothing on screen is faked.
+The shot list that was actually recorded is `demo/VIDEO_PLAN.md`; this file keeps the original narration and the fallbacks.
+
 Visual first: every shot has a picture doing the work, and the narration only names what the viewer is looking at.
 Voice-over only, no face cam, 1080p, terminal font at least 18 pt, dark theme.
 Numbers are read out loud only from the public reports (`reports/results.md`, `reports/hybrid.md`, `reports/pipeline.md`); do not record the final voice-over before then.
@@ -12,7 +15,7 @@ Numbers are read out loud only from the public reports (`reports/results.md`, `r
 - No hostnames, usernames, private paths or tokens on screen: serve through `localhost:30000` and hide the shell prompt.
 - If a shot cannot be produced from a real run before the deadline, cut the shot, not the honesty.
 
-## Assets to prepare (none of these exist in the repo yet unless marked committed)
+## Assets to prepare (the status column is from the drafting stage; the demo app in `demo/` later covered the streaming client and the table view)
 
 | Asset | Status | Notes |
 |---|---|---|
@@ -115,7 +118,7 @@ Code and evals are in the repo."
 
 ## Timing and length check
 
-Narration is about 410 words (count it again once the placeholders are filled), which is about 2:45 at 150 words per minute.
+Narration is about 410 words, which is about 2:45 at 150 words per minute.
 If the final cut runs over 3:00, remove the optional second beat in shot 4 first, then the AlignTune bugs card in shot 6.
 Do not remove shot 5's constrained-versus-unconstrained pair or shot 7's limitation line.
 

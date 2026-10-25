@@ -1,8 +1,10 @@
 # Deck outline: gst-recon (Syntax Error 2026, Local LLM track)
 
-Ten slides, about 4 minutes if presented live, and each slide also reads on its own as a static PDF.
+This is the outline of the ten-slide deck we presented for gst-recon: a local 4B model that reconciles GST input tax credit from messy invoices.
+It runs about 4 minutes live, and each slide also reads on its own as a static PDF.
+Names: pd3g287 is the shipped adapter (Hugging Face folder `grpo-pd3-final`); v1 is the earlier per-document adapter (`perdoc-v1`); semireal is the 54-case set of real supplier documents with simulated books.
 Every number is copied from a public report: `reports/results.md`, `reports/hybrid.md`, `reports/pipeline.md`, `reports/curation.md` or `reports/serving.md`.
-Visuals marked "committed" already exist in the repo (`examples/`, `reports/smoke/`); all others have to be made.
+Visuals marked "committed" exist in the repo (`examples/`, `reports/smoke/`); the others are drawn for the slides.
 All invoices, GSTINs and buyers are synthetic (simulator output), and the deck says so on the slides that show them.
 
 ## Slide 1 - Private, local financial reasoning on one GPU
@@ -125,7 +127,7 @@ Only rows with evidence stay on the slide.
 - Not yet: real scans at scale (the semireal set is 54 real documents with simulated books, and a separate eval-only set of 42 real purchase documents stays private), tax law beyond the modelled sections, and a vision front end that replaces OCR.
 - What we learned: the real-invoice eval exposed an overfit to simulator identity formats; we fixed it in the simulator from CGST Rule 46 without using those invoices and retrained, and the retrained models no longer write the simulator-format invoice numbers the first one invented (counts in `reports/hybrid.md`).
 - The result is mixed and we say so: on the 54 semireal cases the retrained models match better end to end, but they cost ITC exact on the simulated dev sets, whose formats are the old ones.
-- We pick models on full reconciliation of real documents, and the retrained pd3g287 is the best of ours there; an earlier simulated-dev gate was dropped because simulated data was a weak proxy for the real task (numbers in `reports/`).
+- We pick models on full reconciliation of real documents, and the retrained pd3g287 is the best of ours there; simulated sets were early filters, and their dev sets use the simulator's original identity formats, which pd3g287 was not trained on (numbers in `reports/`).
 - Next round: re-validate with a dev set in the new formats.
 - Next: a vision-language student that reads the page directly, more of the GST rules (and a lawyer-reviewed rule table), and upstreaming the AlignTune and AuditKIT work.
 

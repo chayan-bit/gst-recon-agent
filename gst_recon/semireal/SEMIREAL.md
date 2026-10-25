@@ -43,7 +43,7 @@ A document gets books only when its true identity (supplier GSTIN, invoice numbe
 
 ## Oracle check
 
-`gst_recon.semireal.oracle.run_oracle` feeds the true per-document records (`hybrid.sft.truth_records`, the hybrid worker's oracle) through the real hybrid path (`eval.runner.run_eval` + `hybrid.run.make_generator`: reply parsing, repair, identity fill, linker, rules engine) and lists every document whose extraction, match row or ITC differs from the target, with the reconciler's trace.
+`gst_recon.semireal.oracle.run_oracle` feeds the true per-document records (`hybrid.sft.truth_records`, the hybrid pipeline's oracle) through the real hybrid path (`eval.runner.run_eval` + `hybrid.run.make_generator`: reply parsing, repair, identity fill, linker, rules engine) and lists every document whose extraction, match row or ITC differs from the target, with the reconciler's trace.
 A miss means the reconciler and the truth disagree on correct input, so it must be explained before the set is used.
 Known cause on real documents: `hybrid.repair` sets `total` to taxable value plus tax, so a real invoice whose payable total also carries a non-taxable pass-through (for example a travel agent's invoice that includes the airline fare) loses its extracted total and therefore its payment link, and the register total then reads as an amount mismatch.
 In a late review the lost payment link cascades into ITC: the reconciler sees the invoice unpaid after 180 days and defers its credit (`DEFERRED_UNPAID_180D`).

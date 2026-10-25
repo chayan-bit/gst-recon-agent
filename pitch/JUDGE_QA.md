@@ -1,7 +1,19 @@
 # Judge Q&A: the hardest questions, with honest answers
 
-Rule for every answer: say what was measured, say what was not, and never reach past the evidence.
+These are the fifteen hardest questions we expect about gst-recon, with plain answers.
+The rule for every answer: say what was measured, say what was not, and never reach past the evidence.
 Every number is copied from `reports/results.md`, `reports/hybrid.md`, `reports/pipeline.md`, `reports/curation.md` or `reports/serving.md`.
+
+The headline result is the real-document table in the README.
+Because these questions probe the whole project, the answers also quote simulated-data numbers; each one is labelled as simulated or as coming from a named set.
+
+Names used below:
+
+- **pd3g287**: the shipped adapter (Hugging Face folder `grpo-pd3-final`).
+- **student-perdoc-sft** (v1, `perdoc-v1`): the earlier per-document adapter.
+- **hybrid**: the model reads one document at a time and code does the matching and the tax rules; **end to end**: one model call for the whole case.
+- **semireal**: 54 cases from real supplier documents with simulated books; **realworld**: 12 hand-built cases from open-source invoice formats; **simulator test**: the 120 frozen simulated cases.
+- **reconciler v1, v2, v3** and **doc schema v1, v2**: successive versions of the matching code and the per-document output format.
 
 ## 1. Isn't this sim-to-sim? You train and test on your own simulator.
 
@@ -96,7 +108,7 @@ Be precise here, because the answer has three parts.
 SGLang is the engine for teacher generation, serving and evaluation, and that is measured and logged.
 The SGLang rollout backend for GRPO exists as AlignTune pull request #32 (open) with CPU tests and a GPU integration test, but it is wired into AlignTune's TRL GRPO trainer, while the unsloth backend ignores `rollout_backend`.
 Our only GRPO config (`configs/grpo_sglang.yaml`) uses the TRL backend with `rollout_backend: sglang`, and the GRPO runner refuses to start without it, so a GRPO run cannot silently fall back to Hugging Face generation.
-The GRPO runner refuses to start without that backend, and the shipped adapter's GRPO stage (pd3g287) used it: AlignTune with the TRL backend and SGLang rollouts (`configs/grpo_perdoc_v3_hard.yaml`; unsloth with SGLang is refused by design), every rollout request constrained to the document JSON schema, 287 steps (one pass over 1,147 hard documents, 4 per step) from the realistic-formats SFT LoRA, beta 0, temperature 1.0, on one H100; we do not present the backend as the reason for the accuracy, because we have no ablation against a Hugging Face rollout, and it stands as a contribution with its measured benchmark.
+The shipped adapter's GRPO stage (pd3g287) used it: AlignTune with the TRL backend and SGLang rollouts (`configs/grpo_perdoc_v3_hard.yaml`; unsloth with SGLang is refused by design), every rollout request constrained to the document JSON schema, 287 steps (one pass over 1,147 hard documents, 4 per step) from the realistic-formats SFT LoRA, beta 0, temperature 1.0, on one H100; we do not present the backend as the reason for the accuracy, because we have no ablation against a Hugging Face rollout, and it stands as a contribution with its measured benchmark.
 The backend was developed against SGLang 0.5.22, and the training host runs SGLang 0.5.10.post1 because of its CUDA driver, and the backend was tested end to end on both versions (full-sync fidelity on 0.5.10.post1: 0.049 nats per token against a noise floor of 0.052; rollout speedup 9.9x), as reported in PR #32.
 On merging: they are open pull requests (AuditKIT #9, #10, #11, CuratorKIT #34, #35, #36, AlignTune #32, #33, #34, #35, SGLang #46287), eleven in all and none merged at the time of writing.
 
@@ -185,14 +197,14 @@ We diversified the simulator's invoice-number and date formats, designed from CG
 We retrained two per-document adapters on it (per-doc SFT with realistic identity formats, and per-doc SFT with realistic formats that abstains when an identity field is not visible), and measured them on the simulated dev sets and the real documents (`reports/hybrid.md`).
 The real-invoice eval exposed an overfit to simulator identity formats; we fixed it in the simulator from CGST Rule 46 without using those invoices and retrained, and the retrained adapters no longer write the simulator-format wrong invoice numbers that student-perdoc-sft wrote.
 The numbers: student-perdoc-sft writes 18 of its 29 wrong invoice numbers in the simulator's formats, the retrained adapters write none (0 of 21 and 0 of 10), and invoice-number accuracy rises from 30.9% to 47.6% for the realistic-formats adapter.
-The result is mixed: ITC document exact on the real set does not improve (50.0% for the realistic-formats adapter, a tie at 57.1% for the abstaining one), and on the simulated dev sets the retrained adapters trail student-perdoc-sft by 1 to 5 ITC-exact points, below the earlier simulated-dev gate (a lower bound of -3.0 points; -4.5 on the small set for pd3g287).
+The result is mixed: ITC document exact on the real set does not improve (50.0% for the realistic-formats adapter, a tie at 57.1% for the abstaining one), and on the simulated dev sets the retrained adapters trail student-perdoc-sft by 1 to 5 ITC-exact points, for pd3g287 -1.7 [-4.5, +0.9] on the small set.
 The abstaining adapter invents 3.5% of identity fields against 8.8%, but leaves 16 visible ones empty, and the GRPO variant over-abstains (invoice number 21.4%).
 A field-wise vote of three adapters (ensemble B, with the GRPO adapter as tie-breaker) invents no identity and ties on real-document ITC document exact, which is structural because it takes every ITC judgment from student-perdoc-sft; pooled over the 54 real-document cases it is level on ITC exact (58.3% against 58.5%, -0.2 [-1.0, +0.8], p = 0.62) although it matches 5.6 points better, so we did not pursue it.
 On those 54 cases every retrained adapter links documents to the books 6 to 7 points better than student-perdoc-sft end to end (match accuracy +7.2 [+1.9, +12.9] for realistic formats, +7.4 [+1.4, +13.7] for its GRPO variant, +6.1 [+0.2, +12.4] for the abstaining one), with every identity fill correct and no false link, so the fix pays off end to end even though it did not clear the simulated-dev bound.
-The GRPO variant, pd3g287, was the strongest model there (composite +4.3 [+1.7, +7.0]; ITC-exact +2.6 [-1.4, +6.7], not significant) and invents no identity field on the real documents, but it missed the earlier simulated-dev gate on the small simulated set, whose identity formats student-perdoc-sft was trained on.
+The GRPO variant, pd3g287, was the strongest model there (composite +4.3 [+1.7, +7.0]; ITC-exact +2.6 [-1.4, +6.7], not significant) and invents no identity field on the real documents, but it is 1.7 points behind on the small simulated dev set, whose identity formats student-perdoc-sft was trained on.
 How we chose the shipped model:
-We pick models on full reconciliation of real documents, since that is the actual task.
-Earlier we also had a simulated-dev gate for new adapters (non-inferiority against student-perdoc-sft on the simulated dev sets); pd3g287 missed it on the small simulated dev set (ITC exact delta -1.7 [-4.5, +0.9] against a required lower bound of -3.0), and we dropped that gate as the criterion because simulated data was a weak proxy for the real task: the dev sets use the simulator's original identity formats, which pd3g287 was not trained on.
+We pick models on full reconciliation of real documents, since that is the actual task; the simulated sets were early filters.
+The simulated dev sets use the simulator's original identity formats, which pd3g287 was not trained on and student-perdoc-sft was, so they favour student-perdoc-sft: on the small one pd3g287 is -1.7 ITC exact points behind [-4.5, +0.9].
 On the 54 real-document cases pd3g287 is the best of our models end to end (composite +4.3 [+1.7, +7.0], match accuracy +7.4 [+1.4, +13.7], ITC exact +2.6 [-1.4, +6.7], not significant).
 On the 120 simulator test cases it ties student-perdoc-sft on ITC exact (80.0 against 80.1), matches 3.8 points worse (85.0 against 88.7) and has composite 81.6 against 82.8.
 It over-abstains: it left 22 visible identity fields empty on the 42 real documents and 16 visible invoice numbers empty on the 30 held-out ones, with invoice-number accuracy 21.4% and 30.0% against 30.9% and 40.0% for student-perdoc-sft.

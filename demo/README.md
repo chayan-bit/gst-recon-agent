@@ -1,7 +1,9 @@
 # gst-recon live demo
 
-A single-page UI over a small FastAPI backend.
-It streams a case through the SGLang-served model and renders the reconciliation table next to it.
+A single-page web app for trying the reconciler without reading JSON.
+Pick a case, press Run, and it streams the case through the SGLang-served model and shows the reconciliation table next to the model output.
+It is a small FastAPI backend with a static front end.
+If you have no GPU, "Replay" re-plays runs that were recorded earlier.
 
 Panels, left to right:
 
@@ -23,25 +25,25 @@ Every live run is saved to `recordings/` (set `DEMO_RECORD=0` to stop), so anyth
 ```bash
 cd demo                       # this directory, inside the gst-recon repo
 uv sync                       # project-local venv (.venv)
-ssh -N -L 30000:127.0.0.1:30000 rs-epyc &   # only for live mode
 uv run uvicorn gst_demo.app:app --port 8765
 # open http://localhost:8765/
 ```
 
-Replay only (no GPU, no tunnel): skip the `ssh` line; the UI shows "Offline" and Replay works.
+For live mode, serve the model with SGLang first (see "Quick start" in the top-level README) and, if the server is on another machine, forward its port to `127.0.0.1:30000` with `ssh -N -L 30000:127.0.0.1:30000 <your-gpu-host>`.
+Replay only (no GPU, no tunnel): the UI shows "Offline" and Replay works.
 
 Config via environment:
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `SGLANG_BASE_URL` | `http://127.0.0.1:30000/v1` | OpenAI-compatible endpoint (for the kratos server: `ssh -N -L 30400:127.0.0.1:30400 user@gpu-host`, then `SGLANG_BASE_URL=http://127.0.0.1:30400/v1`) |
+| `SGLANG_BASE_URL` | `http://127.0.0.1:30000/v1` | OpenAI-compatible endpoint of your SGLang server (for a server on another port, for example `SGLANG_BASE_URL=http://127.0.0.1:30400/v1`) |
 | `SGLANG_API_KEY` | `EMPTY` | bearer token |
 | `DEMO_CASE_DIRS` | `<repo>/examples` | `:`-separated case directories; the `+` button in the UI adds one at runtime |
 | `DEMO_RECORDINGS` | `demo/recordings` | where recordings are read and written |
 | `DEMO_RECORD` | `1` | `0` stops saving live runs |
 
 A case directory holds `prompt.txt`, optional `target.json` (ground truth), `meta.json` and `images/D<nn>.png`.
-Model names come from `/v1/models`: `base`, and `base:<adapter>` for every LoRA the server reports (so `base:sft`, later `base:grpo` and a per-document adapter appear on their own).
+Model names come from `/v1/models`: `base`, and `base:<adapter>` for every LoRA the server reports (so an end-to-end SFT adapter and the per-document adapters appear on their own).
 Only one run is allowed at a time, so the demo never piles load onto a shared GPU.
 
 ## Recording the demo video

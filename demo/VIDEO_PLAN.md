@@ -1,8 +1,11 @@
 # Submission video plan (3:00 hard limit, target 2:55)
 
+The shot list we used for the three-minute demo video: what is on screen, what to say, and which real run backs each shot.
+Pipeline names: end-to-end means one model call for the whole case; hybrid means the model reads one document at a time and code does the matching and tax rules; pd3g287 is the shipped per-document adapter (see the top-level README).
+
 This plan uses only recorded runs, replayed through the demo app, so the video needs no GPU and cannot stall.
 Every run on screen is a real run saved in `recordings/`; the app labels it "REPLAY · RECORDED · 8x" in the middle panel, and that badge must stay visible in every replay shot.
-Voice-over is the user's own voice, no face cam: each `VO` block below is a prompt for what to say, not a script to read word for word.
+Voice-over is the author's own voice, no face cam: each `VO` block below is a prompt for what to say, not a script to read word for word.
 Numbers in the prompts come from the screen or from `reports/`; say them only as they appear.
 The sponsor-tool material from `pitch/DEMO_SCRIPT.md` shot 6 is covered by the single static slide in shot 6 below; the QR close from its shot 7 is not in this plan.
 

@@ -1,14 +1,17 @@
 # Phone-photo protocol (about 15 minutes)
 
-Goal: replace the clean 200 dpi raster of 10 documents with real phone-camera photos under 3 lighting conditions, so the real-world split also measures real capture noise.
-The 10 documents cover all 7 formats and the main discrepancy kinds; their order is in `data/realworld/print/PHOTO_ORDER.txt`.
+How to replace the clean 200 dpi raster of 10 realworld documents with real phone-camera photos under 3 lighting conditions, so the realworld split also measures capture noise.
+The photos are of synthetic documents, so they carry no client data, and they stay out of git (`data/` is ignored).
+No photo results are reported yet; this is the recipe for adding them.
+
+The 10 documents cover all 7 formats and the main discrepancy kinds; their order is in `data/realworld/print/PHOTO_ORDER.txt`, written by `python -m realworld.build`.
 
 ## 1. Print (3 minutes)
 
-    cd ~/gst-recon-realworld/data/realworld/print            # on kratos, after python -m realworld.build
+    cd data/realworld/print
     pdfunite $(cat PHOTO_ORDER.txt) photo_pack.pdf            # 10 pages, one document per page
 
-Copy `photo_pack.pdf` to the Mac (`scp`), print it single-sided on plain A4, default scaling ("fit to page" is fine).
+Print `photo_pack.pdf` single-sided on plain A4, default scaling ("fit to page" is fine).
 The POS receipt (page 3) prints as a narrow strip; leave it on the A4 sheet, do not cut.
 
 ## 2. Photograph (10 minutes, 30 photos)
@@ -26,16 +29,14 @@ Take the pages in the order of `PHOTO_ORDER.txt`, one photo per page, the whole 
 Rules: do not crop, rotate, filter or "scan" the photos in any app; do not retake a photo because it looks bad (bad photos are the point); keep exactly 10 photos per pass.
 If a photo is truly unusable (page cut off), retake that one immediately so the order stays the same.
 
-## 3. Hand over (2 minutes)
+## 3. Organise
 
-Put the photos in three folders named `light1`, `light2`, `light3` (AirDrop to the Mac, then into `~/Downloads/rw-photos/light1` etc.) and tell Claude where they are.
+Put the photos in three folders named `light1`, `light2`, `light3`.
 File names can stay as the phone wrote them (`IMG_4512.JPG`, ...): within each folder they are sorted by name, which is capture order, and matched to `PHOTO_ORDER.txt`.
 Alternatively name each file `<case>_<doc>.jpg` (for example `rw01_D02.jpg`); named files are matched by name.
 
-## 4. Build (done by Claude on kratos)
+## 4. Build
 
-    rsync -a ~/Downloads/rw-photos/ user@gpu-host:gst-recon-realworld/photos/
     python -m realworld.build --images-dir photos/light1 --out data/realworld_photo/light1    # and light2, light3
 
 Each output directory has the same 12 cases; the 10 photographed documents are OCR'd from the photos (`delivery: photo`, source label "phone photo, OCR text", split `realworld_photo`), the other 26 stay clean scans.
-The photos are synthetic-party documents, so they carry no real client data, but they stay out of git (`data/` is ignored).

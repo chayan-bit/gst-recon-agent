@@ -1,7 +1,10 @@
 # gst-recon spec
 
-Syntax Error 2026 (SDSLabs IITR), Local LLM track (RadixArk prize), registered under PS6: reasoning with verifiable answers (financial calculations).
-Deadline: Sunday 2026-10-25 09:00 IST. Solo.
+The one-page spec the project started from.
+The README has the current results; this file says what we set out to build and the rules we held ourselves to.
+
+Syntax Error 2026 (SDSLabs, IIT Roorkee), Local LLM track, problem statement 6: reasoning with verifiable answers (financial calculations).
+Deadline: Sunday 2026-10-25 09:00 IST. Solo entry.
 
 ## Product
 A small open model (about 4B, LoRA) served on SGLang that does monthly GST input tax credit (ITC) reconciliation for one buyer company.
@@ -15,15 +18,14 @@ Outputs per case (strict JSON, enforced by SGLang grammar-constrained decoding):
 - Ground truth first, render second: a deterministic Python world simulator produces the true state; documents are rendered and degraded from it. Never derive ground truth from generated text.
 - Every reward is checked by code: schema validity, per-field match, accounting identities, match-table correctness, exact ITC.
 - SGLang is the only inference engine (teacher generation, GRPO rollouts, serving, evals).
-- Lexsi toolkits: CuratorKIT (curation), AlignTune (SFT + GRPO), AuditKIT (evals). Separate venvs; hand off via files.
+- Lexsi Labs toolkits: CuratorKIT (data curation), AlignTune (SFT and GRPO), AuditKIT (evals). Each runs in its own virtualenv; they hand off through files.
 - Bulk training text comes from a local open teacher on SGLang, not from a closed API.
 - No real client data anywhere in this repo.
 
 ## Compute
-- rs-epyc: H100 NVL, up to ~60 GB for this project; 192 CPU threads for rendering/OCR. Check `free -g`, `nvidia-smi`, `df -h ~` before each launch; touch only own processes.
-- rs-lab: RTX A6000 48 GB (Windows host).
-- kratos: RTX 5070 Ti 16 GB.
-- Mac: editing and orchestration only.
+- Training, teacher generation, rendering and evals ran on rented or shared Linux GPU hosts: one H100 NVL (94 GB, shared, used within a memory budget), an RTX A6000 48 GB and an RTX 5070 Ti 16 GB.
+- The shipped 4B model serves on a single 16 GB GPU.
+- The development laptop was used for editing and light checks only.
 
 ## Layout
 - `gst_recon/schema.py` - pydantic models + JSON Schema export (single source of truth).
@@ -32,3 +34,4 @@ Outputs per case (strict JSON, enforced by SGLang grammar-constrained decoding):
 - `gst_recon/rewards/` - verifiable reward functions (shared by GRPO and evals).
 - `infra/` - host setup and SGLang launch scripts; serving measurements are in `reports/serving.md`.
 - `data/`, `runs/` - gitignored.
+- `gst_recon/hybrid/`, `gst_recon/eval/`, `gst_recon/train/`, `realworld/`, `demo/` - added later; see the README repo map.
