@@ -8,7 +8,7 @@ const BUCKETS = ["eligible", "blocked", "deferred"];
 const OCR_TABS = [["ocr", "Document text (OCR)"], ["register", "Purchase register"], ["gstr2b", "GSTR-2B"], ["bank", "Bank statement"]];
 
 const S = {
-  cases: [], caseId: null, detail: null, models: [], model: "base", constrained: true, mode: "live", speed: 1, kind: "e2e", focusDoc: null,
+  cases: [], caseId: null, detail: null, models: [], model: "", constrained: true, mode: "live", speed: 1, kind: "e2e", focusDoc: null,
   health: { live: false }, runs: {}, running: false, ctrl: null, doc: null, ocrTab: "ocr", gt: true,
   expanded: new Set(), tableKey: null,
 };
@@ -64,7 +64,11 @@ async function loadCases() {
 async function loadModels() {
   const m = await api("/api/models");
   S.models = m.models;
-  if (!S.models.some((x) => x.name === S.model)) S.model = defaultModel(S.models).name;
+  if (!S.models.some((x) => x.name === S.model)) {
+    const d = defaultModel(S.models);
+    S.model = d.name;
+    if (/\(shipped\)/.test(d.label)) S.kind = "hybrid"; // the shipped model is a per-document reader: open on the hybrid pipeline
+  }
 }
 
 /* ------------------------------------------------------------------ controls */

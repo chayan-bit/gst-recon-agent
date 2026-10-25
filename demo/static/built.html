@@ -15,7 +15,8 @@
   .back { color: var(--accent); text-decoration: none; font-weight: 600; margin-left: auto; white-space: nowrap; }
   .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
   .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 30px 30px 34px; }
-  .card .tag { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
+  .card .tag { font-size: 14px; font-weight: 600; color: var(--dim); margin: 0 0 8px; }
+  .snip { margin: 18px 0 0; font: 15px/1.4 var(--mono); color: var(--ok); background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .card h2 { margin: 0 0 12px; font-size: 28px; }
   .card p { margin: 0; color: var(--muted); font-size: 18px; line-height: 1.5; }
   .card .big { font: 700 44px var(--mono); color: var(--ok); margin: 14px 0 2px; }
@@ -36,9 +37,11 @@
   </header>
   <div class="grid3">
     <section class="card"><p class="tag">SGLang</p><h2>Multi-LoRA serving</h2>
-      <p>One server, one base model, three models: <code>base</code>, <code>base:sft</code> and <code>base:perdoc</code>. The model switcher in this demo is a per-request choice, not a restart.</p></section>
+      <p>One server, one base model and two LoRA adapters: <code>base:perdoc</code> and <code>base:perdoc-grpo</code>. The model switcher in this demo is a per-request choice, not a restart.</p>
+      <pre class="snip">"model": "base:perdoc-grpo"</pre></section>
     <section class="card"><p class="tag">SGLang + XGrammar</p><h2>Constrained decoding</h2>
-      <p>The output JSON schema is passed as <code>response_format</code> and compiled to a grammar, so every answer parses and validates against the schema.</p></section>
+      <p>The output JSON schema is passed as <code>response_format</code> and compiled to a grammar, so every answer parses and validates against the schema.</p>
+      <pre class="snip">"response_format": {"type": "json_schema"}</pre></section>
     <section class="card"><p class="tag">SGLang RadixAttention</p><h2>Shared prefill</h2>
       <p>GRPO samples many completions of one long prompt; the shared prefix is computed once.</p>
       <div class="big">1216 / 1216</div><p>prompt tokens served from cache, against 0 when sent as separate requests.</p></section>
