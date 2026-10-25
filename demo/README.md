@@ -29,7 +29,8 @@ uv run uvicorn gst_demo.app:app --port 8765
 # open http://localhost:8765/
 ```
 
-For live mode, serve the model with SGLang first (see "Quick start" in the top-level README) and, if the server is on another machine, forward its port to `127.0.0.1:30000` with `ssh -N -L 30000:127.0.0.1:30000 <your-gpu-host>`.
+For live mode, serve the model with SGLang first (see "Quick start" in the top-level README) and, if the server runs on a remote GPU box, forward its port with `ssh -N -L 30400:127.0.0.1:30400 <gpu-host>`.
+Point the demo at it with `SGLANG_BASE_URL=http://127.0.0.1:30400/v1` (the default is port 30000).
 Replay only (no GPU, no tunnel): the UI shows "Offline" and Replay works.
 
 Config via environment:

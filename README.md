@@ -57,25 +57,25 @@ The commands below use the flags from `configs/serve_sft_eval.sh` and `gst_recon
 
    ```bash
    uv sync --extra eval
-   huggingface-cli download broman23/gst-recon-qwen3-4b-adapters --include "grpo-pd3-final/*" --local-dir adapters
+   hf download broman23/gst-recon-qwen3-4b-adapters --include "grpo-pd3-final/*" --local-dir .
    ```
 
 2. Serve the base model with the adapter on SGLang.
-   The adapter is then addressed as the model `base:perdoc-grpo`.
+   The adapter is then addressed as the model `base:perdoc` (and `base` alone is the plain base model).
 
    ```bash
    python -m sglang.launch_server \
      --model-path Qwen/Qwen3-4B-Instruct-2507 --served-model-name base \
-     --enable-lora --lora-paths perdoc-grpo=adapters/grpo-pd3-final \
+     --enable-lora --lora-paths perdoc=./grpo-pd3-final \
      --max-lora-rank 32 --lora-target-modules all --max-loras-per-batch 2 \
-     --host 127.0.0.1 --port 30000 --context-length 16384 --grammar-backend xgrammar
+     --host 127.0.0.1 --port 30400 --context-length 16384 --grammar-backend xgrammar
    ```
 
 3. Run the full reconciliation (hybrid mode) on the three bundled example cases and read the scores:
 
    ```bash
    python -m gst_recon.eval run --mode hybrid --constrained \
-     --endpoint http://127.0.0.1:30000/v1 --model base:perdoc-grpo \
+     --endpoint http://127.0.0.1:30400/v1 --model base:perdoc \
      --cases examples --out runs/eval/quickstart
    ```
 
@@ -86,7 +86,8 @@ The commands below use the flags from `configs/serve_sft_eval.sh` and `gst_recon
    It also replays saved runs with no GPU at all.
 
    ```bash
-   cd demo && uv sync && uv run uvicorn gst_demo.app:app --port 8765
+   cd demo && uv sync
+   SGLANG_BASE_URL=http://127.0.0.1:30400/v1 uv run uvicorn gst_demo.app:app --port 8765
    # open http://localhost:8765/
    ```
 
