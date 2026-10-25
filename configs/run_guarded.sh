@@ -1,7 +1,7 @@
 #!/bin/bash
 # Run `python -m gst_recon.train run CONFIG` on a shared GPU host with a host-RAM cap.
 #   PYTHON=~/gst-recon/venv-align/bin/python MODEL=/path/to/local/snapshot bash configs/run_guarded.sh configs/sft.yaml
-# rs-epyc has no user systemd manager (systemd-run --user fails) and ulimit -v / prlimit --as break CUDA
+# the shared H100 host has no user systemd manager (systemd-run --user fails) and ulimit -v / prlimit --as break CUDA
 # init (it reserves tens of GB of address space), so a 1 s watchdog is the cap: it SIGKILLs the run when
 # the process tree's anonymous+shmem PSS passes CAP_GB (default 12), after a SIGUSR1 stack dump at
 # DUMP_GB (default 8). It refuses to start below MIN_AVAIL_GB (default 20) of available host RAM, and with

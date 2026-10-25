@@ -1,9 +1,9 @@
-# Plan B: per-document GRPO on kratos' RTX 5070 Ti (16 GB, sm_120) while rs-epyc is down
+# Plan B: per-document GRPO on the 16 GB host's RTX 5070 Ti (16 GB, sm_120) while the shared H100 host is down
 # (configs/launch_grpo_perdoc_kratos.sh). Same data, reward, grammar and init as configs/grpo_perdoc.yaml.
 # QLoRA trainer (4-bit NF4 base, bf16 compute; the LoRA itself stays full precision, so the synced adapter is the
 # same r32 LoRA the SGLang server applies to its own base) and a 1 x 32 batch (4 documents x 8 generations).
 #
-# Fit on 15.6 GiB free (estimates, GiB; nothing of this has run on kratos):
+# Fit on 15.6 GiB free (estimates, GiB; nothing of this has run on the 16 GB host):
 #   trainer ~5.8: CUDA context 0.5 + 4-bit base 2.5 (3.6B linear params at 0.5 B + tied 0.78 GB embedding)
 #     + LoRA/grads/8-bit Adam 0.65 (66M params) + checkpointed activations 0.5 (1 x ~2.6k tokens)
 #     + recompute peak 0.3 + completion logits 1.6 (1024 x 152k: bf16, fp32 log-softmax, gradient).

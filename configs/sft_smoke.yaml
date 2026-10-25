@@ -1,4 +1,4 @@
-# 20-step SFT smoke test (rs-epyc H100 next to the teacher: ~33 GB GPU free). Run it under a host-RAM cap:
+# 20-step SFT smoke test (the shared H100 host next to the teacher: ~33 GB GPU free). Run it under a host-RAM cap:
 #   systemd-run --user --scope -p MemoryMax=12G -p MemorySwapMax=0 python -m gst_recon.train run configs/sft_smoke.yaml
 # Data: data/smoke/sft/train.jsonl = ~200 SFT rows of at most 12k tokens (see the train report).
 algo: sft

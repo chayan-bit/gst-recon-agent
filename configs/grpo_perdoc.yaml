@@ -1,14 +1,14 @@
 # GRPO on the per-document task (the hybrid mode's model): one DocRecord per document, rewarded by
 # gst_recon.rewards.doc (weighted field match; "" earns full credit for an identity field the page does not
 # show and an invented value is penalised; schema-invalid output scores 0).
-# Data: python -m gst_recon.train perdoc-grpo over the 900 rs-lab GRPO-role cases (the 120 grpo-*-201 cases are
+# Data: python -m gst_recon.train perdoc-grpo over the 900 Windows-workstation GRPO-role cases (the 120 grpo-*-201 cases are
 # gst-hybrid's reconciler dev set and are excluded): 2596 documents, prompt p99 1596 / max 4634 tokens, truth
 # record max 480 tokens; abstaining is the rewarded answer for 462 GSTINs, 956 invoice numbers, 604 dates.
 # Policy = base Qwen3-4B + the per-document SFT adapter as the trainable LoRA (runs/grpo-perdoc-init, linked by
 # the launcher to v2 or v1). Rollouts: SGLang with adapter sync, grammar-constrained to doc_json_schema
 # (per-document targets are the full DocRecord form, so the grammar admits every correct answer).
 #
-# rs-epyc H100 budget (configs/launch_grpo_perdoc.sh; needs >= 60 GB free):
+# the shared H100 host budget (configs/launch_grpo_perdoc.sh; needs >= 60 GB free):
 #   server: mem fraction 0.30 of the ~93 GiB free = 28 GiB: 7.5 weights + ~20 GiB KV (~145k tokens; one step needs
 #     <= 8 shared prompts x 1.6k + 64 x 1024 completion tokens = ~78k) + LoRA slots; CUDA graphs ~2 GiB on top.
 #   trainer ~17-20 GiB: 7.5 policy, ~0.7 LoRA + grads + 8-bit Adam, ~2 checkpointed activations (4 x ~2.6k tokens),

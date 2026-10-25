@@ -1,7 +1,7 @@
-# Per-document GRPO v3 hard, QLoRA variant for the shared rs-epyc H100 with a 16 GB-per-job cap
-# (configs/launch_grpo_perdoc_v3_qlora.sh): the kratos plan-B memory settings on the v3 hard prompt set.
+# Per-document GRPO v3 hard, QLoRA variant for the shared H100 host with a 16 GB-per-job cap
+# (configs/launch_grpo_perdoc_v3_qlora.sh): the 16 GB host plan-B memory settings on the v3 hard prompt set.
 #   server: FP8 weights (~4.6 GB) + KV capped at 16384 tokens (~2.4 GB) + CUDA graphs: ~8.5 GB.
-#   trainer: 4-bit NF4 base + bf16 LoRA (kratos measured 7.1 GB at 1 x 640); 2-sequence microbatches here,
+#   trainer: 4-bit NF4 base + bf16 LoRA (the 16 GB host measured 7.1 GB at 1 x 640); 2-sequence microbatches here,
 #     hard-capped at 15 GB by GST_GPU_CAP_GB (the allocator raises OOM instead of growing past it).
 # Everything else (data, reward, 16 generations, caps, schedule, 25-step bf16 snapshots) as grpo_perdoc_v3_hard.yaml:
 # Per-document GRPO, hard variant, v3: configs/grpo_perdoc_hard.yaml unchanged except the data and the starting adapter.
@@ -17,7 +17,7 @@ backend: trl  # unsloth + sglang is refused by the fork by design
 model:
   name_or_path: Qwen/Qwen3-4B-Instruct-2507  # the launcher substitutes the local snapshot (MODEL=...)
   precision: bf16
-  quantization: {load_in_4bit: true, bnb_4bit_compute_dtype: bfloat16, bnb_4bit_quant_type: nf4}  # QLoRA, as kratos
+  quantization: {load_in_4bit: true, bnb_4bit_compute_dtype: bfloat16, bnb_4bit_quant_type: nf4}  # QLoRA, as the 16 GB host
   max_seq_length: 2688  # prompts <= 2048 tokens + 640 completion
   gradient_checkpointing: true
   use_peft: true

@@ -1,4 +1,4 @@
-# Per-document SFT v2 on rs-lab: finish v1's epoch. v1 (configs/sft_perdoc_trl.yaml, adapter runs/sft-perdoc) hit
+# Per-document SFT v2 on the Windows GPU workstation: finish v1's epoch. v1 (configs/sft_perdoc_trl.yaml, adapter runs/sft-perdoc) hit
 # its 1 h cap at step 124 of 298 (1984 of 4759 rows) and slowed from 19 to 53 s/step as 4 x 4 batches spilled past
 # the A6000's 48 GB (TRL keeps fp32 152k-vocab logits for the loss, entropy and token accuracy).
 # v1's checkpoints were removed, so this starts from v1's final adapter weights (gst_recon.init_adapter) with a

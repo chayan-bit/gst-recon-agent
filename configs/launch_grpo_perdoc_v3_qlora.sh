@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Per-document GRPO v3 hard, QLoRA + FP8 rollout server, on the shared rs-epyc H100 within 16 GB per job
+# Per-document GRPO v3 hard, QLoRA + FP8 rollout server, on the shared H100 host within 16 GB per job
 # (configs/grpo_perdoc_v3_hard_qlora.yaml), through configs/launch_grpo.sh, from the pd3 adapter (SHA256SUMS must verify).
 #   PERDOC_ADAPTER=~/gst-recon/adapters/perdoc-v3 STOP_AT=03:30 \
 #     tmux new-session -d -s grpo 'bash ~/gst-recon/repo-grpo/configs/launch_grpo_perdoc_v3_qlora.sh'

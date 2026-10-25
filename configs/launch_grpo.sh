@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# GRPO on rs-epyc (configs/grpo_sglang.yaml): start the SGLang rollout server (base snapshot + LoRA slots),
+# GRPO on the shared H100 host (configs/grpo_sglang.yaml): start the SGLang rollout server (base snapshot + LoRA slots),
 # wait for health, then the trainer under run_guarded (CAP_GB=8, abort below 12 GB available).
 # Rollouts are unconstrained (no JSON-schema grammar), capped at max_completion_length 4096; the reward expands
 # the compact output form (tests/train/test_reward_plugin_compact.py).
@@ -88,7 +88,7 @@ if [ -n "$STOP_AT" ]; then  # recomputed after the server start
   log "trainer until $STOP_AT: save-then-stop after ${maxh} h, hard stop in $((limit / 60)) min"
 fi
 # UNSLOTH_RETURN_LOGITS: AlignTune's vendored unsloth patches transformers even on the trl backend and would
-# return empty logits (seen in the rs-lab per-document SFT); TRL needs real ones for the completion log-probs.
+# return empty logits (seen in the Windows GPU workstation per-document SFT); TRL needs real ones for the completion log-probs.
 timeout -s TERM $limit env PYTHON="$ALIGN_PY" MODEL="$BASE" UNSLOTH_RETURN_LOGITS=1 ${maxh:+GST_MAX_HOURS=$maxh} \
   CAP_GB=8 DUMP_GB=6 MIN_AVAIL_GB=$MIN_AVAIL \
   bash configs/run_guarded.sh "$CONFIG" >> "$LOG" 2>&1

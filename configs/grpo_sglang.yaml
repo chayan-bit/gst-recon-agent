@@ -5,7 +5,7 @@
 # the trainable adapter (gst_recon.init_adapter). The server runs the same snapshot with --enable-lora, so the
 # fork syncs only the adapter (~264 MB to train.sglang_sync_dir on disk) after each optimizer step.
 #
-# rs-epyc H100 NVL budget (95830 MiB; nothing else of ours; another user's ~0.6 GB process):
+# the shared H100 host NVL budget (95830 MiB; nothing else of ours; another user's ~0.6 GB process):
 #   SGLang 0.5.10.post1 sizes its KV pool as free_after_load - free_before_load * (1 - mem_fraction_static),
 #   so start it FIRST, while ~93 GiB is free. Then 0.45 gives ~42 GiB: 7.5 GiB weights, the LoRA pool, and
 #   ~34 GiB KV (144 KiB/token for Qwen3-4B = ~245k tokens). CUDA graphs and activations add ~3 GiB, so ~45 GiB.
@@ -38,7 +38,7 @@ model:
   lora_target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
 
 datasets:
-  - name: data/train/curated/grpo-merged  # 194 teacher-paraphrased + 474 rs-lab unparaphrased rows; directory with train.jsonl (columns: prompt messages, reference = truth JSON)
+  - name: data/train/curated/grpo-merged  # 194 teacher-paraphrased + 474 Windows-workstation unparaphrased rows; directory with train.jsonl (columns: prompt messages, reference = truth JSON)
     split: train
 
 rewards:

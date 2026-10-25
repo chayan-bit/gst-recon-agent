@@ -1,4 +1,4 @@
-# Per-document SFT for the hybrid mode on rs-lab (RTX A6000 48 GB, Windows): configs/sft_perdoc.yaml on the
+# Per-document SFT for the hybrid mode on the Windows GPU workstation (RTX A6000 48 GB, Windows): configs/sft_perdoc.yaml on the
 # trl backend (unsloth does not run on Windows). Rows are the same curated per-document rows in TRL
 # prompt/completion form (data/train/curated/sft-perdoc-pc), so TRL's SFTTrainer puts the loss on the
 # completion only; gst_recon.check_completion_mask proves it on the first training row before step 1.

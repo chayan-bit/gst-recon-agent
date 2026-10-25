@@ -1,6 +1,6 @@
 """Response-only loss on a real built SFT row: prompt tokens are labelled -100, the reply is not.
 
-Needs unsloth_zoo, the Qwen3 tokenizer and a built row, so it runs where training runs (rs-epyc
+Needs unsloth_zoo, the Qwen3 tokenizer and a built row, so it runs where training runs (the shared H100 host,
 venv-align, HF_HOME with the model) and skips elsewhere. Row: $GST_SFT_ROWS or
 data/train/curated/sft/train.jsonl.
 """

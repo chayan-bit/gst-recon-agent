@@ -1,4 +1,4 @@
-# Per-document SFT on rs-lab (Windows, RTX A6000): preflight, then a per-doc config (default
+# Per-document SFT on the Windows GPU workstation (Windows, RTX A6000): preflight, then a per-doc config (default
 # configs/sft_perdoc_trl.yaml) under a Job Object memory cap. Runs as a scheduled task so it survives ssh. The task
 # is interactive-only (no stored password), so its console would open on the shared desktop: keep it hidden.
 #   schtasks /Create /TN gst-sft-perdoc /SC ONCE /ST 23:59 /F /TR "powershell -WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -File D:\gst\gst-train\repo\configs\launch_sft_perdoc_rslab.ps1"
@@ -36,7 +36,7 @@ $env:TOKENIZERS_PARALLELISM = "false"; $env:GST_MEM_CAP_GB = "64"  # host commit
 $env:UNSLOTH_RETURN_LOGITS = "1"
 Set-Location $Repo
 Log "run $Config"
-# rs-lab is someone else's machine: a Ctrl-C or close event from its desktop ends the run, by design.
+# the Windows GPU workstation is someone else's machine: a Ctrl-C or close event from its desktop ends the run, by design.
 cmd /c "`"$T\env\python.exe`" -m gst_recon.train run $Config >> `"$Log`" 2>&1"
 $rc = $LASTEXITCODE  # checkpoints stay: with the optimizer state they allow a true resume
 Log "DONE rc=$rc"

@@ -1,4 +1,4 @@
-# Per-document SFT v3a on rs-lab: configs/sft_perdoc_v3_trl.yaml unchanged except the data and the output. Rows =
+# Per-document SFT v3a on the Windows GPU workstation: configs/sft_perdoc_v3_trl.yaml unchanged except the data and the output. Rows =
 # sft-perdoc-v3-pc with every identity field (supplier_gstin, invoice_no, invoice_date) the document page does not show
 # set to "" (rewards.doc.visible, the per-document GRPO reward's abstention rule): 1483 invoice numbers, 932 dates and
 # 695 GSTINs blanked of 4746 rows. v1 and v3 train on targets the page does not show (37% / 31% of invoice numbers),
@@ -38,7 +38,7 @@ train:
   seed: 42
 
 logging:
-  output_dir: D:/gst/runs/perdoc-v3a  # rs-lab only, on D:, outside the repo checkout
+  output_dir: D:/gst/runs/perdoc-v3a  # the Windows GPU workstation only, on D:, outside the repo checkout
   run_name: gst-recon-sft-perdoc-v3a
   loggers: [tensorboard]
 

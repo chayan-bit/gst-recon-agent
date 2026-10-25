@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Per-document SFT (configs/sft_perdoc.yaml, ~20-30 min) on rs-epyc; needs the GPU free (after GRPO).
+# Per-document SFT (configs/sft_perdoc.yaml, ~20-30 min) on the shared H100 host; needs the GPU free (after GRPO).
 #   tmux new-session -d -s sft-perdoc 'bash ~/gst-recon/repo/configs/launch_sft_perdoc.sh'
 #   CAP_GB / DUMP_GB / MIN_AVAIL_GB pass through to run_guarded.sh.
 # Log: ~/gst-recon/logs/sft_perdoc.log (`step N/M loss X`); adapter: ~/gst-recon/runs/sft-perdoc.

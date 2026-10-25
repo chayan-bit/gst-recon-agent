@@ -100,7 +100,7 @@ def shadowed_args(cfg: dict) -> dict:
 
 def _pin_dataset_num_proc(n: int) -> None:
     """AlignTune 0.1.28 never forwards dataset_num_proc into the TRL SFTConfig, and unsloth's SFT
-    trainer then tokenizes with cpu_count + 4 worker processes (39 on rs-epyc)."""
+    trainer then tokenizes with cpu_count + 4 worker processes (39 on the shared H100 host)."""
     from aligntune.core.sft import training_args_builder as tab
 
     build = tab.build_sft_config
@@ -326,7 +326,7 @@ def cmd_run(a: argparse.Namespace) -> None:
     import faulthandler
     import signal
 
-    if hasattr(signal, "SIGUSR1"):  # POSIX only (rs-lab is Windows)
+    if hasattr(signal, "SIGUSR1"):  # POSIX only (the Windows GPU workstation lacks it)
         faulthandler.register(signal.SIGUSR1)  # `kill -USR1 <pid>` prints every thread's stack (memory triage)
     if os.environ.get("GST_MEM_CAP_GB"):  # Windows has no run_guarded.sh: Job Object commit cap instead
         from gst_recon.render.memlimit import apply_memory_cap
@@ -367,7 +367,7 @@ def cmd_run(a: argparse.Namespace) -> None:
     trainer = make(config=cfg, **shadowed_args(cfg), **extras)
     # datasets fingerprints every .map() function by dill-pickling its closure. AlignTune 0.1.28's
     # unsloth SFT formatter closes over the trainer, so hashing it copied the whole model into host
-    # RAM (42 GB, rs-epyc OOM on 2026-10-24). Hash the trainer by identity instead.
+    # RAM (42 GB, the shared H100 host OOM on 2026-10-24). Hash the trainer by identity instead.
     type(trainer).__getstate__ = lambda self: {"trainer_id": id(self)}
     _add_step_log(trainer, max_hours)
     if check_mask:

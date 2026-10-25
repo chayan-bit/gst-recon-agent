@@ -32,7 +32,7 @@ train:
   packing: false
   logging_steps: 1
   save_steps: 50
-  save_total_limit: 1  # rs-epyc disk is tight
+  save_total_limit: 1  # the shared H100 host disk is tight
   seed: 42
 
 logging:

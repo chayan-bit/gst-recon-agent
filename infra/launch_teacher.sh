@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Launch the teacher on rs-epyc (run there). Idempotent: refuses if the tmux session exists.
+# Launch the teacher on the shared H100 host (run there). Idempotent: refuses if the tmux session exists.
 # Usage: bash ~/gst-recon/launch_teacher.sh   (logs: ~/gst-recon/logs/sglang-teacher.log)
 set -euo pipefail
 ROOT=$HOME/gst-recon

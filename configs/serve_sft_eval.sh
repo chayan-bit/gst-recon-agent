@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Post-SFT eval server on rs-epyc (run there, after `DONE rc=0` in ~/gst-recon/logs/sft_full.log).
+# Post-SFT eval server on the shared H100 host (run there, after `DONE rc=0` in ~/gst-recon/logs/sft_full.log).
 # One SGLang server, two models: request model "base" for base Qwen3-4B-Instruct-2507 and "base:sft"
 # for base + the SFT LoRA (SGLang's base:adapter syntax), so the eval worker runs base vs SFT on
 # one endpoint. Logs: ~/gst-recon/logs/sglang-sft-eval.log. Stop: tmux kill-session -t sft-eval.

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Plan B: per-document GRPO on kratos' RTX 5070 Ti (configs/grpo_perdoc_kratos.yaml; the memory budget is there).
+# Plan B: per-document GRPO on the 16 GB host's RTX 5070 Ti (configs/grpo_perdoc_kratos.yaml; the memory budget is there).
 # QLoRA trainer + an FP8 SGLang rollout server on one 16 GB GPU. gst-hybrid's own SGLang server (port 30400,
 # ~13.7 GB) must be stopped by gst-hybrid first: this script never touches it, it only waits for a free GPU.
 #   bash ~/gst-recon-train/configs/launch_grpo_perdoc_kratos.sh setup    # once: builds .venv-grpo (network)
@@ -29,7 +29,7 @@ die() { log "ABORT: $*"; exit 3; }
 stop_server() { tmux kill-session -t sglang-rollout 2>/dev/null; pkill -u "$USER" -f "[s]glang.launch_server.*--port $PORT"; sleep 5
   pkill -KILL -u "$USER" -f "[s]glang.launch_server.*--port $PORT"; }
 
-if [ "$MODE" = setup ]; then  # torch cu128 for sm_120; the rest pinned to the rs-lab env that trains with this runner
+if [ "$MODE" = setup ]; then  # torch cu128 for sm_120; the rest pinned to the Windows GPU workstation env that trains with this runner
   UV=$HOME/.local/bin/uv
   [ -x "$PY" ] || "$UV" venv --python 3.12 .venv-grpo || exit 1
   "$UV" pip install --python "$PY" torch==2.9.0 --index-url https://download.pytorch.org/whl/cu128 || exit 1
