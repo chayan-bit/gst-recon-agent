@@ -67,6 +67,7 @@ Secondary: `composite` (the weighted reward), `grpo`, `parse_ok`, `arithmetic`, 
       --order base-unconstrained base-constrained sft sft-grpo frontier \
       --append runs/eval/auditkit-compare/auditkit_compare.md
 
+- `scripts/build_results.sh` runs exactly this command for the committed report; `reports/results-notes.md` is the Notes section it appends.
 - Writes `reports/results.md` and `reports/results.png` (grouped bars of composite, ITC invoice exact, match accuracy and field F1 per split).
 - `--runs` takes run directories or parents of them.
 - `--baselines` is the JSON from `python -m gst_recon.sim.audit --json FILE`: trivial baselines (majority, no_anomaly, keyword, context_blind), which are handed the true extraction and links, so only their decision metrics are comparable.

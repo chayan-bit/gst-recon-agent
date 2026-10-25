@@ -1,0 +1,45 @@
+## Notes
+
+- The two baseline rows are handed the true extraction and document links, so their match accuracy, field F1 and schema validity are oracle values; compare them on ITC invoice exact, context accuracy and the rupee metrics only.
+- teacher-30B unconstrained was stopped early because the teacher GPU was needed for student training.
+- It finished 19 cases, all test_iid easy, and 15 of the 19 hit the 24,000-token completion cap in repetition loops.
+- The row "teacher-30B constrained (same 19 cases as unconstrained)" is the constrained run restricted to those 19 cases, for a paired comparison; it is not a separate run.
+- teacher-30B constrained covers all 120 cases; 9 of 120 hit the completion cap and are scored as they stand.
+- Teacher runs used the task prompt from before the compact-form sentence ("Fields that are 0, empty or false may be omitted.") was added; the first teacher passes had a 24,000-token cap and later passes added a cap of 2 x reference length + 1,000.
+- Sonnet: the first 62 completed cases ran under the earlier prompt and the last 58 under the current one (prompt hashes are in config.json).
+- GPU and API price flags in the cost table are illustrative inputs; the Sonnet API cost is the total_cost_usd reported by the claude CLI.
+- All 120 cases were rendered with one OCR engine (Tesseract 5.5.0); gst_recon/eval/eval_sets_manifest.json pins the data.
+- realworld (12 hand-built cases, 36 documents printed through 7 open-source print formats, OCR'd with Tesseract 5.5.0, no synthetic degradation; see realworld/README.md) is reported as its own split and is excluded from the Overall row and from the difficulty, OCR and length tables, so those stay comparable with the simulator test sets.
+- With n = 12 the realworld bootstrap CIs are wide; read them as coverage evidence, not a precise score.
+- The realworld baseline rows come from `python -m realworld.baselines --n-train 2000` and are handed the true extraction and links; the two oracle-extraction baseline runs above were not run on realworld.
+- No teacher row exists for realworld because the teacher was stopped.
+- The "SFT constrained (full grammar)" row is format-mismatch evidence, not the SFT model's capability.
+- The SFT targets use the compact form (zero fields dropped), but the full constrained grammar requires blocked, deferred and all four tax heads in every ITC record.
+- Forced to emit slots it never saw in training, the model fills blocked and deferred with junk: predicted blocked is nonzero in 78.5% of 2,246 ITC records (truth 21.9%) and deferred in 71.4% (truth 12.2%).
+- Per ITC record, the eligible bucket is exactly right in 59.0% of records, but all three buckets are right in only 12.3%, which matches the headline 10.9% ITC invoice exact.
+- Rows labelled "compact grammar" use `--compact-schema`, which makes the zero-droppable inner fields optional while keeping top-level keys, types and reason enums.
+- Per-record ITC comparison on the 120 simulator cases (2,252 truth records; a record is correct when all four heads are within Rs 0.02, records aligned by doc_id), eligible bucket exactly right / all three buckets right, as a share of aligned records (share of all truth records in brackets):
+- SFT full grammar: 59.0% (57.9%) / 12.1% (11.9%); teacher-30B constrained: 61.6% (53.1%) / 61.0% (52.5%); Sonnet: 96.9% (96.4%) / 96.5% (96.0%).
+- The teacher aligns only 1,939 of 2,252 records because some of its replies are invalid or cut, which is why its share of truth records is lower than its share of aligned records.
+- Predicted blocked is nonzero in 79.0% of SFT records, 2.9% of teacher records and 19.8% of Sonnet records (deferred 72.2%, 1.7%, 12.8%); the truth rates are 21.9% and 12.2%.
+- So on the eligible bucket the SFT model matches the teacher, and the whole gap to the teacher on ITC invoice exact comes from blocked and deferred under the full grammar.
+- The earlier SFT figures 59.0% and 12.3% above include realworld (2,246 aligned records); the simulator-only figures are in this note.
+- The "SFT constrained (compact grammar)" rows are the SFT model scored with the grammar that matches its compact training targets (`--compact-schema`); they replace the full-grammar row as the SFT headline.
+- Scope: the compact run is a seeded stratified sample, 15 test_iid, 15 test_ood and all 12 realworld cases, so its Overall row has n = 30 simulator cases while the other rows have n = 120.
+- Compare rows only through the paired table, which uses the shared case ids; the CIs at n = 30 are wide.
+- Sign convention in the paired table is the other run minus SFT compact, so a negative delta means SFT compact is better.
+- Same 42 cases, SFT compact vs SFT full grammar: ITC invoice exact +59.5 points, context accuracy +22.5, composite +21.9 (all p = 0.0005); the grammar mismatch, not the model, caused the earlier 10.9%.
+- Per-record ITC buckets on the same 30 sampled simulator cases (587 truth records; correct = all four heads within Rs 0.02, aligned by doc_id), eligible bucket right / all three buckets right, as a share of aligned records (share of truth records in brackets):
+- SFT compact grammar: 71.6% (71.2%) / 69.7% (69.3%); SFT full grammar: 55.5% (55.5%) / 9.0% (9.0%); teacher-30B constrained: 60.9% (48.4%) / 59.2% (47.0%); Sonnet: 98.5% (98.5%) / 98.1% (98.1%).
+- Predicted blocked is nonzero in 13.7% of SFT compact records and deferred in 2.2%, against truth rates near 22% and 12%, so under the compact grammar the remaining error is mostly the eligible decision and a missing deferred bucket, not junk.
+- "SFT unconstrained" is the same 42-case sample with no grammar, the JSON Schema in the system prompt and a per-case token cap of 2 x the reference length + 1000; no case hit the cap (0 truncated, all finish_reason stop) and none looped.
+- Without the grammar the model still emits valid compact JSON on most cases, but only 70.0% pass the schema check and 1 reply failed to parse (a missing closing brace), against 100% schema-valid with the compact grammar.
+- Paired against SFT compact (same 42 cases): ITC invoice exact -2.4 points [-7.3, +2.5], p = 0.32, context accuracy -1.7 [-9.0, +5.9], p = 0.65, composite -3.8 [-8.1, -0.4], p = 0.049.
+- So the compact grammar gives the guarantee of valid output at no measurable accuracy cost, and the SFT model does not depend on the grammar for its ITC decisions.
+- "student-base constrained" (Qwen3-4B-Instruct-2507 with the full grammar, no training) ran the same 42-case sample at concurrency 2.
+- Six of its 12 realworld cases (rw01, rw02, rw04, rw06, rw09, rw11) failed with ConnectionResetError when the shared GPU host ran out of RAM at the end of the run, and were not retried.
+- Those failures are infrastructure, not model results, so the report does not publish the 42-case base aggregate; the base row covers the 36 completed cases only (30 simulator cases and 6 realworld cases), with transport errors 0.
+- The row "SFT constrained, compact grammar (same 36 cases)" is SFT compact restricted to the same 36 cases, for a like-for-like comparison; the realworld table shows both at n = 6.
+- 3 base replies hit the 24,000-token cap on test_iid-hard cases (prompts of 33k to 40k tokens), which are genuine and kept.
+- On the 30 simulator cases the base model scores ITC invoice exact 50.0, context accuracy 24.7 and composite 60.1, against 75.7, 63.9 and 80.5 for SFT compact.
+- Paired on those 30 simulator cases, SFT compact beats base by +25.7 points on ITC invoice exact [18.8, 32.6], +45.9 on context accuracy [35.0, 56.5] and +20.5 on composite [14.4, 27.4], all p = 0.0005.

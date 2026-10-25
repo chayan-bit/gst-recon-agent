@@ -17,7 +17,6 @@ Headline metrics are ITC invoice exact and context accuracy; the composite (the 
 | SFT constrained, compact grammar (same 36 cases) | 30 | 75.7 [70.0, 81.5] | 63.9 [52.5, 73.8] | 435,416 [215,198, 701,045] | 19,491 [6,265, 36,743] | 322,681 [183,096, 493,411] | 85.7 [80.9, 90.3] | 95.7 [94.2, 97.0] | 100.0 [100.0, 100.0] | 80.5 [77.7, 83.5] |
 | SFT unconstrained | 30 | 72.3 [64.8, 79.4] | 59.5 [48.0, 69.7] | 387,852 [183,040, 636,231] | 36,977 [7,310, 78,010] | 355,488 [196,829, 546,233] | 83.6 [76.0, 89.7] | 92.6 [85.6, 96.7] | 70.0 [53.3, 86.7] | 75.5 [68.4, 81.1] |
 | Claude Sonnet (via Claude Code CLI) | 120 | 96.3 [94.3, 97.7] | 92.7 [90.5, 94.6] | 15,306 [7,532, 24,334] | 28,403 [4,860, 61,386] | 43,079 [17,201, 78,166] | 99.0 [97.2, 99.9] | 98.4 [96.7, 99.4] | 99.2 [97.5, 100.0] | 94.4 [92.3, 95.9] |
-| SFT+GRPO (not run yet) | - | - | - | - | - | - | - | - | - | - |
 
 ## Throughput and cost per 1,000 cases
 
@@ -34,7 +33,6 @@ Headline metrics are ITC invoice exact and context accuracy; the composite (the 
 | SFT constrained, compact grammar (same 36 cases) | 0.05 | 203 | 38.0 | - | - |
 | SFT unconstrained | 0.04 | 200 | 31.0 | - | - |
 | Claude Sonnet (via Claude Code CLI) | 0.03 | 358 | 67.9 | - | $226.88 |
-| SFT+GRPO (not run yet) | - | - | - | - | - |
 
 GPU cost = measured wall time x the GPU-hour price passed to `run`. API cost = this run's mean token counts x the list price passed to `run`. Prices are inputs, not facts; `-` means no price was given.
 
@@ -53,7 +51,6 @@ GPU cost = measured wall time x the GPU-hour price passed to `run`. API cost = t
 | SFT constrained, compact grammar (same 36 cases) | 15 | 72.6 | 57.4 | 605,393 | 11,688 | 432,296 | 84.1 | 95.6 | 100.0 | 78.7 |
 | SFT unconstrained | 15 | 72.1 | 56.6 | 532,352 | 6,526 | 481,081 | 85.2 | 95.9 | 73.3 | 76.1 |
 | Claude Sonnet (via Claude Code CLI) | 60 | 94.9 | 92.3 | 23,982 | 39,299 | 62,212 | 98.0 | 97.5 | 98.3 | 93.0 |
-| SFT+GRPO (not run yet) | - | - | - | - | - | - | - | - | - | - |
 
 ## test_ood
 
@@ -68,7 +65,6 @@ GPU cost = measured wall time x the GPU-hour price passed to `run`. API cost = t
 | SFT constrained, compact grammar (same 36 cases) | 15 | 78.9 | 71.4 | 265,438 | 27,294 | 213,067 | 87.3 | 95.7 | 100.0 | 82.3 |
 | SFT unconstrained | 15 | 72.6 | 62.9 | 243,352 | 67,429 | 229,895 | 82.0 | 89.3 | 66.7 | 74.8 |
 | Claude Sonnet (via Claude Code CLI) | 60 | 97.8 | 93.1 | 6,629 | 17,506 | 23,946 | 99.9 | 99.4 | 100.0 | 95.8 |
-| SFT+GRPO (not run yet) | - | - | - | - | - | - | - | - | - | - |
 
 ## realworld
 
@@ -86,7 +82,6 @@ realworld is a sanity split of 12 hand-built cases (not part of the Overall row 
 | baseline: no_anomaly | - | 48.6 | 36.4 | - | - | 34,202 | 87.5 | 100.0 | - | 74.7 |
 | baseline: keyword | - | 42.4 | 31.8 | - | - | 21,201 | 87.5 | 100.0 | - | 73.9 |
 | baseline: context_blind | - | 73.6 | 60.6 | - | - | 25,672 | 100.0 | 100.0 | - | 88.4 |
-| SFT+GRPO (not run yet) | - | - | - | - | - | - | - | - | - | - |
 
 ## By difficulty
 
@@ -280,7 +275,7 @@ Paired by case_id; p-value from a centred paired bootstrap (null: zero mean diff
 ## Notes
 
 - The two baseline rows are handed the true extraction and document links, so their match accuracy, field F1 and schema validity are oracle values; compare them on ITC invoice exact, context accuracy and the rupee metrics only.
-- teacher-30B unconstrained was stopped early, at the coordinator's request, because the teacher GPU was needed for student training.
+- teacher-30B unconstrained was stopped early because the teacher GPU was needed for student training.
 - It finished 19 cases, all test_iid easy, and 15 of the 19 hit the 24,000-token completion cap in repetition loops.
 - The row "teacher-30B constrained (same 19 cases as unconstrained)" is the constrained run restricted to those 19 cases, for a paired comparison; it is not a separate run.
 - teacher-30B constrained covers all 120 cases; 9 of 120 hit the completion cap and are scored as they stand.
@@ -316,7 +311,7 @@ Paired by case_id; p-value from a centred paired bootstrap (null: zero mean diff
 - Paired against SFT compact (same 42 cases): ITC invoice exact -2.4 points [-7.3, +2.5], p = 0.32, context accuracy -1.7 [-9.0, +5.9], p = 0.65, composite -3.8 [-8.1, -0.4], p = 0.049.
 - So the compact grammar gives the guarantee of valid output at no measurable accuracy cost, and the SFT model does not depend on the grammar for its ITC decisions.
 - "student-base constrained" (Qwen3-4B-Instruct-2507 with the full grammar, no training) ran the same 42-case sample at concurrency 2.
-- Six of its 12 realworld cases (rw01, rw02, rw04, rw06, rw09, rw11) failed with ConnectionResetError when the shared rs-epyc host was starved of RAM at the end of the run, and were not retried.
+- Six of its 12 realworld cases (rw01, rw02, rw04, rw06, rw09, rw11) failed with ConnectionResetError when the shared GPU host ran out of RAM at the end of the run, and were not retried.
 - Those failures are infrastructure, not model results, so the report does not publish the 42-case base aggregate; the base row covers the 36 completed cases only (30 simulator cases and 6 realworld cases), with transport errors 0.
 - The row "SFT constrained, compact grammar (same 36 cases)" is SFT compact restricted to the same 36 cases, for a like-for-like comparison; the realworld table shows both at n = 6.
 - 3 base replies hit the 24,000-token cap on test_iid-hard cases (prompts of 33k to 40k tokens), which are genuine and kept.
