@@ -8,97 +8,69 @@
 <link rel="stylesheet" href="/static/style.css">
 <style>
   body { display: block; height: auto; min-height: 100%; overflow: auto; }
-  .wrap { max-width: 1760px; margin: 0 auto; padding: 20px 20px 16px; display: grid; grid-template-columns: 1fr 520px; align-items: start; gap: 20px; }
+  .wrap { max-width: 1760px; margin: 0 auto; padding: 24px 20px 16px; display: grid; grid-template-columns: 1fr 560px; align-items: start; gap: 20px; }
   .wrap > header { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 20px; }
   h1 { margin: 0; font-size: 26px; letter-spacing: -.01em; }
-  .sub { color: var(--muted); max-width: 900px; }
+  .sub { color: var(--muted); }
   .back { color: var(--accent); text-decoration: none; font-weight: 600; margin-left: auto; white-space: nowrap; }
-  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px 24px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 22px 28px; }
   .card h2 { margin: 0 0 4px; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
-  .card .lead { color: var(--dim); margin: 0 0 18px; font-size: 13px; }
-  .legend { display: flex; flex-wrap: wrap; gap: 18px; margin-bottom: 8px; font-size: 12.5px; color: var(--muted); }
-  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
-  .chart { padding-left: 30px !important; display: flex; align-items: flex-end; gap: 18px; height: 580px; padding: 24px 4px 0; border-bottom: 1px solid var(--line-2); position: relative; }
-  .grid { position: absolute; inset: 24px 0 0 0; padding-left: 0; pointer-events: none; }
-  .grid span { position: absolute; left: 0; right: 0; border-top: 1px dashed var(--line); font-size: 10.5px; color: var(--dim); }
-  .grid span b { position: absolute; left: 0; top: -15px; font-weight: 500; }
-  .group { flex: 1; display: flex; align-items: flex-end; justify-content: center; gap: 8px; height: 100%; position: relative; z-index: 1; }
-  .gap { width: 22px; flex: none; }
-  .bar { width: 62%; max-width: 92px; border-radius: 8px 8px 0 0; position: relative; min-height: 6px; transition: height .6s cubic-bezier(.2, .8, .2, 1); }
-  .bar.code { background: #55627a; } .bar.e2e { background: var(--warn); opacity: .85; }
-  .bar.hybrid { background: var(--accent); } .bar.ref { background: var(--ok); }
-  .bar .v { position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); padding-bottom: 5px; font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums; white-space: nowrap; }
-  .bar.sample { background: repeating-linear-gradient(135deg, var(--warn) 0 6px, #7a5d12 6px 11px); }
-  .bar.todo { background: transparent; border: 1.5px dashed var(--line-2); border-bottom: 0; height: 56px !important; }
-  .bar.todo .v { color: var(--warn); font-size: 11px; letter-spacing: .08em; font-weight: 700; }
-  .labels { display: flex; gap: 18px; padding: 12px 4px 0 34px; }
-  .labels > div { flex: 1; text-align: center; }
-  .labels .gap { flex: none; }
-  .labels b { display: block; font-size: 14px; }
-  .labels span { display: block; color: var(--muted); font-size: 12px; }
-  .labels em { display: block; color: var(--dim); font: 10.5px ui-monospace, monospace; font-style: normal; margin-top: 3px; }
-  .labels .cm { color: var(--dim); font: 10.5px ui-monospace, monospace; margin-top: 2px; }
+  .card .lead { color: var(--dim); margin: 0 0 14px; font-size: 13px; }
+  .reader { display: grid; grid-template-columns: 260px 1fr 100px; gap: 24px; align-items: center; padding: 44px 0; border-top: 1px solid var(--line); }
+  .reader:first-of-type { border-top: 0; }
+  .reader .nm { font-weight: 650; font-size: 18px; }
+  .reader .nm small { display: block; color: var(--dim); font-weight: 500; font-size: 12px; margin-top: 3px; }
+  .reader.ours { background: rgba(120, 160, 255, .06); margin: 0 -28px; padding: 44px 28px; border-radius: 10px; border-top-color: transparent; }
+  .reader.ours .nm { color: var(--accent); }
+  .m { display: grid; grid-template-columns: 78px 1fr 52px; align-items: center; gap: 10px; margin: 6px 0; font-size: 13.5px; color: var(--muted); }
+  .track { height: 20px; background: var(--panel-2); border-radius: 5px; overflow: hidden; }
+  .track i { display: block; height: 100%; width: 0; border-radius: 5px; background: #55627a; transition: width .7s cubic-bezier(.2, .8, .2, 1); }
+  .ours .track i { background: var(--accent); }
+  .m .n { color: var(--text); font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
+  .invd { text-align: right; }
+  .invd b { display: block; font-size: 28px; font-variant-numeric: tabular-nums; }
+  .invd span { display: block; white-space: nowrap; margin-top: 2px; color: var(--dim); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
   .side { display: flex; flex-direction: column; gap: 20px; }
-  .pair { margin: 12px 0 2px; }
-  .pair .nm { font-weight: 600; margin-bottom: 8px; }
-  .row { display: grid; grid-template-columns: 112px 1fr 84px; align-items: center; gap: 10px; margin: 4px 0; font-size: 13px; color: var(--muted); }
-  .track { height: 22px; background: var(--panel-2); border-radius: 6px; overflow: hidden; }
-  .track i { display: block; height: 100%; border-radius: 6px; transition: width .6s cubic-bezier(.2, .8, .2, 1); }
-  .row .n { color: var(--text); font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
-  .fn { display: block; color: var(--warn); margin-bottom: 6px; }
-  .src { grid-column: 1 / -1; color: var(--dim); font-size: 12.5px; }
+  .def { margin: 10px 0; color: var(--muted); font-size: 13.5px; line-height: 1.45; }
+  .def b { color: var(--text); }
+  .note { margin: 12px 0; color: var(--text); font-size: 14px; line-height: 1.5; }
+  .src { grid-column: 1 / -1; color: var(--dim); font-size: 12.5px; margin: 0; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <h1 id="title">The hybrid ladder</h1>
+    <h1 id="title"></h1>
     <span class="sub" id="metricNote"></span>
     <a class="back" href="/">&larr; Live demo</a>
   </header>
   <section class="card">
-    <h2>ITC invoice exact on held-out cases</h2>
-    <p class="lead">Each step adds one thing; the per-document bars re-score the same model replies with a better reconciler. End-to-end references on the right.</p>
-    <div class="legend"><span><i style="background:#55627a"></i>Code, no model</span><span><i style="background:var(--warn)"></i>End-to-end student</span><span><i style="background:var(--accent)"></i>Hybrid (model reads, code reconciles)</span><span><i style="background:var(--ok)"></i>End-to-end reference</span></div>
-    <div class="chart" id="chart"></div>
-    <div class="labels" id="labels"></div>
+    <h2 id="set"></h2>
+    <p class="lead">Higher is better, except invented IDs.</p>
+    <div id="readers"></div>
   </section>
-  <div class="side"><section class="card" id="context"></section><section class="card" id="decoding"></section></div>
+  <div class="side"><section class="card" id="defs"></section><section class="card" id="notes"></section></div>
   <p class="src" id="foot"></p>
 </div>
 <script>
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
-const fmt = (v) => `${v.toFixed(1)}%`;
-
-function bar(c) {
-  const todo = c.value == null;
-  return `<div class="bar ${c.kind}${c.sample ? " sample" : ""}${todo ? " todo" : ""}" data-h="${todo ? 0 : c.value}"><span class="v">${todo ? "TODO" : fmt(c.value)}</span></div>`;
-}
+const metric = (name, v) => `<div class="m"><span>${name}</span><div class="track"><i data-w="${v}"></i></div><span class="n">${v.toFixed(1)}</span></div>`;
 
 fetch("/static/results.json").then((r) => r.json()).then((d) => {
-  $("metricNote").textContent = d.metric_note;
   $("title").textContent = d.title;
-  const cols = [...d.steps, { gap: true }, ...d.references];
-  $("chart").innerHTML = `<div class="grid">${[100, 75, 50, 25, 0].map((t) => `<span style="top:${100 - t}%"><b>${t}</b></span>`).join("")}</div>` +
-    cols.map((c) => c.gap ? `<div class="gap"></div>` : `<div class="group">${bar(c)}</div>`).join("");
-  $("labels").innerHTML = cols.map((c) => c.gap ? `<div class="gap"></div>` : `<div><b>${esc(c.label)}</b><span>${esc(c.sub)}</span>${c.commit ? `<em>${esc(c.commit)}</em>` : ""}</div>`).join("");
-  requestAnimationFrame(() => document.querySelectorAll(".bar").forEach((b) => { if (!b.classList.contains("todo")) b.style.height = `${b.dataset.h}%`; }));
-
-  const cx = d.context, maxO = Math.max(...cx.rows.map((r) => r.overclaim));
-  $("context").innerHTML = `<h2>${esc(cx.title)}</h2><p class="lead">${esc(cx.sub)}</p>` + cx.rows.map((r) => `
-    <div class="pair"><div class="nm">${esc(r.label)} <span style="color:var(--dim);font:10.5px ui-monospace,monospace">${esc(r.commit)}</span></div>
-      <div class="row"><span>Context acc</span><div class="track"><i style="width:${r.context}%;background:var(--ok)"></i></div><span class="n">${fmt(r.context)}</span></div>
-      <div class="row"><span>Overclaim</span><div class="track"><i style="width:${(100 * r.overclaim) / maxO}%;background:var(--bad)"></i></div><span class="n" style="font-size:12px">Rs ${r.overclaim.toLocaleString("en-IN")}</span></div>
+  $("metricNote").textContent = d.metric_note;
+  $("set").textContent = d.set;
+  $("readers").innerHTML = d.readers.map((r) => `
+    <div class="reader${r.ours ? " ours" : ""}">
+      <div class="nm">${esc(r.label)}<small>${esc(r.sub)}</small></div>
+      <div>${metric("ITC exact", r.itc)}${metric("Match", r.match)}${metric("Composite", r.composite)}</div>
+      <div class="invd"><b>${r.invented.toFixed(1)}%</b><span>invented IDs</span></div>
     </div>`).join("");
-
-  const dec = d.decoding;
-  $("decoding").innerHTML = `<h2>${esc(dec.title)}</h2><p class="lead">${esc(dec.sub)}</p>` + dec.rows.map((r) => `
-    <div class="pair"><div class="nm">${esc(r.label)}</div>
-      <div class="row"><span>Unconstrained</span><div class="track"><i style="width:${r.unconstrained}%;background:var(--bad)"></i></div><span class="n">${fmt(r.unconstrained)}</span></div>
-      <div class="row"><span>Constrained</span><div class="track"><i style="width:${r.constrained}%;background:var(--ok)"></i></div><span class="n">${fmt(r.constrained)}</span></div>
-    </div>`).join("") + `<p class="lead" style="margin-top:20px;color:var(--warn)">${esc(dec.todo)}</p>`;
-  $("foot").innerHTML = (d.footnotes || []).map((f) => `<span class="fn">${esc(f)}</span>`).join("") + `Source: ${esc(d.source)}`;
+  $("defs").innerHTML = `<h2>What the columns mean</h2>` + d.defs.map(([k, v]) => `<p class="def"><b>${esc(k)}</b>: ${esc(v)}.</p>`).join("");
+  $("notes").innerHTML = `<h2>Read this with</h2>` + d.notes.map((n) => `<p class="note">${esc(n)}</p>`).join("");
+  $("foot").textContent = `Source: ${d.source}`;
+  requestAnimationFrame(() => document.querySelectorAll(".track i").forEach((i) => { i.style.width = `${i.dataset.w}%`; }));
 });
 </script>
 </body>

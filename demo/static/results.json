@@ -1,144 +1,23 @@
 {
-  "title": "The hybrid ladder: code, SFT, per-document, GRPO",
-  "metric": "ITC invoice exact (%)",
-  "metric_note": "Share of invoices whose eligible, blocked and deferred amounts are all within Rs 1 of the truth. Held-out test set, 120 simulator cases (60 in-distribution, 60 out-of-distribution), one number per bar.",
-  "source": "reports/hybrid.md (Overall, 120 simulator cases) and reports/results.md at commit 83599e7; SFT compact row at da4120a. No value = TODO, not run yet. Commit under each bar = the reconciler (or report) commit behind the number.",
-  "steps": [
-    {
-      "label": "Code alone",
-      "sub": "regex, no model",
-      "value": 10.4,
-      "kind": "code",
-      "commit": "ac03f32"
-    },
-    {
-      "label": "SFT e2e*",
-      "sub": "strict grammar",
-      "value": 10.9,
-      "kind": "e2e",
-      "commit": "83599e7"
-    },
-    {
-      "label": "SFT e2e",
-      "sub": "compact grammar, n=30 sample",
-      "value": 75.7,
-      "kind": "e2e",
-      "commit": "da4120a",
-      "sample": true
-    },
-    {
-      "label": "Base hybrid",
-      "sub": "reconciler v3",
-      "value": 55.2,
-      "kind": "hybrid",
-      "commit": "8286f1f"
-    },
-    {
-      "label": "SFT hybrid",
-      "sub": "reconciler v3",
-      "value": 46.8,
-      "kind": "hybrid",
-      "commit": "8286f1f"
-    },
-    {
-      "label": "Per-doc v1",
-      "sub": "reconciler v1",
-      "value": 62.9,
-      "kind": "hybrid",
-      "commit": "ac03f32"
-    },
-    {
-      "label": "Per-doc v2",
-      "sub": "reconciler v2, same replies",
-      "value": 73.1,
-      "kind": "hybrid",
-      "commit": "b5c3c0b"
-    },
-    {
-      "label": "Per-doc v3",
-      "sub": "reconciler v3, same replies",
-      "value": 79.9,
-      "kind": "hybrid",
-      "commit": "8286f1f"
-    },
-    {
-      "label": "+ GRPO",
-      "sub": "rule-checked reward",
-      "value": null,
-      "kind": "hybrid",
-      "commit": ""
-    }
+  "title": "Real-document results",
+  "set": "54 real supplier documents with simulated books (purchase register, GSTR-2B, bank)",
+  "metric_note": "Every reader feeds the same code reconciler and got the same document text (no images).",
+  "readers": [
+    {"label": "Claude Haiku 5.5", "sub": "minimum thinking, cannot be turned off", "itc": 84.9, "match": 88.4, "composite": 86.5, "invented": 8.4},
+    {"label": "GPT-6 luna", "sub": "reasoning off", "itc": 70.6, "match": 82.5, "composite": 77.9, "invented": 15.4},
+    {"label": "Claude Haiku 4.5", "sub": "thinking off", "itc": 68.2, "match": 82.2, "composite": 77.4, "invented": 16.6},
+    {"label": "Ours: pd3g287", "sub": "Qwen3-4B + LoRA, runs locally on one 16 GB GPU", "itc": 61.1, "match": 71.5, "composite": 72.9, "invented": 9.7, "ours": true}
   ],
-  "references": [
-    {
-      "label": "Teacher 30B",
-      "sub": "end-to-end, constrained",
-      "value": 59.8,
-      "kind": "ref",
-      "commit": "83599e7"
-    },
-    {
-      "label": "Claude Sonnet",
-      "sub": "end-to-end, via CLI",
-      "value": 96.3,
-      "kind": "ref",
-      "commit": "83599e7"
-    }
+  "defs": [
+    ["ITC exact", "share of invoices whose eligible, blocked and deferred amounts are all within Rs 1 of the truth"],
+    ["Match", "per invoice, the right purchase-register entry, GSTR-2B row and bank payment found and the right flags raised"],
+    ["Composite", "one overall score of ITC, matching, field extraction, totals, arithmetic, valid output and reasons"],
+    ["Invented IDs", "GSTIN, invoice-number and date fields where the model wrote a value that differs from the truth and the page does not show it (lower is better)"]
   ],
-  "context": {
-    "title": "Context accuracy and overclaim",
-    "sub": "Same 120 test cases (SFT compact: a 30-case sample). Context = did the model apply the business context right (blocked and deferred reasons). Overclaim = rupees of credit wrongly claimed, per case.",
-    "rows": [
-      {
-        "label": "Per-document, reconciler v3",
-        "context": 82.7,
-        "overclaim": 27183,
-        "overclaim_ci": "12,495 to 45,815",
-        "commit": "8286f1f"
-      },
-      {
-        "label": "Teacher 30B, end-to-end",
-        "context": 38.8,
-        "overclaim": 383144,
-        "overclaim_ci": "295,619 to 487,652",
-        "commit": "83599e7"
-      },
-      {
-        "label": "Claude Sonnet, end-to-end",
-        "context": 92.7,
-        "overclaim": 15306,
-        "overclaim_ci": "7,532 to 24,334",
-        "commit": "83599e7"
-      },
-      {
-        "label": "SFT e2e, compact (n=30 sample)",
-        "context": 63.9,
-        "overclaim": 435416,
-        "overclaim_ci": "215,198 to 701,045",
-        "commit": "da4120a"
-      }
-    ]
-  },
-  "decoding": {
-    "title": "Constrained vs unconstrained decoding",
-    "sub": "Qwen3-30B teacher, same 19 cases (reports/results.md)",
-    "rows": [
-      {
-        "label": "Schema-valid output (%)",
-        "unconstrained": 15.8,
-        "constrained": 94.7
-      },
-      {
-        "label": "ITC invoice exact (%)",
-        "unconstrained": 14.9,
-        "constrained": 68.0
-      }
-    ],
-    "todo": "Student (SFT, GRPO) unconstrained runs TODO"
-  },
-  "footnotes": [
-    "* Strict-grammar SFT forced junk into blocked and deferred (it was trained on compact targets): a format mismatch, not the student's accuracy. The compact bar is its real end-to-end number.",
-    "Not measured (GPU host down): base Qwen3-4B end-to-end. The hatched SFT compact-grammar bar is a 30-case simulator sample (CI 70.0 to 81.5), not the 120 cases of the other bars, so read it as indicative only.",
-    "Reconciler v1, v2 and v3 re-score the same cached per-document replies with no new model calls; the oracle check (true records through the same code) reproduces the truth on all cases under all three."
-  ]
+  "notes": [
+    "The frontier readers lead on this set. Our 4B model runs on one 16 GB GPU with no document leaving the machine, and it invents fewer identity fields than Haiku 4.5 and GPT-6 luna.",
+    "Most of our lost ITC exact is misreading amounts and identity fields off the page, not judgment: with the true amounts swapped in, it goes from 61.1 to 88.6.",
+    "The 54 labels were drafted by a model and not verified by a human."
+  ],
+  "source": "README.md, Results table (origin/main). Per-case ITC exact in the demo is computed live against the case's ground truth."
 }

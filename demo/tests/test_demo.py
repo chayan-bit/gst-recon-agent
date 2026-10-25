@@ -106,10 +106,9 @@ def test_results_page_and_its_numbers_are_served():
     assert c.get("/results").status_code == 200
     assert c.get("/built").status_code == 200
     d = c.get("/static/results.json").json()
-    for s in [*d["steps"], *d["references"]]:
-        assert s["value"] is None or 0 <= s["value"] <= 100
-        assert s["value"] is None or s["commit"]  # every number cites where it came from
-    assert all(0 <= r["context"] <= 100 and r["overclaim"] >= 0 and r["commit"] for r in d["context"]["rows"])
+    ours = [r for r in d["readers"] if r.get("ours")]
+    assert len(d["readers"]) == 4 and len(ours) == 1 and ours[0]["itc"] == 61.1  # the README Results table, real documents only
+    assert all(0 <= r[k] <= 100 for r in d["readers"] for k in ("itc", "match", "composite", "invented"))
 
 
 def test_shipped_and_earlier_per_document_adapters_have_their_labels():

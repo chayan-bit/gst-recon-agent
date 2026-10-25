@@ -84,15 +84,12 @@ End on the badge for 3 s: "11 pull requests open upstream, none merged" (AlignTu
 VO prompt: one SGLang server serves the base model and two LoRA adapters, switched per request; XGrammar makes the JSON always valid; RadixAttention shares the prompt prefill, which is what made GRPO rollouts cheap enough, and we built that as the AlignTune SGLang backend; CuratorKIT filtered the teacher's data and AuditKIT scored the extraction; eleven pull requests are open upstream and none is merged yet, and we say so.
 Say "open, none merged" exactly; do not say "merged" or "accepted".
 
-### Shot 7 - The results chart (2:20 to 2:50)
+### Shot 7 - The real-document results (2:20 to 2:50)
 
 Screen: open `http://localhost:8765/results` (the footer link "Results chart"); the bars animate in.
-Walk left to right: code alone 10.4, SFT end-to-end with the strict grammar 10.9 (format mismatch footnote), SFT end-to-end with the compact grammar 75.7 (hatched bar: a 30-case sample, CI 70.0 to 81.5), base hybrid 55.2, SFT hybrid 46.8, per-doc v1 62.9, v2 73.1, v3 79.9, GRPO as a dashed TODO bar; then teacher 30B 59.8 and Claude Sonnet 96.3 on the right.
-Then the side panel: per-document v3 context accuracy 82.7% and overclaim Rs 27,183 per case, against the teacher at 38.8% and Rs 3,83,144, SFT end-to-end compact (30-case sample) at 63.9% and Rs 4,35,416, and Sonnet at 92.7% and Rs 15,306.
-Footer text on the page: ITC invoice exact, 120 simulator test cases, every number cites its commit.
+Page content (from the README Results table, 54 real supplier documents with simulated books; no simulated-test numbers are shown): ITC exact / match / composite / invented IDs for Claude Haiku 5.5 (84.9 / 88.4 / 86.5 / 8.4%), GPT-6 luna reasoning off (70.6 / 82.5 / 77.9 / 15.4%), Claude Haiku 4.5 thinking off (68.2 / 82.2 / 77.4 / 16.6%) and ours, pd3g287 (61.1 / 71.5 / 72.9 / 9.7%).
 
-VO prompt: ITC invoice exact on 120 held-out simulator cases; code alone is 10; the per-document model with better reconciler versions climbs from 63 to 80 on the same model replies; the 30B teacher is 60 and Claude Sonnet is 96, so we are not claiming to beat a frontier model; the local model overclaims far less than the teacher.
-If GRPO numbers have landed by recording time, update `static/results.json` first and say the number; otherwise leave the dashed bar and say "GRPO is still training".
+VO prompt: on 54 real supplier documents the frontier readers lead, and we say so; ours is a 4B model on one 16 GB GPU with nothing leaving the machine, and it invents fewer identity fields than Haiku 4.5 and luna; most of its loss is misreading amounts off the page, and the labels were drafted by a model, not verified by a human.
 
 ### Shot 8 - Honest close (2:50 to 3:00)
 
@@ -106,8 +103,6 @@ VO prompt: this is trained and tested on a simulator, so the limits are real; pr
 - Sped-up segments carry the "8x" label.
 - The shipped-model (GRPO) hard-case hybrid run is 17/23 exact (the earlier SFT-only run was 19/23; do not mix them), not perfect; the headline totals differ from truth and the video says so.
 - The reconciler version is in the footer in hybrid mode (for example `reconciler 4f60882`; it is the latest reconciler commit at start-up, so say the hash on screen), and "end-to-end (model only)" in end-to-end mode.
-- The strict-grammar SFT bar (10.9) is a format mismatch, footnoted on the page; the compact-grammar SFT bar (75.7) is the student's real end-to-end number, but it is a 30-case sample with a wide interval, so say "on a 30-case sample" and do not rank it against the 120-case bars.
-- Be ready for the obvious question: SFT end-to-end (compact) scores close to per-document v3 on ITC exact, but its overclaim is far higher (Rs 4,35,416 per case on the sample, against Rs 27,183), which is the second panel's point.
 - The "caterer buys the same sugar" re-run is not supported by the app and is not shown.
 
 ## Timing summary
